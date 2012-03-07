@@ -1,0 +1,330 @@
+SPDL
+Version = "2.0.0.0";
+Reference = "{F40F85EA-34E9-408c-B3FA-77DA1F15F54A}";
+PropertySet "aaOceanArnNormals_params"
+{
+	Parameter "out" output
+	{
+		title = "output";
+		guid = "{2EB62BA1-8B81-47db-BC66-AA6FAACF502E}";
+		type = vector;
+		flags = 0;
+	}
+	Parameter "renderResolution" input
+	{		
+		guid = "{024CD1F8-5ECF-405c-BB4A-8C6A35B53C60}";
+		type = integer;
+		flags = 0;
+		texturable = on;
+		value = 3;
+		value minimum = 3;
+		value maximum = 8;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "oceanSize" input
+	{		
+		guid = "{4A2ED11C-55DC-4617-B1EC-F735516B646B}";
+		type = scalar;
+		flags = 0;
+		texturable = on;
+		value = 100;
+		value minimum = 0.001;
+		value maximum = 10000;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "seed" input
+	{		
+		guid = "{B76ECFCA-04A7-4972-889E-173A69ABA39C}";
+		type = integer;
+		flags = 0;
+		texturable = on;
+		value = 1;
+		value minimum = 1;
+		value maximum = 20;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "waveHeight" input
+	{		
+		guid = "{5659EB14-BB97-46c7-8CA5-6F7155305197}";
+		type = scalar;
+		flags = 0;
+		texturable = on;
+		value = 1;
+		value minimum = 0;
+		value maximum = 1000;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "waveSize" input
+	{		
+		guid = "{6422D8A0-B7C0-496f-9048-B01F1FD8DE88}";
+		type = scalar;
+		flags = 0;
+		texturable = on;
+		value = 10;
+		value minimum = 0.001;
+		value maximum = 30;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "waveSpeed" input
+	{
+		guid = "{8039251F-D43D-458e-B4E3-0615A1C842A5}";
+		type = scalar;
+		flags = 0;
+		texturable = on;
+		value = 1;
+		value minimum = 1;
+		value maximum = 50;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "waveChop" input
+	{		
+		guid = "{04B937E6-4065-4424-81A9-4EBA298C980C}";
+		type = scalar;
+		flags = 0;
+		texturable = on;
+		value = 1;
+		value minimum = 0;
+		value maximum = 100;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "waveSmooth" input
+	{		
+		guid = "{B7934E73-60AA-4da7-9E34-D28F8DA9EC48}";
+		type = scalar;
+		flags = 0;
+		texturable = on;
+		value = 0;
+		value minimum = 0;
+		value maximum = 100;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "waveDirection" input
+	{		
+		guid = "{DC0F8E8E-0809-4293-8829-9B8215DC1471}";
+		type = scalar;
+		flags = 0;
+		texturable = on;
+		value = 0;
+		value minimum = 0;
+		value maximum = 360;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "waveReflection" input
+	{		
+		guid = "{CF296F9C-E175-49c9-9776-E67F4CD922EF}";
+		type = scalar;
+		flags = 0;
+		texturable = on;
+		value = 0;
+		value minimum = 0;
+		value maximum = 1;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "waveAlign" input
+	{		
+		guid = "{1B3EAF35-673E-4b51-A647-70463189A18A}";
+		type = integer;
+		flags = 0;
+		texturable = on;
+		value = 0;
+		value minimum = 0;
+		value maximum = 10;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "uv_coords" input
+	{		
+		guid = "{B9EF2A21-F797-4e07-9D0B-6E258A9DAA87}";
+		type = vector;
+		flags = 0;
+		texturable = on;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "time" input
+	{
+		guid = "{8D62DCB0-E2B8-4ef4-8817-20EA2738FA80}";
+		type = scalar;
+		flags = 0;
+		texturable = on;
+		value = 1;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	
+	
+}
+phenomenon "aaOceanArnNormals_declare"
+{
+	Name = "aaOceanArnNormals";
+	Version = 1;
+	Use = texture;
+}
+
+
+Defaults
+{
+	renderResolution
+	{
+		Name = "Resolution";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 3 to 8 by 1;
+		UIType = "Number";
+	}
+	oceanSize
+	{
+		Name = "Ocean Size";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 0.001 to 1000 by 0.001;
+		UIType = "Number";
+	}
+	seed
+	{
+		Name = "Seed";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 1 to 20 by 1;
+		UIType = "Number";
+	}
+	waveHeight
+	{
+		Name = "Height";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 0 to 500 by 0.001;
+		UIType = "Number";
+	}
+	waveSize
+	{
+		Name = "Size";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 0.001 to 30 by 0.001;
+	}
+	waveSpeed
+	{
+		Name = "Speed";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 0.001 to 50 by 0.001;
+	}
+	waveChop
+	{
+		Name = "Choppiness";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 0 to 50 by 0.001;
+	}
+	waveSmooth
+	{
+		Name = "Smooth";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 0 to 50 by 0.01;
+		UIType = "Number";
+	}
+	waveDirection
+	{
+		Name = "Direction";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 0 to 360 by 0.01;
+		UIType = "Number";
+	}
+	waveReflection
+	{
+		Name = "Reflection";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 0 to 1 by 0.01;
+		UIType = "Number";
+	}
+	waveAlign
+	{
+		Name = "Wind Align";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 0 to 10 by 1;
+		UIType = "Number";
+	}
+	uv_coords
+	{
+		Name = "uv coords";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+	}
+	time
+	{
+		Name = "Time (secs)";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+	}
+	
+}
+
+Layout "Default"
+{
+	
+		Group "Ocean Parameters"
+		{
+			renderResolution;
+			oceanSize;
+			seed;
+		}
+		Group "Wave Parameters"
+		{
+			waveHeight;
+			waveSize;
+			waveSpeed;
+			waveChop;
+			waveSmooth;
+		}
+		Group "Wind Parameters"
+		{
+			waveDirection;
+			waveReflection;
+			waveAlign;
+			uv_coords;
+		}
+		time;
+	
+}
+
