@@ -184,7 +184,7 @@
       <Optimization>Full</Optimization>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\..\..\..\sdks\Arnold\Arnold-4.0.1.2-win64\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\..\sdks\Arnold\Arnold-4.0.1.2-win64\include; ..\..\..\..\..\sdks\fftw</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -199,7 +199,7 @@
     <Link>
       <AdditionalDependencies>ai.lib;libfftw.64.release.lib</AdditionalDependencies>
       <OutputFile>..\Output\aaOceanArnFoam.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\..\sdks\Arnold\Arnold-4.0.1.2-win64\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\..\sdks\Arnold\Arnold-4.0.1.2-win64\lib; ..\..\..\..\..\sdks\fftw</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT;</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
