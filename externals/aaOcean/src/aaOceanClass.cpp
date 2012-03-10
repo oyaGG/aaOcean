@@ -3,6 +3,7 @@
 
 #include "aaOceanClass.h"
 
+
 aaOcean::aaOcean() :	
 	m_pointCount(0),			m_resolution(0),			m_windAlign(0),			m_seed(-1),			
 	m_3DGridULength(-1.0f),		m_3DGridVLength(-1.0f),		m_velocity(-1.0f),		m_windDir(-1.0f),
@@ -18,7 +19,7 @@ aaOcean::aaOcean() :
 	m_fft_jzz(0),				m_fft_jxz(0),				m_fft_normX(0),			m_fft_normY(0),
 	m_fft_normZ(0)
 {
-	int success = fftwf_init_threads();
+	fftwf_init_threads();
 }
 
 aaOcean::aaOcean(const aaOcean &cpy)
@@ -33,7 +34,7 @@ aaOcean::~aaOcean()
 	fftwf_cleanup();
 }
 
-void aaOcean::input(int _resolution, int _seed, float _oceanScale, float _velocity, float _cutoff, float _windDir, 
+void aaOcean::input(int _resolution, ULONG _seed, float _oceanScale, float _velocity, float _cutoff, float _windDir, 
 			int _windAlign, float _damp, float	_waveSpeed, float _waveHeight, float _chopAmount, float _time)
 {
 	bool isDirty = FALSE; 
@@ -191,11 +192,11 @@ void aaOcean::allocateBaseArrays()
 	else
 		fftwf_plan_with_nthreads(1);
 
-	m_fft_htField	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1)*(m_resolution+1)));
-	m_fft_chopX		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1)*(m_resolution+1)));
-	m_fft_chopZ		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1)*(m_resolution+1)));
+	m_fft_htField	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
+	m_fft_chopX		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
+	m_fft_chopZ		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
 
-	m_planHeightField	= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_htField,m_fft_htField,1,FFTW_ESTIMATE);
+	m_planHeightField	= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_htField,m_fft_htField,1, FFTW_ESTIMATE);
 	m_planChopX			= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_chopX ,m_fft_chopX	,1, FFTW_ESTIMATE);
 	m_planChopZ			= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_chopZ ,m_fft_chopZ	,1, FFTW_ESTIMATE);
 	m_isAllocated		= TRUE;
@@ -212,21 +213,21 @@ void aaOcean::allocateNormalsArrays()
 
 inline void aaOcean::allocateFoamArrays()
 {
-	m_fft_jxx = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1)*(m_resolution+1)));
-	m_fft_jxz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1)*(m_resolution+1)));
-	m_fft_jzz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1)*(m_resolution+1)));
-	m_planJxx = fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_jxx,m_fft_jxx,1,FFTW_MEASURE);
-	m_planJxz = fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_jxz,m_fft_jxz,1,FFTW_MEASURE);
-	m_planJzz = fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_jzz,m_fft_jzz,1,FFTW_MEASURE);
+	m_fft_jxx = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
+	m_fft_jxz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
+	m_fft_jzz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
+	m_planJxx = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jxx, m_fft_jxx, 1, FFTW_MEASURE);
+	m_planJxz = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jxz, m_fft_jxz, 1, FFTW_MEASURE);
+	m_planJzz = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jzz, m_fft_jzz, 1, FFTW_MEASURE);
 	m_isFoamAllocated = TRUE;
 }
 
 void aaOcean::allocateSplashArrays()
 {
-	m_eigenPlusX	= (float*) aligned_malloc((m_resolution+1)*(m_resolution+1) * sizeof(float), 16);
-	m_eigenPlusZ	= (float*) aligned_malloc((m_resolution+1)*(m_resolution+1) * sizeof(float), 16);
-	m_eigenMinusX	= (float*) aligned_malloc((m_resolution+1)*(m_resolution+1) * sizeof(float), 16);
-	m_eigenMinusZ	= (float*) aligned_malloc((m_resolution+1)*(m_resolution+1) * sizeof(float), 16);
+	m_eigenPlusX	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), 16);
+	m_eigenPlusZ	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), 16);
+	m_eigenMinusX	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), 16);
+	m_eigenMinusZ	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), 16);
 	m_isSplashAllocated = TRUE;
 }
 
@@ -385,9 +386,9 @@ void aaOcean::clearArrays()
 
 inline ULONG aaOcean::get_uID(float xCoord, float zCoord)
 {
-	float angle = 0.0f;
-	float length = 0.0f;
-	float id_out;
+	register float angle = 0.0f;
+	register float length = 0.0f;
+	register float id_out;
 	ULONG returnVal = 0;
 
 	if (zCoord == 0.0 && xCoord == 0.0)
@@ -418,23 +419,24 @@ inline void aaOcean::setup_grid()
 {
 	if(!m_isAllocated)
 		return;
-	const int n = m_resolution;
-	const int half_n = (-n / 2) - ((n-1) / 2);
-	ULONG index, uID; 
+	register const int n = m_resolution;
+	register const int half_n = (-n / 2) - ((n-1) / 2);
+	register ULONG index, uID; 
+	MTRand randNum; 
 
-	#pragma omp parallel for private(index, uID)
-	for(int i = 0; i < n; i++)
+	#pragma omp parallel for private(index, uID) schedule(dynamic) 
+	for(int i = 0; i < n; ++i)
 	{
-		for(int j = 0; j < n; j++)
+		for(int j = 0; j < n; ++j)
 		{
-			index = (i*n) + j;
+			index = (i * n) + j;
 
-			m_xCoord[index] = half_n + i*2 ;
-			m_zCoord[index] = half_n + j*2 ;
+			m_xCoord[index] = half_n + i * 2 ;
+			m_zCoord[index] = half_n + j * 2 ;
 
 			uID = (ULONG)get_uID( (float)m_xCoord[index], (float)m_zCoord[index] );
 			
-			MTRand randNum(uID + m_seed); 
+			randNum.seed(uID + m_seed);
 			m_rand1[index] = (float)randNum.randNorm(); 
 			m_rand2[index] = (float)randNum.randNorm();
 		}
@@ -443,23 +445,24 @@ inline void aaOcean::setup_grid()
 
 inline void aaOcean::evaluateHokData()
 {
-	float k_sq, k_mag,  k_dot_w, low_freq, exp_term, philips;
-	const int	n		 = m_resolution * m_resolution;
-	const float	k_mult	 = (2 * aa_PI) / m_oceanScale;
-	const float	L		 = m_velocity;
-	const float	L_sq	 = L*L;
-	const float	windx	 = cos(m_windDir);
-	const float	windz	 = sin(m_windDir);
+	register float k_sq, k_mag,  k_dot_w, low_freq, exp_term, philips;
+	register const int	n			 = m_resolution * m_resolution;
+	register const float	k_mult	 = (2 * aa_PI) / m_oceanScale;
+	register const float	L		 = m_velocity;
+	register const float	L_sq	 = L*L;
+	register const float	windx	 = cos(m_windDir);
+	register const float	windz	 = sin(m_windDir);
 	
 	bool bDamp	= FALSE;
 	if (m_damp > 0.0f)
 		bDamp = true;
 
-	#pragma omp parallel for private( k_sq, k_mag, k_dot_w, low_freq, exp_term, philips) 
-	for(int index = 0; index < n; index++)
+	#pragma omp parallel for private( k_sq, k_mag, k_dot_w, low_freq, exp_term, philips) schedule(dynamic) 
+	for(int index = 0; index < n; ++index)
 	{
 		m_kX[index] =  m_xCoord[index] * k_mult; 
 		m_kZ[index] =  m_zCoord[index] * k_mult;
+
 		//philips spectrum vars
 		k_sq		= (m_kX[index] * m_kX[index]) + (m_kZ[index] * m_kZ[index]);
 		k_mag		= sqrt( k_sq );
@@ -482,12 +485,13 @@ inline void aaOcean::evaluateHokData()
 inline void aaOcean::evaluateHieghtField()
 {
 	int  i,j,index, index_rev;
-	float  hokRealOpp, hokImagOpp, sinwt, coswt;
+	register float  hokRealOpp, hokImagOpp, sinwt, coswt;
 	const int n = m_resolution;
-	const int n_sq = n * n - 1;
+	const int nn = n * n;
+	register const int n_sq = n * n - 1;
 
-	#pragma omp parallel for  private( index, index_rev ) 
-	for(index = 0; index < n * n; index++)
+	#pragma omp parallel for private( index, index_rev ) schedule(dynamic) 
+	for(index = 0; index < nn; ++index)
 	{
 		index_rev = n_sq - index; //tail end  
 		hokRealOpp	=  m_hokReal[index_rev];
@@ -509,9 +513,9 @@ inline void aaOcean::evaluateHieghtField()
 	fftwf_execute(m_planHeightField);
 
 	#pragma omp parallel for private(i,j)
-	for(i = 0; i < n; i++)
+	for(i = 0; i < n; ++i)
 	{
-		for(j = 0; j < n; j++)
+		for(j = 0; j < n; ++j)
 		{
 			m_fft_htField[(i*n) + j][0] *= isEven(i+j)  * m_waveHeight;
 		}
@@ -521,11 +525,11 @@ inline void aaOcean::evaluateHieghtField()
 inline void aaOcean::evaluateChopField()
 {
 	int  i,j,index;
-	float _kX,_kZ, kMag;
+	register float _kX,_kZ, kMag;
 	int n = m_resolution * m_resolution;
 
-	#pragma omp parallel for private( index, _kX, _kZ, kMag) 
-	for(index = 0; index < n; index++)
+	#pragma omp parallel for private( index, _kX, _kZ, kMag) schedule(dynamic) 
+	for(index = 0; index < n; ++index)
 	{			
 		kMag = sqrt(m_kX[index] * m_kX[index] + m_kZ[index] * m_kZ[index]);
 		_kX = m_kX[index] / kMag;
@@ -551,10 +555,10 @@ inline void aaOcean::evaluateChopField()
 	}
 
 	n = m_resolution;
-	#pragma omp parallel for private(i,j, index)
-	for(i = 0; i < n; i++)
+	#pragma omp parallel for private(i,j, index) schedule(dynamic) 
+	for(i = 0; i < n; ++i)
 	{
-		for(j = 0; j < n; j++)
+		for(j = 0; j < n; ++j)
 		{
 			index = (i*n) + j;
 			m_fft_chopX[index][0] *= m_chopAmount * isEven(i+j) ;
@@ -570,14 +574,14 @@ void aaOcean::evaluateNormalsFinDiff()
 	vector3 current, prev_iPos, next_iPos, prev_jPos, next_jPos, a, b, c, d, v1, v2;
 
 	const int n = m_resolution;	
-	const int halfRes = n/2;	
-	const float mult1 = float(m_oceanScale) / float(n);
-	const float mult2 = float(m_oceanScale) / float(n);
+	const int halfRes = n / 2;	
+	register const float mult1 = float(m_oceanScale) / float(n);
+	register const float mult2 = float(m_oceanScale) / float(n);
 
-	#pragma omp parallel for private( i,j, nextI, prevI, nextJ, prevJ, nextX, prevX, nextZ, prevZ, current, prev_iPos, next_iPos, prev_jPos, next_jPos,a,b,c,d,v1,v2) 
-	for(i = 0; i< n; i++)
+	// #pragma omp parallel for private( i,j, nextI, prevI, nextJ, prevJ, nextX, prevX, nextZ, prevZ, current, prev_iPos, next_iPos, prev_jPos, next_jPos,a,b,c,d,v1,v2) schedule(dynamic) 
+	for(i = 0; i< n; ++i)
 	{					
-		for(j = 0; j< n; j++)
+		for(j = 0; j< n; ++j)
 		{
 			nextI = i+1;
 			prevI = i-1;
@@ -637,11 +641,11 @@ void aaOcean::evaluateNormalsFinDiff()
 void aaOcean::evaluateJacobians()
 {
 	int  i, j, index;
-	float _kX, _kZ, kMag, kXZ;
-	int n = m_resolution*m_resolution;
+	register float _kX, _kZ, kMag, kXZ;
+	int n = m_resolution * m_resolution;
 
 	#pragma omp parallel for private( index, _kX, _kZ, kXZ, kMag) 
-	for(index = 0; index < n; index++)
+	for(index = 0; index < n; ++index)
 	{			
 		kMag = sqrt(m_kX[index] * m_kX[index] + m_kZ[index] * m_kZ[index]);
 		_kX  = (m_kX[index] * m_kX[index]) / kMag;
@@ -675,21 +679,21 @@ void aaOcean::evaluateJacobians()
 	}
 
 	n = m_resolution;
-	#pragma omp parallel for private(i, j, index)
-	for(i = 0; i < n; i++)
+	#pragma omp parallel for private(i, j, index) schedule(dynamic) 
+	for(i = 0; i < n; ++i)
 	{
-		for(j = 0; j < n; j++)
+		for(j = 0; j < n; ++j)
 		{
 			index = (i*n) + j;
-			m_fft_jxx[index][0] = (m_fft_jxx[index][0] * -m_chopAmount * isEven(i+j)) + 1;
-			m_fft_jzz[index][0] = (m_fft_jzz[index][0] * -m_chopAmount * isEven(i+j)) + 1;
+			m_fft_jxx[index][0] = (m_fft_jxx[index][0] * -m_chopAmount * isEven(i+j)) + 1.0f;
+			m_fft_jzz[index][0] = (m_fft_jzz[index][0] * -m_chopAmount * isEven(i+j)) + 1.0f;
 			m_fft_jxz[index][0] =  m_fft_jxz[index][0] * -m_chopAmount * isEven(i+j);
 		}
 	}
 
-	float jPlus, jMinus, qPlus, qMinus, Jxx, Jzz, Jxz;
-	#pragma omp parallel for private(index, jPlus, jMinus, qPlus, qMinus, Jxx, Jzz, Jxz)
-	for(index = 0; index < n*n; index++)
+	register float jPlus, jMinus, qPlus, qMinus, Jxx, Jzz, Jxz;
+	#pragma omp parallel for private(index, jPlus, jMinus, qPlus, qMinus, Jxx, Jzz, Jxz) schedule(dynamic) 
+	for(index = 0; index < n*n; ++index)
 	{
 		Jxx = m_fft_jxx[index][0];
 		Jzz = m_fft_jzz[index][0];

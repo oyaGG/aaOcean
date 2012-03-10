@@ -12,12 +12,13 @@
 #include "mersenneTwister.h"
 #include "vectorSSE.h"
 
+
 class aaOcean
 { 
 public:
 	int		m_pointCount;
 	int		m_resolution;
-	int		m_seed;
+	ULONG	m_seed;
 	int		m_windAlign;
 	float	m_velocity;
 	float	m_windDir;
@@ -84,7 +85,7 @@ public:
 	~aaOcean();
 
 	void input(	int 	_resolution,
-				int 	_seed, 
+				ULONG 	_seed, 
 				float 	_oceanScale, 
 				float 	_velocity, 
 				float 	_cutoff, 
