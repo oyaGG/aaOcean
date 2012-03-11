@@ -5,7 +5,7 @@
 
 
 aaOcean::aaOcean() :	
-	m_pointCount(0),			m_resolution(0),			m_windAlign(0),			m_seed(-1),			
+	m_pointCount(0),			m_resolution(0),			m_windAlign(0),			m_seed(1),			
 	m_3DGridULength(-1.0f),		m_3DGridVLength(-1.0f),		m_velocity(-1.0f),		m_windDir(-1.0f),
 	m_cutoff(-1.0f),			m_damp(-1.0f),				m_oceanScale(-1.0f),	m_waveHeight(-1.0f), 
 	m_time(-1.0),				m_isAllocated(FALSE),		m_isValid(FALSE),		m_isNormalsAllocated(FALSE),
@@ -42,11 +42,11 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 	oceanScale	= maximum<float>(oceanScale, 0.00001f);
 	velocity	= maximum<float>(((velocity  * velocity) / aa_GRAVITY), 0.00001f);
 	cutoff		= fabs(cutoff * 0.01f);
-	windDir		= ((windDir)/180.0f) * aa_PI;
+	windDir		= windDir * aa_PIBY180;
 	windAlign	= maximum<int>(((windAlign + 1) * 2),2); 
 	damp		= minimum<float>(damp, 1.0f);
 
-	waveHeight	*= 0.01f;
+	waveHeight *= 0.01f;
 	chopAmount *= 0.01f;
 
 	if(m_time != time || m_waveSpeed != waveSpeed || m_waveHeight != waveHeight || m_chopAmount != chopAmount )
@@ -95,25 +95,20 @@ bool aaOcean::reInit(int data_size)
 {
 	if(((data_size & (data_size - 1)) != 0) || data_size == 0) //	not power of 2
 	{	
-		char msg[100];
-		sprintf_s(msg,"[aaOcean] :  invalid point resolution of %d. Please select a power-of-2 subdivision value", data_size);
-		//print(msg,0);
+		sprintf_s(m_state,"[aaOcean] :  invalid point resolution of %d. Please select a power-of-2 subdivision value", data_size);
 		m_isValid = FALSE;
 	}
 	else
 	{
 		if(m_resolution != data_size || !m_isAllocated )
 		{
-			char msg[100];
 			if(m_isShader)
 			{
-				sprintf_s(msg,"[aaOcean] : Building ocean shader with resolution %dx%d", data_size, data_size);
-				//print(msg);
+				sprintf_s(m_state,"[aaOcean] : Building ocean shader with resolution %dx%d", data_size, data_size);
 			}
 			else
 			{
-				sprintf_s(msg,"[aaOcean ICE] : Building ocean grid with resolution %dx%d", data_size, data_size);
-				//print(msg,0);
+				sprintf_s(m_state,"[aaOcean ICE] : Building ocean grid with resolution %dx%d", data_size, data_size);
 			}
 
 			m_resolution = data_size;
@@ -181,7 +176,7 @@ void aaOcean::allocateBaseArrays()
 	m_xCoord	= (int*)   aligned_malloc(m_resolution * m_resolution * sizeof(int),   16);
 	m_zCoord	= (int*)   aligned_malloc(m_resolution * m_resolution * sizeof(int),   16);
 
-	if(m_resolution > 1000)
+	if(m_resolution > 254)
 	{
 		int threads = omp_get_num_procs();
 		fftwf_plan_with_nthreads(threads);
@@ -211,7 +206,7 @@ void aaOcean::allocateNormalsArrays()
 	m_isNormalsAllocated = TRUE;
 }
 
-inline void aaOcean::allocateFoamArrays()
+ void aaOcean::allocateFoamArrays()
 {
 	m_fft_jxx = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
 	m_fft_jxz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
@@ -384,16 +379,14 @@ void aaOcean::clearArrays()
 	}
 }
 
-inline ULONG aaOcean::get_uID(float xCoord, float zCoord)
+ULONG aaOcean::get_uID(float xCoord, float zCoord)
 {
 	register float angle = 0.0f;
 	register float length = 0.0f;
 	register float id_out;
-	ULONG returnVal = 0;
+	ULONG returnVal = 1;
 
-	if (zCoord == 0.0 && xCoord == 0.0)
-		return 1;
-	else
+	if (zCoord != 0.0 && xCoord != 0.0)
 	{
 		angle = xCoord / sqrt(zCoord * zCoord + xCoord * xCoord); 
 		angle = acos(angle);
@@ -415,7 +408,7 @@ inline ULONG aaOcean::get_uID(float xCoord, float zCoord)
 	return returnVal;
 }
 
-inline void aaOcean::setup_grid()
+void aaOcean::setup_grid()
 {
 	if(!m_isAllocated)
 		return;
@@ -443,7 +436,7 @@ inline void aaOcean::setup_grid()
 	}
 }
 
-inline void aaOcean::evaluateHokData()
+ void aaOcean::evaluateHokData()
 {
 	register float k_sq, k_mag,  k_dot_w, low_freq, exp_term, philips;
 	register const int	n			 = m_resolution * m_resolution;
@@ -482,7 +475,7 @@ inline void aaOcean::evaluateHokData()
 	}
 }
 
-inline void aaOcean::evaluateHieghtField()
+ void aaOcean::evaluateHieghtField()
 {
 	int  i,j,index, index_rev;
 	register float  hokRealOpp, hokImagOpp, sinwt, coswt;
@@ -522,7 +515,7 @@ inline void aaOcean::evaluateHieghtField()
 	}
 }
 
-inline void aaOcean::evaluateChopField()
+ void aaOcean::evaluateChopField()
 {
 	int  i,j,index;
 	register float _kX,_kZ, kMag;
