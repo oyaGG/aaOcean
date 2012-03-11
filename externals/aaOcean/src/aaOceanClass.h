@@ -32,6 +32,7 @@ public:
 	float	m_3DGridULength;
 	float	m_3DGridVLength;
 	float	m_fmin, m_fmax; //for holding min/max foam
+	char	m_state[128];
 
 	//ocean array pointers
 	int		*m_xCoord;
@@ -84,18 +85,18 @@ public:
 	aaOcean(const aaOcean &cpy);
 	~aaOcean();
 
-	void input(	int 	_resolution,
-				ULONG 	_seed, 
-				float 	_oceanScale, 
-				float 	_velocity, 
-				float 	_cutoff, 
-				float 	_windDir, 
-				int 	_windAlign, 
-				float 	_damp,  
-				float 	_waveSpeed, 
-				float 	_waveHeight,
-				float 	_chopAmount,
-				float 	_time);
+	void input(	int 	resolution,
+				ULONG 	seed, 
+				float 	oceanScale, 
+				float 	velocity, 
+				float 	cutoff, 
+				float 	windDir, 
+				int 	windAlign, 
+				float 	damp,  
+				float 	waveSpeed, 
+				float 	waveHeight,
+				float 	chopAmount,
+				float 	time);
 
 	void init();
 	void allocateBaseArrays();

@@ -34,51 +34,51 @@ aaOcean::~aaOcean()
 	fftwf_cleanup();
 }
 
-void aaOcean::input(int _resolution, ULONG _seed, float _oceanScale, float _velocity, float _cutoff, float _windDir, 
-			int _windAlign, float _damp, float	_waveSpeed, float _waveHeight, float _chopAmount, float _time)
+void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity, float cutoff, float windDir, 
+			int windAlign, float damp, float	waveSpeed, float waveHeight, float chopAmount, float time)
 {
 	bool isDirty = FALSE; 
-	_resolution	= (int)pow(2.0f, (4 + _resolution));
-	_oceanScale	= maximum<float>(_oceanScale, 0.00001f);
-	_velocity	= maximum<float>(((_velocity  * _velocity) / aa_GRAVITY), 0.00001f);
-	_cutoff		= fabs(_cutoff * 0.01f);
-	_windDir	= ((_windDir)/180.0f) * aa_PI;
-	_windAlign	= maximum<int>(((_windAlign + 1) * 2),2); 
-	_damp		= minimum<float>(_damp, 1.0f);
+	resolution	= (int)pow(2.0f, (4 + resolution));
+	oceanScale	= maximum<float>(oceanScale, 0.00001f);
+	velocity	= maximum<float>(((velocity  * velocity) / aa_GRAVITY), 0.00001f);
+	cutoff		= fabs(cutoff * 0.01f);
+	windDir		= ((windDir)/180.0f) * aa_PI;
+	windAlign	= maximum<int>(((windAlign + 1) * 2),2); 
+	damp		= minimum<float>(damp, 1.0f);
 
-	_waveHeight	*= 0.01f;
-	_chopAmount *= 0.01f;
+	waveHeight	*= 0.01f;
+	chopAmount *= 0.01f;
 
-	if(m_time != _time || m_waveSpeed != _waveSpeed || m_waveHeight != _waveHeight || m_chopAmount != _chopAmount )
+	if(m_time != time || m_waveSpeed != waveSpeed || m_waveHeight != waveHeight || m_chopAmount != chopAmount )
 		isDirty = TRUE;
 
-	m_time			= _time;
-	m_waveSpeed		= _waveSpeed;
-	m_waveHeight	= _waveHeight;
-	m_chopAmount	= _chopAmount;
+	m_time			= time;
+	m_waveSpeed		= waveSpeed;
+	m_waveHeight	= waveHeight;
+	m_chopAmount	= chopAmount;
 
-	if( m_oceanScale	!= _oceanScale	||
-		m_windDir		!= _windDir		||
-		m_cutoff		!= _cutoff		||
-		m_velocity		!= _velocity	||
-		m_windAlign		!= _windAlign	||
-		m_damp			!= _damp		)
+	if( m_oceanScale	!= oceanScale	||
+		m_windDir		!= windDir		||
+		m_cutoff		!= cutoff		||
+		m_velocity		!= velocity	||
+		m_windAlign		!= windAlign	||
+		m_damp			!= damp		)
 	{
-		m_oceanScale	= _oceanScale;
-		m_windDir		= _windDir;
-		m_cutoff		= _cutoff;
-		m_velocity		= _velocity;
-		m_windAlign		= _windAlign;
-		m_damp			= _damp;
+		m_oceanScale	= oceanScale;
+		m_windDir		= windDir;
+		m_cutoff		= cutoff;
+		m_velocity		= velocity;
+		m_windAlign		= windAlign;
+		m_damp			= damp;
 		m_redoHoK		= TRUE;
 		isDirty			= TRUE;
 	}
 
-	if(m_seed != _seed)
+	if(m_seed != seed)
 	{
-		m_seed		= _seed;
+		m_seed		= seed;
 		m_redoHoK	= TRUE;
-		if(m_resolution == _resolution)
+		if(m_resolution == resolution)
 			setup_grid(); 
 		isDirty = TRUE;
 	}
@@ -87,7 +87,7 @@ void aaOcean::input(int _resolution, ULONG _seed, float _oceanScale, float _velo
 	else
 		m_isDisplacementDirty = m_isNormalsDirty = m_isFoamDirty = FALSE;
 
-	reInit(_resolution);
+	reInit(resolution);
 
 }
 
@@ -424,7 +424,7 @@ inline void aaOcean::setup_grid()
 	register ULONG index, uID; 
 	MTRand randNum; 
 
-	#pragma omp parallel for private(index, uID) schedule(dynamic) 
+	#pragma omp parallel for private(index, uID, randNum)
 	for(int i = 0; i < n; ++i)
 	{
 		for(int j = 0; j < n; ++j)
@@ -434,7 +434,7 @@ inline void aaOcean::setup_grid()
 			m_xCoord[index] = half_n + i * 2 ;
 			m_zCoord[index] = half_n + j * 2 ;
 
-			uID = (ULONG)get_uID( (float)m_xCoord[index], (float)m_zCoord[index] );
+			uID = (ULONG)get_uID((float)m_xCoord[index], (float)m_zCoord[index]);
 			
 			randNum.seed(uID + m_seed);
 			m_rand1[index] = (float)randNum.randNorm(); 
