@@ -177,6 +177,7 @@ inline void MTRand::initialize( const uint32 seed )
 	register uint32 *r = state;
 	register int i = 1;
 	*s++ = seed & 0xffffffffUL;
+	
 	for( ; i < N; ++i )
 	{
 		*s++ = ( 1812433253UL * ( *r ^ (*r >> 30) ) + i ) & 0xffffffffUL;

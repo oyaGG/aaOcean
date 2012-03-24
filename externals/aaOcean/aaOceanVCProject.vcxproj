@@ -61,7 +61,7 @@
       </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>
       </PrecompiledHeaderOutputFile>
-      <AdditionalIncludeDirectories>..\..\..\sdks\fftw;..\helpers</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\sdks\fftw\fftw-3.3.1builds\vc90\;..\helpers</AdditionalIncludeDirectories>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>

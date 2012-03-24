@@ -3,7 +3,6 @@
 
 #include "aaOceanClass.h"
 
-
 aaOcean::aaOcean() :	
 	m_pointCount(0),			m_resolution(0),			m_windAlign(0),			m_seed(1),			
 	m_3DGridULength(-1.0f),		m_3DGridVLength(-1.0f),		m_velocity(-1.0f),		m_windDir(-1.0f),
@@ -450,7 +449,7 @@ void aaOcean::setup_grid()
 	if (m_damp > 0.0f)
 		bDamp = true;
 
-	#pragma omp parallel for private( k_sq, k_mag, k_dot_w, low_freq, exp_term, philips) schedule(dynamic) 
+	#pragma omp parallel for private( k_sq, k_mag, k_dot_w, low_freq, exp_term, philips)  
 	for(int index = 0; index < n; ++index)
 	{
 		m_kX[index] =  m_xCoord[index] * k_mult; 
@@ -483,7 +482,7 @@ void aaOcean::setup_grid()
 	const int nn = n * n;
 	register const int n_sq = n * n - 1;
 
-	#pragma omp parallel for private( index, index_rev ) schedule(dynamic) 
+	#pragma omp parallel for private( index, index_rev )  
 	for(index = 0; index < nn; ++index)
 	{
 		index_rev = n_sq - index; //tail end  
@@ -520,8 +519,7 @@ void aaOcean::setup_grid()
 	int  i,j,index;
 	register float _kX,_kZ, kMag;
 	int n = m_resolution * m_resolution;
-
-	#pragma omp parallel for private( index, _kX, _kZ, kMag) schedule(dynamic) 
+	#pragma omp parallel for private( index, _kX, _kZ, kMag)  
 	for(index = 0; index < n; ++index)
 	{			
 		kMag = sqrt(m_kX[index] * m_kX[index] + m_kZ[index] * m_kZ[index]);
@@ -548,7 +546,7 @@ void aaOcean::setup_grid()
 	}
 
 	n = m_resolution;
-	#pragma omp parallel for private(i,j, index) schedule(dynamic) 
+	#pragma omp parallel for private(i,j, index)  
 	for(i = 0; i < n; ++i)
 	{
 		for(j = 0; j < n; ++j)
@@ -571,7 +569,7 @@ void aaOcean::evaluateNormalsFinDiff()
 	register const float mult1 = float(m_oceanScale) / float(n);
 	register const float mult2 = float(m_oceanScale) / float(n);
 
-	// #pragma omp parallel for private( i,j, nextI, prevI, nextJ, prevJ, nextX, prevX, nextZ, prevZ, current, prev_iPos, next_iPos, prev_jPos, next_jPos,a,b,c,d,v1,v2) schedule(dynamic) 
+	// #pragma omp parallel for private( i,j, nextI, prevI, nextJ, prevJ, nextX, prevX, nextZ, prevZ, current, prev_iPos, next_iPos, prev_jPos, next_jPos,a,b,c,d,v1,v2)  
 	for(i = 0; i< n; ++i)
 	{					
 		for(j = 0; j< n; ++j)
@@ -672,7 +670,7 @@ void aaOcean::evaluateJacobians()
 	}
 
 	n = m_resolution;
-	#pragma omp parallel for private(i, j, index) schedule(dynamic) 
+	#pragma omp parallel for private(i, j, index)  
 	for(i = 0; i < n; ++i)
 	{
 		for(j = 0; j < n; ++j)
@@ -685,7 +683,7 @@ void aaOcean::evaluateJacobians()
 	}
 
 	register float jPlus, jMinus, qPlus, qMinus, Jxx, Jzz, Jxz;
-	#pragma omp parallel for private(index, jPlus, jMinus, qPlus, qMinus, Jxx, Jzz, Jxz) schedule(dynamic) 
+	#pragma omp parallel for private(index, jPlus, jMinus, qPlus, qMinus, Jxx, Jzz, Jxz)  
 	for(index = 0; index < n*n; ++index)
 	{
 		Jxx = m_fft_jxx[index][0];

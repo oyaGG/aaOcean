@@ -23,13 +23,28 @@ typedef unsigned long ULONG;
 
 #define CLAMP_TO_RANGE 1
 
-static const float aa_GRAVITY		= 9.81f;
+static const float aa_GRAVITY		= 9.80665f;
 static const float aa_EPSILON		= FLT_MIN;
 static const float aa_PI			= 3.14159265358979323846f;
+static const float aa_TWOPI			= 3.14159265358979323846f * 2.0f;
 static const float aa_PIBYTWO		= 1.57079632679489661923f;
 static const float aa_180BYPI		= 57.295779513082320876798154814105f;
 static const float aa_PIBY180		= 0.01745329251994329576922222222222f;
 static const float aa_INV_PIBYTWO	= 0.63661977236758134307607071493546f;
 static const float aa_INV_SQRTTWO	= 0.70710678118654752440084436210485f;
+
+#define BOUNDARY 64 // alignment boundary
+
+#ifdef _MSC_VER
+#define ALIGN(x) __declspec(align(x))
+#else // gcc
+#define ALIGN(x) __attribute__((aligned(x)))
+#endif
+
+#ifdef _MSC_VER
+#define f_inline __forceinline
+#else // gcc
+#define f_inline inline
+#endif
 
 #endif /*CONSTANTS_H*/

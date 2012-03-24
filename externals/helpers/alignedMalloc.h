@@ -39,7 +39,8 @@
 //I would appreciate it if you email me at me@williamchan.ca if you
 //use my source code in any of your projects. Please do not hesitate to leave me
 //comments and suggestions too.
-
+#ifndef ALIGNED_MALLOC
+#define ALIGNED_MALLOC
 #include "stdlib.h"
  
 void* aligned_malloc(size_t bytes, size_t alignment)
@@ -72,3 +73,5 @@ void aligned_free(void* p)
 {
 	free((void*)(*((uintptr_t*)((uintptr_t)p - sizeof(uintptr_t))))); //get the pointer of the entire block and then FREE!
 }
+
+#endif /* ALIGNED_MALLOC_H */
