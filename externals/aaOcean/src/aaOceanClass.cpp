@@ -37,7 +37,7 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 			int windAlign, float damp, float	waveSpeed, float waveHeight, float chopAmount, float time)
 {
 	bool isDirty = FALSE; 
-	resolution	= (int)pow(2.0f, (4 + resolution));
+	resolution	= (int)intpow(2.0f,  (4 + resolution)); //pow(2.0f, (4 + resolution));
 	oceanScale	= maximum<float>(oceanScale, 0.00001f);
 	velocity	= maximum<float>(((velocity  * velocity) / aa_GRAVITY), 0.00001f);
 	cutoff		= fabs(cutoff * 0.01f);
@@ -380,6 +380,7 @@ void aaOcean::clearArrays()
 
 ULONG aaOcean::get_uID(float xCoord, float zCoord)
 {
+	// a very simple hash function. should probably do a better one at some point
 	register float angle = 0.0f;
 	register float length = 0.0f;
 	register float id_out;
@@ -437,7 +438,7 @@ void aaOcean::setup_grid()
 
  void aaOcean::evaluateHokData()
 {
-	register float k_sq, k_mag,  k_dot_w, low_freq, exp_term, philips;
+	register float k_sq, k_mag,  k_dot_w, philips, x, z;
 	register const int	n			 = m_resolution * m_resolution;
 	register const float	k_mult	 = (2 * aa_PI) / m_oceanScale;
 	register const float	L		 = m_velocity;
@@ -449,19 +450,18 @@ void aaOcean::setup_grid()
 	if (m_damp > 0.0f)
 		bDamp = true;
 
-	#pragma omp parallel for private( k_sq, k_mag, k_dot_w, low_freq, exp_term, philips)  
+	#pragma omp parallel for private( k_sq, k_mag, k_dot_w, philips, x, z)  
 	for(int index = 0; index < n; ++index)
 	{
-		m_kX[index] =  m_xCoord[index] * k_mult; 
-		m_kZ[index] =  m_zCoord[index] * k_mult;
+		x = m_kX[index] =  m_xCoord[index] * k_mult; 
+		z = m_kZ[index] =  m_zCoord[index] * k_mult;
 
 		//philips spectrum vars
-		k_sq		= (m_kX[index] * m_kX[index]) + (m_kZ[index] * m_kZ[index]);
-		k_mag		= sqrt( k_sq );
-		k_dot_w		= (m_kX[index]/k_mag) * windx + (m_kZ[index]/k_mag) * windz;
-		low_freq	= -k_sq * m_cutoff;
-		exp_term	= -1.0f / ( L_sq * k_sq);
-		philips		= sqrt((( exp(exp_term) * pow(k_dot_w, m_windAlign)) / (k_sq * k_sq)) * exp(low_freq));
+		k_sq		= (x * x) + (z * z);
+		k_mag		= 1.0f / sqrt( k_sq );
+		k_dot_w		= (x * k_mag) * windx + (z * k_mag) * windz;
+		philips		= sqrt((( t2exp(-1.0f / ( L_sq * k_sq)) * pow(k_dot_w, m_windAlign)) / 
+					  (k_sq * k_sq)) * t2exp(-k_sq * m_cutoff));
 
 		if(bDamp)
 		{
@@ -477,26 +477,29 @@ void aaOcean::setup_grid()
  void aaOcean::evaluateHieghtField()
 {
 	int  i,j,index, index_rev;
-	register float  hokRealOpp, hokImagOpp, sinwt, coswt;
+	register float  hokReal, hokImag, hokRealOpp, hokImagOpp, sinwt, coswt;
+	float wt = m_waveSpeed * m_time;
 	const int n = m_resolution;
 	const int nn = n * n;
 	register const int n_sq = n * n - 1;
 
-	#pragma omp parallel for private( index, index_rev )  
+	#pragma omp parallel for private( index, index_rev, hokReal, hokImag, hokRealOpp, hokImagOpp, sinwt, coswt )  
 	for(index = 0; index < nn; ++index)
 	{
-		index_rev = n_sq - index; //tail end  
+		index_rev = n_sq - index; //tail end 
+		hokReal		=  m_hokReal[index];
+		hokImag		=  m_hokImag[index];
 		hokRealOpp	=  m_hokReal[index_rev];
 		hokImagOpp	=  m_hokImag[index_rev];
 
-		coswt = cos( m_omega[index] * m_time * m_waveSpeed);
-		sinwt = sin( m_omega[index] * m_time * m_waveSpeed);
+		coswt = cos( m_omega[index] * wt);
+		sinwt = sin( m_omega[index] * wt);
 
-		m_hktReal[index]  =	( m_hokReal[index] *	coswt )  + 	( m_hokImag[index]	*	sinwt )  + 
-							( hokRealOpp	   *	coswt )  -  ( hokImagOpp		*	sinwt )  ;  //complex conjugage
+		m_hktReal[index]  =	( hokReal    *	coswt )  + 	( hokImag	 *	sinwt )  + 
+							( hokRealOpp *	coswt )  -  ( hokImagOpp *	sinwt )  ;  //complex conjugage
 				
-		m_hktImag[index]  =	(-m_hokReal[index]  *	sinwt )  + 	( m_hokImag[index]	*	coswt )  +
-							( hokRealOpp		*	sinwt )  +  ( hokImagOpp		*	coswt )  ;  //complex conjugage
+		m_hktImag[index]  =	(-hokReal	 *	sinwt )  + 	( hokImag	 *	coswt )  +
+							( hokRealOpp *	sinwt )  +  ( hokImagOpp *	coswt )  ;  //complex conjugage
 		
 		m_fft_htField[index][0] = m_hktReal[index];
 		m_fft_htField[index][1] = m_hktImag[index];
