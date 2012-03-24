@@ -468,7 +468,7 @@ void aaOcean::setup_grid()
 			if(k_dot_w < 0.0f)
 				philips *= (1.0f - m_damp);
 		}		
-		m_omega[index]   = sqrt(aa_GRAVITY * k_mag );
+		m_omega[index]   = sqrt(aa_GRAVITY / k_mag );
 		m_hokReal[index] = (aa_INV_SQRTTWO) * (m_rand1[index]) * philips;
 		m_hokImag[index] = (aa_INV_SQRTTWO) * (m_rand2[index]) * philips;
 	}
