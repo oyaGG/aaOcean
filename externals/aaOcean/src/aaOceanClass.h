@@ -9,19 +9,11 @@
 #include "constants.h"
 #include "functionLib.h"
 #include "alignedMalloc.h"
-#include "mersenneTwister.h"
 #include "vectorSSE.h"
-
-#define STOC_BASE CRandomSFMT1     // define random number generator base class
-
-#include "agnerFogRandom\randomc.h"
-#include "agnerFogRandom\sfmt.cpp" 
-#include "agnerFogRandom\stocc.h"
-#include "agnerFogRandom\mersenne.cpp" 
-            // code for random number generator
-#include "agnerFogRandom\stoc1.cpp"            // random library source code
-#include "agnerFogRandom\userintf.cpp"         // define system specific user interface
-#include "timer\Timer.h"
+#include "agnerFog\sfmt.cpp" 
+#include "agnerFog\stocc.h"
+#include "agnerFog\stoc1.cpp"
+#include "agnerFog\userintf.cpp"
 
 class aaOcean
 { 

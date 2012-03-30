@@ -10,7 +10,7 @@ aaOcean::aaOcean() :
 	m_time(-1.0),				m_isAllocated(FALSE),		m_isValid(FALSE),		m_isNormalsAllocated(FALSE),
 	m_isFoamAllocated(FALSE),	m_isSplashAllocated(FALSE),	m_redoHoK(FALSE),		m_isDisplacementDirty(FALSE),
 	m_isNormalsDirty(FALSE),	m_isFoamDirty(FALSE),		m_isShader(FALSE),		m_fmin(FLT_MAX), 
-	m_fmax(FLT_MAX),			m_zCoord(0),				m_xCoord(0),			m_hokReal(0),
+	m_fmax(-FLT_MAX),			m_zCoord(0),				m_xCoord(0),			m_hokReal(0),
 	m_hokImag(0),				m_hktReal(0),				m_hktImag(0),			m_kX(0),
 	m_kZ(0),					m_omega(0),					m_rand1(0),				m_rand2(0),
 	m_eigenPlusX(0),			m_eigenPlusZ(0),			m_eigenMinusX(0),		m_eigenMinusZ(0),
@@ -37,12 +37,12 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 			int windAlign, float damp, float	waveSpeed, float waveHeight, float chopAmount, float time, float randomType)
 {
 	bool isDirty = FALSE; 
-	resolution	= (int)intpow(2.0f,  (4 + resolution)); //pow(2.0f, (4 + resolution));
+	resolution	= (int)pow(2.0f, (4 + resolution));
 	oceanScale	= maximum<float>(oceanScale, 0.00001f);
 	velocity	= maximum<float>(((velocity  * velocity) / aa_GRAVITY), 0.00001f);
 	cutoff		= fabs(cutoff * 0.01f);
 	windDir		= windDir * aa_PIBY180;
-	windAlign	= maximum<int>(((windAlign + 1) * 2),2); 
+	windAlign	= maximum<int>(((windAlign + 1) * 2), 2); 
 	damp		= minimum<float>(damp, 1.0f);
 
 	waveHeight *= 0.01f;
@@ -101,15 +101,7 @@ bool aaOcean::reInit(int data_size)
 	{
 		if(m_resolution != data_size || !m_isAllocated )
 		{
-			if(m_isShader)
-			{
-				sprintf_s(m_state,"[aaOcean] : Building ocean shader with resolution %dx%d", data_size, data_size);
-			}
-			else
-			{
-				sprintf_s(m_state,"[aaOcean ICE] : Building ocean grid with resolution %dx%d", data_size, data_size);
-			}
-
+			sprintf_s(m_state,"[aaOcean] : Building ocean shader with resolution %dx%d", data_size, data_size);
 			m_resolution = data_size;
 			allocateBaseArrays();				
 			m_redoHoK  = TRUE;
@@ -163,24 +155,23 @@ void aaOcean::allocateBaseArrays()
 	if(m_isAllocated) 
 		clearArrays();
 
-	m_kX		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), 16);
-	m_kZ		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), 16);
-	m_omega		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), 16);
-	m_hokReal	= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), 16);
-	m_hokImag	= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), 16);
-	m_hktReal	= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), 16);
-	m_hktImag	= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), 16);
-	m_rand1		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), 16);
-	m_rand2		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), 16);
-	m_xCoord	= (int*)   aligned_malloc(m_resolution * m_resolution * sizeof(int),   16);
-	m_zCoord	= (int*)   aligned_malloc(m_resolution * m_resolution * sizeof(int),   16);
+	m_kX		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
+	m_kZ		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
+	m_omega		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
+	m_hokReal	= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
+	m_hokImag	= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
+	m_hktReal	= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
+	m_hktImag	= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
+	m_rand1		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
+	m_rand2		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
+	m_xCoord	= (int*)   aligned_malloc(m_resolution * m_resolution * sizeof(int),   BOUNDARY);
+	m_zCoord	= (int*)   aligned_malloc(m_resolution * m_resolution * sizeof(int),   BOUNDARY);
 
 	if(m_resolution > 254)
 	{
 		int threads = omp_get_num_procs();
 		fftwf_plan_with_nthreads(threads);
-		char msg[100];
-		sprintf_s(msg,"[aaOcean] : Launching threaded FFTW with %d threads", threads);
+		sprintf_s(m_state,"[aaOcean] : Launching threaded FFTW with %d threads", threads);
 	}
 	else
 		fftwf_plan_with_nthreads(1);
@@ -190,8 +181,8 @@ void aaOcean::allocateBaseArrays()
 	m_fft_chopZ		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
 
 	m_planHeightField	= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_htField,m_fft_htField,1, FFTW_ESTIMATE);
-	m_planChopX			= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_chopX ,m_fft_chopX	,1, FFTW_ESTIMATE);
-	m_planChopZ			= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_chopZ ,m_fft_chopZ	,1, FFTW_ESTIMATE);
+	m_planChopX			= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_chopX ,m_fft_chopX	 ,1, FFTW_ESTIMATE);
+	m_planChopZ			= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_chopZ ,m_fft_chopZ	 ,1, FFTW_ESTIMATE);
 	m_isAllocated		= TRUE;
 }
 
@@ -217,10 +208,10 @@ void aaOcean::allocateNormalsArrays()
 
 void aaOcean::allocateSplashArrays()
 {
-	m_eigenPlusX	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), 16);
-	m_eigenPlusZ	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), 16);
-	m_eigenMinusX	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), 16);
-	m_eigenMinusZ	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), 16);
+	m_eigenPlusX	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), BOUNDARY);
+	m_eigenPlusZ	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), BOUNDARY);
+	m_eigenMinusX	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), BOUNDARY);
+	m_eigenMinusZ	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), BOUNDARY);
 	m_isSplashAllocated = TRUE;
 }
 
@@ -380,7 +371,7 @@ void aaOcean::clearArrays()
 ULONG aaOcean::get_uID(float xCoord, float zCoord)
 {
 	// a very simple hash function. should probably do a better one at some point
-	register float angle = 0.0f;
+	register float angle  = 0.0f;
 	register float length = 0.0f;
 	register float id_out;
 	ULONG returnVal = 1;
@@ -402,7 +393,7 @@ ULONG aaOcean::get_uID(float xCoord, float zCoord)
 		else if (zCoord <= 0.0f)
 			returnVal = (ULONG)floor(id_out + 0.5f);
 		else
-			returnVal = INT_MAX - (ULONG)floor(id_out + 0.5) ;
+			returnVal = INT_MAX - (ULONG)floor(id_out + 0.5f) ;
 	}
 	return returnVal;
 }
@@ -415,8 +406,6 @@ void aaOcean::setup_grid()
 	register const int half_n = (-n / 2) - ((n-1) / 2);
 	register ULONG index, uID; 
 
-	Timer timer;
-	timer.start();
 	#pragma omp parallel for private(index, uID)
 	for(int i = 0; i < n; ++i)
 	{
@@ -434,17 +423,16 @@ void aaOcean::setup_grid()
 			m_rand2[index] = (float)sto.Normal(0.0f, 1.0f);
 		}
 	}
-	timer.stop();
-	Application().LogMessage("RanGen Time : " + CString(timer.getElapsedTimeInMilliSec()) + "ms");
 }
 
  void aaOcean::evaluateHokData()
 {
 	register float k_sq, k_mag,  k_dot_w, philips, x, z;
-	register const int	n			 = m_resolution * m_resolution;
-	register const float	k_mult	 = (2.0f * aa_PI) / m_oceanScale;
+
+	register const int		n		 = m_resolution * m_resolution;
+	register const float	k_mult	 = aa_TWOPI / m_oceanScale;
 	register const float	L		 = m_velocity;
-	register const float	L_sq	 = L*L;
+	register const float	L_sq	 = L * L;
 	register const float	windx	 = cos(m_windDir);
 	register const float	windz	 = sin(m_windDir);
 	
@@ -470,6 +458,7 @@ void aaOcean::setup_grid()
 			if(k_dot_w < 0.0f)
 				philips *= (1.0f - m_damp);
 		}		
+
 		m_omega[index]   = sqrt(aa_GRAVITY / k_mag );
 		m_hokReal[index] = (aa_INV_SQRTTWO) * (m_rand1[index]) * philips;
 		m_hokImag[index] = (aa_INV_SQRTTWO) * (m_rand2[index]) * philips;
@@ -480,12 +469,13 @@ void aaOcean::setup_grid()
 {
 	int  i,j,index, index_rev;
 	register float  hokReal, hokImag, hokRealOpp, hokImagOpp, sinwt, coswt;
-	float wt = m_waveSpeed * m_time;
+
+	float	wt  = m_waveSpeed * m_time;
 	const int n = m_resolution;
 	const int nn = n * n;
 	register const int n_sq = n * n - 1;
 
-	#pragma omp parallel for private( index, index_rev, hokReal, hokImag, hokRealOpp, hokImagOpp, sinwt, coswt )  
+	#pragma omp parallel for private(index, index_rev, hokReal, hokImag, hokRealOpp, hokImagOpp, sinwt, coswt)  
 	for(index = 0; index < nn; ++index)
 	{
 		index_rev   = n_sq - index; //tail end 
@@ -513,17 +503,16 @@ void aaOcean::setup_grid()
 	for(i = 0; i < n; ++i)
 	{
 		for(j = 0; j < n; ++j)
-		{
 			m_fft_htField[(i*n) + j][0] *= isEven(i+j)  * m_waveHeight;
-		}
 	}
 }
 
  void aaOcean::evaluateChopField()
 {
-	int  i,j,index;
+	int  i, j, index;
 	register float _kX,_kZ, kMag;
 	int n = m_resolution * m_resolution;
+
 	#pragma omp parallel for private( index, _kX, _kZ, kMag)  
 	for(index = 0; index < n; ++index)
 	{			
@@ -542,14 +531,14 @@ void aaOcean::setup_grid()
 	fftwf_execute(m_planChopZ);
 
 	n = m_resolution;
-	#pragma omp parallel for private(i,j, index)  
+	#pragma omp parallel for private(i, j, index)  
 	for(i = 0; i < n; ++i)
 	{
 		for(j = 0; j < n; ++j)
 		{
 			index = (i*n) + j;
-			m_fft_chopX[index][0] *= m_chopAmount * isEven(i+j) ;
-			m_fft_chopZ[index][0] *= m_chopAmount * isEven(i+j) ;
+			m_fft_chopX[index][0] *= m_chopAmount * isEven(i+j);
+			m_fft_chopZ[index][0] *= m_chopAmount * isEven(i+j);
 		}
 	}
 }
@@ -634,10 +623,10 @@ void aaOcean::evaluateJacobians()
 	#pragma omp parallel for private( index, _kX, _kZ, kXZ, kMag) 
 	for(index = 0; index < n; ++index)
 	{			
-		kMag = sqrt(m_kX[index] * m_kX[index] + m_kZ[index] * m_kZ[index]);
-		_kX  = (m_kX[index] * m_kX[index]) / kMag;
-		_kZ  = (m_kZ[index] * m_kZ[index]) / kMag;
-		kXZ  = (m_kX[index] * m_kZ[index]) / kMag;
+		kMag = 1.0f / sqrt(m_kX[index] * m_kX[index] + m_kZ[index] * m_kZ[index]);
+		_kX  = (m_kX[index] * m_kX[index]) * kMag;
+		_kZ  = (m_kZ[index] * m_kZ[index]) * kMag;
+		kXZ  = (m_kX[index] * m_kZ[index]) * kMag;
 
 		m_fft_jxx[index][0] =  m_hktReal[index] * _kX;
 		m_fft_jxx[index][1] =  m_hktImag[index] * _kX;
