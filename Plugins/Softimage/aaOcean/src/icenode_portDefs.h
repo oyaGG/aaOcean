@@ -17,6 +17,8 @@ enum IDs
 	ID_IN_RENDER_READY = 30,
 	ID_IN_GRID_LENGTH_U = 31,
 	ID_IN_GRID_LENGTH_V = 32,
+
+	ID_IN_RANDOM_TYPE = 40,
 	
 	ID_G_100 = 100,
 	ID_G_101,
@@ -139,7 +141,15 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 								ID_G_101,
 								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
 								L"Grid Length V",L"Grid_Length_V",
-								10);
+								10.f);
+	st.AssertSucceeded( ) ;
+	
+
+	st = nodeDef.AddInputPort(	ID_IN_RANDOM_TYPE,
+								ID_G_101,
+								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
+								L"Random Type",L"Random_Type",
+								0.f,0.0f, 1.0f, UINT_MAX,UINT_MAX,UINT_MAX);
 	st.AssertSucceeded( ) ;
 
 	st = nodeDef.AddInputPort(	ID_IN_RENDER_READY,

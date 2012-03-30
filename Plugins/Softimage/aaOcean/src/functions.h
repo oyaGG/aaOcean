@@ -15,12 +15,12 @@ inline bool isPortDirty( CICEPortState& in_port)
 inline void fetchICEUserInput(ICENodeContext& in_ctxt, aaOcean *&ICEocean)
 {
 	//Check port states that require a re-evaluation of HoK
-	CICEPortState	pState_oceanScale( in_ctxt, ID_IN_OCEAN_SCALE);
-	CICEPortState	pState_windDir( in_ctxt, ID_IN_WINDDIR);
-	CICEPortState	pState_cutoff( in_ctxt, ID_IN_CUTOFF);
-	CICEPortState	pState_velocity( in_ctxt, ID_IN_WINDVELOCITY);
-	CICEPortState	pState_windAlign( in_ctxt, ID_IN_WINDALIGN );
-	CICEPortState	pState_damp( in_ctxt, ID_IN_DAMP);
+	CICEPortState pState_oceanScale( in_ctxt, ID_IN_OCEAN_SCALE);
+	CICEPortState pState_windDir( in_ctxt, ID_IN_WINDDIR);
+	CICEPortState pState_cutoff( in_ctxt, ID_IN_CUTOFF);
+	CICEPortState pState_velocity( in_ctxt, ID_IN_WINDVELOCITY);
+	CICEPortState pState_windAlign( in_ctxt, ID_IN_WINDALIGN );
+	CICEPortState pState_damp( in_ctxt, ID_IN_DAMP);
 
 	if( isPortDirty(pState_oceanScale) || isPortDirty(pState_windDir)   || isPortDirty(pState_cutoff) ||
 		isPortDirty(pState_velocity)   || isPortDirty(pState_windAlign) || isPortDirty(pState_damp) )
@@ -32,35 +32,38 @@ inline void fetchICEUserInput(ICENodeContext& in_ctxt, aaOcean *&ICEocean)
 		CDataArrayLong	windAlign( in_ctxt, ID_IN_WINDALIGN );
 		CDataArrayFloat damp( in_ctxt, ID_IN_DAMP);
 
-		ICEocean->m_windDir		= (windDir[0]/180) * 3.141592653589793238462643383;
-		ICEocean->m_cutoff		= fabs(cutoff[0] / 100);
-		ICEocean->m_oceanScale	= maximum<float>(oceanScale[0],0.00001);
-		ICEocean->m_velocity	= maximum<float>(((velocity[0]  * velocity[0]) / (9.81)),0.00001);
+		ICEocean->m_windDir		= (windDir[0]/180.f) * 3.141592653589793238462643383f;
+		ICEocean->m_cutoff		= fabs(cutoff[0] / 100.f);
+		ICEocean->m_oceanScale	= maximum<float>(oceanScale[0],0.00001f);
+		ICEocean->m_velocity	= maximum<float>(((velocity[0]  * velocity[0]) / (9.81f)),0.00001f);
 		ICEocean->m_windAlign	= maximum<int>(((windAlign[0] + 1) * 2),2); 
-		ICEocean->m_damp		= minimum<float>(damp[0],1);
+		ICEocean->m_damp		= minimum<float>(damp[0],1.f);
 		
 		//only re-evaluate the expensive HoK Tessendorf function 
 		//if user input changes for these ports
 		ICEocean->m_redoHoK = true;
 	}
 
-	CICEPortState	pState_waveHeight( in_ctxt, ID_IN_WAVE_HEIGHT);
-	CICEPortState	pState_waveSpeed( in_ctxt, ID_IN_WAVESPEED);
-	CICEPortState	pState_chop( in_ctxt, ID_IN_CHOP);
+	CICEPortState pState_waveHeight( in_ctxt, ID_IN_WAVE_HEIGHT);
+	CICEPortState pState_waveSpeed( in_ctxt, ID_IN_WAVESPEED);
+	CICEPortState pState_chop( in_ctxt, ID_IN_CHOP);
 	if( isPortDirty(pState_waveHeight) || isPortDirty(pState_waveSpeed) || isPortDirty(pState_chop) )
 	{
 		CDataArrayFloat	waveHeight( in_ctxt, ID_IN_WAVE_HEIGHT);
 		CDataArrayFloat	waveSpeed( in_ctxt, ID_IN_WAVESPEED);
 		CDataArrayFloat	chop( in_ctxt, ID_IN_CHOP);
-		ICEocean->m_chopAmount =  chop[0] * .01;		//divided by scale for better ocean control
-		ICEocean->m_waveHeight =  waveHeight[0] * .01; //divided by scale for better ocean control
+		ICEocean->m_chopAmount =  chop[0] * .01f;		//divided by scale for better ocean control
+		ICEocean->m_waveHeight =  waveHeight[0] * .01f; //divided by scale for better ocean control
 		ICEocean->m_waveSpeed	 =  waveSpeed[0];
 	}
-
-	CICEPortState	pState_seed( in_ctxt, ID_IN_SEED);
-	if( isPortDirty(pState_seed))
+	
+	CICEPortState pState_seed( in_ctxt, ID_IN_SEED);
+	CICEPortState pState_ranType( in_ctxt, ID_IN_RANDOM_TYPE);
+	if( isPortDirty(pState_seed) || isPortDirty(pState_ranType))
 	{
-		CDataArrayLong seed( in_ctxt, ID_IN_SEED );
+		CDataArrayLong seed( in_ctxt, ID_IN_SEED);
+		CDataArrayFloat ranType( in_ctxt, ID_IN_RANDOM_TYPE);
+		ICEocean->m_randomType = ranType[0];
 		ICEocean->m_seed	= seed[0];
 		ICEocean->m_redoHoK = true;
 		ICEocean->setup_grid(); 	
@@ -72,7 +75,7 @@ inline void fetchICEUserInput(ICENodeContext& in_ctxt, aaOcean *&ICEocean)
 	ICEocean->m_3DGridVLength = gridV[0];
 
 	//set current time and frame values
-	ICEocean->m_time  = in_ctxt.GetTime().GetTime(CTime::Seconds);
+	ICEocean->m_time  = (float) in_ctxt.GetTime().GetTime(CTime::Seconds);
 }
 
 void displayHeightField(CDataArrayVector3f &outData, aaOcean *&ICEocean)
@@ -81,11 +84,11 @@ void displayHeightField(CDataArrayVector3f &outData, aaOcean *&ICEocean)
 	int index, i, j;	
 	float x,z,mult1, mult2, halfRes;
 	int gridRes = int_sqrt(ICEocean->m_pointCount) - 1;
-	halfRes = gridRes/2;
+	halfRes = (float)gridRes/2;
 	mult1 = float(ICEocean->m_3DGridULength) / float(gridRes);
 	mult2 = float(ICEocean->m_3DGridVLength) / float(gridRes);
 
-	if(ICEocean->m_chopAmount > 0.0)
+	if(ICEocean->m_chopAmount > 0.0f)
 		chop = true;
 
 	if(!ICEocean->m_renderReady)
@@ -200,7 +203,6 @@ void displayEigenMinus(CDataArrayVector3f &outData, aaOcean *&ICEocean)
 {
 	int index;
 	const int n = ICEocean->m_resolution;
-	int counter = 0;
 
 	#pragma omp parallel for private(index)
 	for(int i = 0; i< (n+1); i++)
@@ -308,4 +310,5 @@ void displayNormals(CDataArrayVector3f &outData, aaOcean *&ICEocean)
 		}
 	}
 }
+
 #endif /*ICE_FUNCS*/
