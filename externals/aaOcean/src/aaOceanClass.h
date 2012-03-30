@@ -12,6 +12,16 @@
 #include "mersenneTwister.h"
 #include "vectorSSE.h"
 
+#define STOC_BASE CRandomSFMT1     // define random number generator base class
+
+#include "agnerFogRandom\randomc.h"
+#include "agnerFogRandom\sfmt.cpp" 
+#include "agnerFogRandom\stocc.h"
+#include "agnerFogRandom\mersenne.cpp" 
+            // code for random number generator
+#include "agnerFogRandom\stoc1.cpp"            // random library source code
+#include "agnerFogRandom\userintf.cpp"         // define system specific user interface
+#include "timer\Timer.h"
 
 class aaOcean
 { 
@@ -50,6 +60,8 @@ public:
 	float	*m_eigenPlusZ;
 	float	*m_eigenMinusX;
 	float	*m_eigenMinusZ;
+
+	float m_randomType;
 
 	//bool types for various checks during run-time
 	bool	m_renderReady;
@@ -96,7 +108,8 @@ public:
 				float 	waveSpeed, 
 				float 	waveHeight,
 				float 	chopAmount,
-				float 	time);
+				float 	time,
+				float	randomType);
 
 	void init();
 	void allocateBaseArrays();

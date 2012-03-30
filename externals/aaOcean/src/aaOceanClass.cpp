@@ -16,7 +16,7 @@ aaOcean::aaOcean() :
 	m_eigenPlusX(0),			m_eigenPlusZ(0),			m_eigenMinusX(0),		m_eigenMinusZ(0),
 	m_fft_htField(0),			m_fft_chopX(0),				m_fft_chopZ(0),			m_fft_jxx(0),
 	m_fft_jzz(0),				m_fft_jxz(0),				m_fft_normX(0),			m_fft_normY(0),
-	m_fft_normZ(0)
+	m_fft_normZ(0),				m_randomType(0.f)
 {
 	fftwf_init_threads();
 }
@@ -34,7 +34,7 @@ aaOcean::~aaOcean()
 }
 
 void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity, float cutoff, float windDir, 
-			int windAlign, float damp, float	waveSpeed, float waveHeight, float chopAmount, float time)
+			int windAlign, float damp, float	waveSpeed, float waveHeight, float chopAmount, float time, float randomType)
 {
 	bool isDirty = FALSE; 
 	resolution	= (int)intpow(2.0f,  (4 + resolution)); //pow(2.0f, (4 + resolution));
@@ -181,7 +181,6 @@ void aaOcean::allocateBaseArrays()
 		fftwf_plan_with_nthreads(threads);
 		char msg[100];
 		sprintf_s(msg,"[aaOcean] : Launching threaded FFTW with %d threads", threads);
-		//print(msg, m_isShader);
 	}
 	else
 		fftwf_plan_with_nthreads(1);
@@ -386,7 +385,7 @@ ULONG aaOcean::get_uID(float xCoord, float zCoord)
 	register float id_out;
 	ULONG returnVal = 1;
 
-	if (zCoord != 0.0 && xCoord != 0.0)
+	if (zCoord != 0.0f && xCoord != 0.0f)
 	{
 		angle = xCoord / sqrt(zCoord * zCoord + xCoord * xCoord); 
 		angle = acos(angle);
@@ -403,7 +402,7 @@ ULONG aaOcean::get_uID(float xCoord, float zCoord)
 		else if (zCoord <= 0.0f)
 			returnVal = (ULONG)floor(id_out + 0.5f);
 		else
-			returnVal = ULONG_MAX - (ULONG)floor(id_out + 0.5) ;
+			returnVal = INT_MAX - (ULONG)floor(id_out + 0.5) ;
 	}
 	return returnVal;
 }
@@ -415,9 +414,10 @@ void aaOcean::setup_grid()
 	register const int n = m_resolution;
 	register const int half_n = (-n / 2) - ((n-1) / 2);
 	register ULONG index, uID; 
-	MTRand randNum; 
 
-	#pragma omp parallel for private(index, uID, randNum)
+	Timer timer;
+	timer.start();
+	#pragma omp parallel for private(index, uID)
 	for(int i = 0; i < n; ++i)
 	{
 		for(int j = 0; j < n; ++j)
@@ -428,19 +428,21 @@ void aaOcean::setup_grid()
 			m_zCoord[index] = half_n + j * 2 ;
 
 			uID = (ULONG)get_uID((float)m_xCoord[index], (float)m_zCoord[index]);
-			
-			randNum.seed(uID + m_seed);
-			m_rand1[index] = (float)randNum.randNorm(); 
-			m_rand2[index] = (float)randNum.randNorm();
+
+			StochasticLib1 sto(uID + m_seed);
+			m_rand1[index] = (float)sto.Normal(0.0f, 1.0f);
+			m_rand2[index] = (float)sto.Normal(0.0f, 1.0f);
 		}
 	}
+	timer.stop();
+	Application().LogMessage("RanGen Time : " + CString(timer.getElapsedTimeInMilliSec()) + "ms");
 }
 
  void aaOcean::evaluateHokData()
 {
 	register float k_sq, k_mag,  k_dot_w, philips, x, z;
 	register const int	n			 = m_resolution * m_resolution;
-	register const float	k_mult	 = (2 * aa_PI) / m_oceanScale;
+	register const float	k_mult	 = (2.0f * aa_PI) / m_oceanScale;
 	register const float	L		 = m_velocity;
 	register const float	L_sq	 = L*L;
 	register const float	windx	 = cos(m_windDir);
@@ -460,8 +462,8 @@ void aaOcean::setup_grid()
 		k_sq		= (x * x) + (z * z);
 		k_mag		= 1.0f / sqrt( k_sq );
 		k_dot_w		= (x * k_mag) * windx + (z * k_mag) * windz;
-		philips		= sqrt((( t2exp(-1.0f / ( L_sq * k_sq)) * pow(k_dot_w, m_windAlign)) / 
-					  (k_sq * k_sq)) * t2exp(-k_sq * m_cutoff));
+		philips		= sqrt((( exp(-1.0f / ( L_sq * k_sq)) * pow(k_dot_w, m_windAlign)) / 
+					  (k_sq * k_sq)) * exp(-k_sq * m_cutoff));
 
 		if(bDamp)
 		{
@@ -486,11 +488,11 @@ void aaOcean::setup_grid()
 	#pragma omp parallel for private( index, index_rev, hokReal, hokImag, hokRealOpp, hokImagOpp, sinwt, coswt )  
 	for(index = 0; index < nn; ++index)
 	{
-		index_rev = n_sq - index; //tail end 
-		hokReal		=  m_hokReal[index];
-		hokImag		=  m_hokImag[index];
-		hokRealOpp	=  m_hokReal[index_rev];
-		hokImagOpp	=  m_hokImag[index_rev];
+		index_rev   = n_sq - index; //tail end 
+		hokReal		= m_hokReal[index];
+		hokImag		= m_hokImag[index];
+		hokRealOpp	= m_hokReal[index_rev];
+		hokImagOpp	= m_hokImag[index_rev];
 
 		coswt = cos( m_omega[index] * wt);
 		sinwt = sin( m_omega[index] * wt);
@@ -536,17 +538,8 @@ void aaOcean::setup_grid()
 		m_fft_chopZ[index][1] = -m_hktReal[index] * _kZ;
 	}
 
-	#pragma omp sections
-	{
-		#pragma omp section
-		{
-			fftwf_execute(m_planChopX);
-		}
-		#pragma omp section
-		{
-			fftwf_execute(m_planChopZ);
-		}
-	}
+	fftwf_execute(m_planChopX);
+	fftwf_execute(m_planChopZ);
 
 	n = m_resolution;
 	#pragma omp parallel for private(i,j, index)  
@@ -656,21 +649,9 @@ void aaOcean::evaluateJacobians()
 		m_fft_jxz[index][1] =  m_hktImag[index] * kXZ;
 	}
 
-	#pragma omp sections
-	{
-		#pragma omp section
-		{
-			fftwf_execute(m_planJxx);
-		}
-		#pragma omp section
-		{
-			fftwf_execute(m_planJzz);
-		}
-		#pragma omp section
-		{
-			fftwf_execute(m_planJxz);
-		}
-	}
+	fftwf_execute(m_planJxx);
+	fftwf_execute(m_planJzz);
+	fftwf_execute(m_planJxz);
 
 	n = m_resolution;
 	#pragma omp parallel for private(i, j, index)  
