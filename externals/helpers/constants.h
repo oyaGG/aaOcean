@@ -33,7 +33,7 @@ static const float aa_PIBY180		= 0.01745329251994329576922222222222f;
 static const float aa_INV_PIBYTWO	= 0.63661977236758134307607071493546f;
 static const float aa_INV_SQRTTWO	= 0.70710678118654752440084436210485f;
 
-#define BOUNDARY 64 // alignment boundary
+#define BOUNDARY 16 // alignment boundary
 
 #ifdef _MSC_VER
 #define ALIGN(x) __declspec(align(x))

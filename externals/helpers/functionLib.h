@@ -35,6 +35,8 @@ inline bool isfEqual(float x, float y, const float epsilon)
 
 inline float isEven(int x)
 {
+	// (-1)^(x+y), shift back from centre representation for zero-frequencies to left
+	// x, y being coordinates of 2d array holding fft data
     if(!(x % 2))
 		return 1.0f;
 	else
@@ -94,11 +96,12 @@ inline int wrap(int x, int n)
 
 float intpow( float base, int exponent )
 {
-	int i;
-	float out = base;
-	for( i=1 ; i < exponent ; i++ )
+	float out = 1.f, curpwr = base;
+	for( ; exponent > 0; exponent = exponent >> 1)
 	{
-		out *= base;
+		if ((exponent & 1) > 0)
+			base *= curpwr;
+		curpwr *= curpwr;
 	}
 	return out;
 }
@@ -117,8 +120,13 @@ float fastPow(float a, float b)
   return u.d;
 }
 
-#define int_pow(b,e) \
-((((e & 1) > 0) ? b : 1) * intpow((b*b), (e >> 1)))
+inline float lerp(float t, float a, float b)
+{ 
+	// t = 0 retunes a
+	// t = 1 returns b
+	return a*(1.0f - t) + b * t;
+}
+
 
 bool isAligned(void* data, int alignment = 16)
 {
@@ -126,7 +134,6 @@ bool isAligned(void* data, int alignment = 16)
 	assert((alignment & (alignment-1)) == 0); 
 	return ((uintptr_t)data & (alignment-1)) == 0;
 }
-
 
 //void* aligned_malloc(int size, int alignment)
 //{
