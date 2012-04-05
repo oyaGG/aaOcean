@@ -32,10 +32,10 @@ inline void fetchICEUserInput(ICENodeContext& in_ctxt, aaOcean *&ICEocean)
 		CDataArrayLong	windAlign( in_ctxt, ID_IN_WINDALIGN );
 		CDataArrayFloat damp( in_ctxt, ID_IN_DAMP);
 
-		ICEocean->m_windDir		= (windDir[0]/180.f) * 3.141592653589793238462643383f;
-		ICEocean->m_cutoff		= fabs(cutoff[0] / 100.f);
+		ICEocean->m_windDir		= DegsToRads(windDir[0]);
+		ICEocean->m_cutoff		= fabs(cutoff[0] * 0.01f);
 		ICEocean->m_oceanScale	= maximum<float>(oceanScale[0],0.00001f);
-		ICEocean->m_velocity	= maximum<float>(((velocity[0]  * velocity[0]) / (9.81f)),0.00001f);
+		ICEocean->m_velocity	= maximum<float>(((velocity[0]  * velocity[0]) / (aa_GRAVITY)),0.00001f);
 		ICEocean->m_windAlign	= maximum<int>(((windAlign[0] + 1) * 2),2); 
 		ICEocean->m_damp		= minimum<float>(damp[0],1.f);
 		

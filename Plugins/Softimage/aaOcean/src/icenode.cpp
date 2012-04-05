@@ -7,6 +7,7 @@
 
 SICALLBACK aaOcean_Init( CRef& in_ctxt )
 {
+	fftwf_init_threads();
 	aaOcean *ICEocean	= new aaOcean; 
 	Context ctxt(in_ctxt);
 	ctxt.PutUserData( (CValue::siPtrType)ICEocean);

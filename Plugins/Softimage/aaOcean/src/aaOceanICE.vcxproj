@@ -11,7 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\externals\helpers\timer\Timer.cpp" />
     <ClCompile Include="icenode.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
