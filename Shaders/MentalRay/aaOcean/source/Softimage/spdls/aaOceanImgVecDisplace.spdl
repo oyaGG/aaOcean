@@ -1,0 +1,97 @@
+SPDL
+Version = "2.0.0.0";
+Reference = "{6D02259F-B992-4831-9409-791F39B12A81}";
+PropertySet "aaOceanImgVecDisplace_pset"
+{
+	Parameter "out" output
+	{
+		GUID = "{FF191810-ED42-4a43-B56C-46466A786303}";
+		Type = scalar;
+	}
+	Parameter "texture" input
+	{
+		GUID = "{27F6303C-ACE7-48f2-B016-C9D93AD3C53E}";
+		Type = texture;
+	}
+	Parameter "uv_coords" input
+	{
+		GUID = "{78872D31-D653-4c63-A013-85A7B17401A8}";
+		Type = vector;
+		Texturable = on;
+		Value = 0.0 0.0 0.0;
+	}
+	Parameter "scale_height" input
+	{
+		GUID = "{F84F4E26-E0A9-47bb-9ACE-42195CAC58C0}";
+		Type = scalar;
+		Texturable = on;
+		Value = 1.0;
+
+	}
+	Parameter "scale_chop" input
+	{
+		GUID = "{E2BCAD2F-D0AF-4f10-891C-352345544D74}";
+		Type = scalar;
+		Texturable = on;
+		Value = 1.0;
+	}
+	Parameter "fade" input
+	{
+		GUID = "{9771FE0D-8ED8-41d5-B2F7-44CAF40843F8}";
+		Type = scalar;
+		Texturable = on;
+		Value = 0.0;
+		value minimum = 0;
+		value maximum = 1;
+	}
+
+}
+
+MetaShader "aaOceanImgVecDisplace_meta"
+{
+	Name = "aaOceanImgVecDisplace";
+	Type = displace;
+	Renderer "mental ray"
+	{
+		Name = "aaOceanImgVecDisplace";
+		FileName = "aaOceanMentalRay";
+		Options
+		{
+			"version" = 1;
+		}
+	}
+}
+
+Defaults
+{
+	texture
+	{
+		Name = "texture";
+	}
+	uv_coords
+	{
+		Name = "uv_coords";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";
+	}
+	scale_height
+	{
+		Name = "Scale Height";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";
+		
+	}
+	scale_chop
+	{
+		Name = "Scale Chopiness";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";
+	}
+	fade
+	{
+		Name = "Fade";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";
+	}
+}
+
+Plugin = Shader
+{
+	FileName = "aaOceanShader";
+}

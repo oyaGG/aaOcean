@@ -1,0 +1,328 @@
+SPDL
+Version = "2.0.0.0";
+Reference = "{ECF25878-14BB-4fb6-9D81-7D14ED0A94D7}";
+PropertySet "aaOceanFoamShader_pset"
+{
+	Parameter "out" output
+	{
+		GUID = "{4FD37E99-D20F-48aa-8078-CD860EFCB9FC}";
+		Type = color;
+	}
+	Parameter "uv_coords" input
+	{
+		GUID = "{561F1A8F-3D63-443b-848C-BE23AAE4B8AE}";
+		Type = vector;
+		Texturable = on;
+		Value = 0.0 0.0 0.0;
+	}
+	Parameter "gamma" input
+	{
+		GUID = "{B5ADDE86-115F-4ccc-AB86-BDC223BB2028}";
+		Type = scalar;
+		Texturable = on;
+		Value = 1.0;
+	}
+	Parameter "brightness" input
+	{
+		GUID = "{AD750BF4-2FCA-4049-B86E-06A390ACE9E6}";
+		Type = scalar;
+		Texturable = on;
+		Value = 1.0;
+	}
+	Parameter "fade" input
+	{
+		GUID = "{A977EFBD-B703-49c0-9249-C4C9D15656FF}";
+		Type = scalar;
+		texturable = on;
+		Value = 0;
+		value minimum = 0;
+		value maximum = 1;
+	}
+	Parameter "rawOutput" input
+	{	
+		GUID = "{9A937098-2D90-49d5-9452-8007101259DD}";
+		Type = boolean;
+		value = 0;
+		texturable = off;
+	}
+	
+	Parameter "resolution" input
+	{	
+		GUID = "{37BC325B-9762-41a8-B644-9CD10011DADB}";
+		Type = integer;
+		value = 3;
+		texturable = on;
+		value minimum = 3;
+		value maximum = 8;
+	}
+	
+	Parameter "oceanScale" input
+	{
+		GUID = "{3B5D5343-76F3-48ac-964F-F72C27B5538D}";
+		Type = scalar;
+		value = 100;
+		texturable = on;
+	}
+
+	Parameter "seed" input
+	{		
+		GUID = "{B64724C3-1A6E-4a63-9789-6CBF8415EC43}";
+		Type = integer;
+		value = 1;
+		texturable = on;
+		value minimum = 0;
+		value maximum = 20;
+	}
+	
+	Parameter "waveHeight" input
+	{
+		GUID = "{950223C9-E30D-4e59-8EC9-71C0C68D1631}";
+		Type = scalar;
+		value = 1;
+		texturable = on;
+		value minimum = 0.00001;
+		value maximum = 40;
+	}
+	
+	Parameter "velocity" input
+	{
+		GUID = "{3EE6A867-51CD-47ca-9AA3-6FB64907E754}";
+		Type = scalar;
+		value = 5;
+		texturable = on;
+		value minimum = 0.00001;
+		value maximum = 30;
+	}
+	Parameter "waveSpeed" input
+	{
+		GUID = "{70CC1249-C8B9-4f9d-BEDD-BBE618080581}";
+		Type = scalar;
+		value = 1;
+		texturable = on;
+		value minimum = 0.00001;
+		value maximum = 20;
+	}
+	Parameter "chopAmount" input
+	{
+		GUID = "{ADDD0935-B658-4acb-8352-2E7DAA91F496}";
+		Type = scalar;
+		value = 1;
+		texturable = on;
+		value minimum = 0;
+		value maximum = 20;
+	}
+	Parameter "cutoff" input
+	{
+		GUID = "{452EE5E2-7E7A-402e-B078-174E68058FD6}";
+		Type = scalar;
+		value = 0;
+		texturable = on;
+		value minimum = 0;
+		value maximum = 20;
+	}
+	Parameter "windDir" input
+	{
+		GUID = "{B0870144-6045-4781-B421-E9DA0CF0BCB3}";
+		Type = scalar;
+		value = 45;
+		texturable = on;
+		value minimum = 0;
+		value maximum = 360;
+	}
+	Parameter "damp" input
+	{
+		GUID = "{80608952-7FB7-4f34-9BD6-25BCBA045937}";
+		Type = scalar;
+		value = 0.985;
+		texturable = on;
+		value minimum = 0;
+		value maximum = 1;
+	}
+	Parameter "windAlign" input
+	{
+		GUID = "{F91E3650-0EF5-4898-9349-A77CF424E013}";
+		Type = integer;
+		value = 1;
+		texturable = on;
+		value minimum = 0;
+		value maximum = 20;
+	}
+	Parameter "time" input
+	{
+		GUID = "{1D15CD2D-107C-4c91-AF02-EF95E04A271F}";
+		Type = scalar;
+		value = 1;
+		inspectable = on;
+	}
+	Parameter "fmin" input
+	{
+		GUID = "{A731931A-A628-47c4-9564-923D3610F8AB}";
+		Type = scalar;
+		value = 0.0;
+		inspectable = on;
+	}
+	Parameter "fmax" input
+	{
+		GUID = "{862F3B6D-8B81-4224-A82C-C033F1BA2959}";
+		Type = scalar;
+		value = 0.0;
+		inspectable = on;
+	}
+}
+
+MetaShader "aaOceanFoamShader_meta"
+{
+	Name = "aaOceanFoamShader";
+	Type = texture;
+	Renderer "mental ray"
+	{
+		Name = "aaOceanFoamShader";
+		FileName = "aaOceanMentalRay";
+		Options
+		{
+			"version" = 1;
+		}
+	}
+}
+
+Defaults
+{
+	uv_coords
+	{
+		Name = "uv coords";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";
+	}
+	gamma
+	{
+		Name = "gamma";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";
+	}
+	brightness
+	{
+		Name = "brightness";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";
+	}
+	fade
+	{
+		Name = "fade";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";
+	}
+	rawOutput
+	{
+		Name = "Raw output";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";
+	}
+	resolution
+	{
+		Name = "Resolution";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";		
+	}
+	oceanScale
+	{
+		Name = "Ocean Size";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";		
+	}	
+	seed
+	{
+		Name = "Seed";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";		
+	}	
+	waveHeight
+	{
+		Name = "Wave Height";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";		
+	}	
+	velocity
+	{
+		Name = "Wave Size";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";		
+	}	
+	waveSpeed
+	{
+		Name = "Wave Speed";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";		
+	}
+	chopAmount
+	{
+		Name = "Chop Amount";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";		
+	}	
+	cutoff
+	{
+		Name = "Smooth Amount";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";		
+	}	
+	windDir
+	{
+		Name = "Wind Direction";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";		
+	}
+	damp
+	{
+		Name = "Reflected Waves";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";		
+	}	
+	windAlign
+	{
+		Name = "Wind Align";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";		
+	}
+	time
+	{
+		Name = "time";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";		
+	}
+	fmin
+	{
+		Name = "min";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";
+	}
+	fmax
+	{
+		Name = "max";
+		Commands = "{F5C75F11-2F05-11D3-AA95-00AA0068D2C0}";
+	}
+}
+
+Layout "Default"
+{
+		Group "Ocean Parameters"
+		{
+			resolution;
+			oceanScale;
+			seed;
+		}
+		
+		Group "Wave Parameters"
+		{
+			waveHeight;
+			velocity;
+			waveSpeed;
+			chopAmount;
+			cutoff;
+		}
+		
+		Group "Wind Parameters"
+		{
+			windDir;
+			damp;
+			windAlign;
+		}
+		Group "Misc"
+		{
+			gamma;
+			brightness;
+			fade;
+			fmin;
+			fmax;
+			rawOutput;
+			#uv_coords;
+			time;
+		}
+  
+}
+
+Plugin = Shader
+{
+	FileName = "aaOceanShader";
+}
