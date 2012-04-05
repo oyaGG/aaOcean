@@ -1,3 +1,6 @@
+#ifndef SFMT_CPP
+#define SFMT_CPP
+
 /*****************************   sfmt.cpp   ***********************************
 * Authors:
 * Mutsuo Saito (Hiroshima University)
@@ -365,3 +368,5 @@ double CRandomSFMT::Random() {
    // 52 bits resolution for compatibility with assembly version:
    return (int64_t)(r >> 12) * (1./(67108864.0*67108864.0));  // (r >> 12)*2^(-52)
 }
+
+#endif

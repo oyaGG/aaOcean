@@ -62,8 +62,8 @@ _MM_ALIGN16 class vector3
   inline vector3 normalize() const { return _mm_mul_ps(mmvalue, _mm_rsqrt_ps(_mm_dp_ps(mmvalue, mmvalue, 0x7F))); }
  
   // overloaded operators that ensure alignment
-  inline void* operator new[](size_t x) { return _aligned_malloc(x, 16); }
-  inline void operator delete[](void* x) { if (x) _aligned_free(x); }
+//  inline void* operator new[](size_t x) { return _aligned_malloc(x, 16); }
+//  inline void operator delete[](void* x) { if (x) _aligned_free(x); }
  
   // Member variables
   union

@@ -8,8 +8,7 @@ aaOcean::aaOcean() :
 	m_3DGridULength(-1.0f),		m_3DGridVLength(-1.0f),		m_velocity(-1.0f),		m_windDir(-1.0f),
 	m_cutoff(-1.0f),			m_damp(-1.0f),				m_oceanScale(-1.0f),	m_waveHeight(-1.0f), 
 	m_time(-1.0),				m_isAllocated(FALSE),		m_isValid(FALSE),		m_isNormalsAllocated(FALSE),
-	m_isFoamAllocated(FALSE),	m_isSplashAllocated(FALSE),	m_redoHoK(FALSE),		m_isDisplacementDirty(FALSE),
-	m_isNormalsDirty(FALSE),	m_isFoamDirty(FALSE),		m_isShader(FALSE),		m_fmin(FLT_MAX), 
+	m_isFoamAllocated(FALSE),	m_isSplashAllocated(FALSE),	m_redoHoK(FALSE),		m_isShader(FALSE), m_fmin(FLT_MAX), 
 	m_fmax(-FLT_MAX),			m_zCoord(0),				m_xCoord(0),			m_hokReal(0),
 	m_hokImag(0),				m_hktReal(0),				m_hktImag(0),			m_kX(0),
 	m_kZ(0),					m_omega(0),					m_rand1(0),				m_rand2(0),
@@ -18,7 +17,6 @@ aaOcean::aaOcean() :
 	m_fft_jzz(0),				m_fft_jxz(0),				m_fft_normX(0),			m_fft_normY(0),
 	m_fft_normZ(0),				m_randomType(0.f)
 {
-	fftwf_init_threads();
 }
 
 aaOcean::aaOcean(const aaOcean &cpy)
@@ -29,14 +27,12 @@ aaOcean::aaOcean(const aaOcean &cpy)
 aaOcean::~aaOcean()
 {
 	clearArrays();
-	fftwf_cleanup_threads();
-	fftwf_cleanup();
+	
 }
 
 void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity, float cutoff, float windDir, 
-			int windAlign, float damp, float	waveSpeed, float waveHeight, float chopAmount, float time, float randomType)
+			int windAlign, float damp, float waveSpeed, float waveHeight, float chopAmount, float time, float randomType)
 {
-	bool isDirty = FALSE; 
 	resolution	= (int)pow(2.0f, (4 + resolution));
 	oceanScale	= maximum<float>(oceanScale, 0.00001f);
 	velocity	= maximum<float>(((velocity  * velocity) / aa_GRAVITY), 0.00001f);
@@ -48,9 +44,6 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 	waveHeight *= 0.01f;
 	chopAmount *= 0.01f;
 
-	if(m_time != time || m_waveSpeed != waveSpeed || m_waveHeight != waveHeight || m_chopAmount != chopAmount )
-		isDirty = TRUE;
-
 	m_time			= time;
 	m_waveSpeed		= waveSpeed;
 	m_waveHeight	= waveHeight;
@@ -59,7 +52,7 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 	if( m_oceanScale	!= oceanScale	||
 		m_windDir		!= windDir		||
 		m_cutoff		!= cutoff		||
-		m_velocity		!= velocity	||
+		m_velocity		!= velocity		||
 		m_windAlign		!= windAlign	||
 		m_damp			!= damp		)
 	{
@@ -70,7 +63,6 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 		m_windAlign		= windAlign;
 		m_damp			= damp;
 		m_redoHoK		= TRUE;
-		isDirty			= TRUE;
 	}
 
 	if(m_seed != seed)
@@ -79,12 +71,7 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 		m_redoHoK	= TRUE;
 		if(m_resolution == resolution)
 			setup_grid(); 
-		isDirty = TRUE;
 	}
-	if(isDirty)
-		m_isDisplacementDirty = m_isNormalsDirty = m_isFoamDirty = TRUE;
-	else
-		m_isDisplacementDirty = m_isNormalsDirty = m_isFoamDirty = FALSE;
 
 	reInit(resolution);
 
@@ -94,14 +81,14 @@ bool aaOcean::reInit(int data_size)
 {
 	if(((data_size & (data_size - 1)) != 0) || data_size == 0) //	not power of 2
 	{	
-		sprintf_s(m_state,"[aaOcean] :  invalid point resolution of %d. Please select a power-of-2 subdivision value", data_size);
+		sprintf_s(m_state,"[aaOcean Core] :  invalid point resolution of %d. Please select a power-of-2 subdivision value", data_size);
 		m_isValid = FALSE;
 	}
 	else
 	{
 		if(m_resolution != data_size || !m_isAllocated )
 		{
-			sprintf_s(m_state,"[aaOcean] : Building ocean shader with resolution %dx%d", data_size, data_size);
+			sprintf_s(m_state,"[aaOcean Core] : Building ocean shader with resolution %dx%d", data_size, data_size);
 			m_resolution = data_size;
 			allocateBaseArrays();				
 			m_redoHoK  = TRUE;
@@ -118,19 +105,16 @@ void aaOcean::prepareOcean(bool doHeightField, bool doChopField, bool doJacobian
 	{
 		evaluateHokData();
 		m_redoHoK = FALSE;
-		m_isDisplacementDirty = m_isNormalsDirty = m_isFoamDirty = TRUE;
 	}
 
 	if(doHeightField)
 	{
 		evaluateHieghtField();
-		m_isDisplacementDirty = m_isNormalsDirty = m_isFoamDirty = TRUE;
 	}
 
 	if(doChopField && m_chopAmount > 0.0f)
 	{
 		evaluateChopField();
-		m_isDisplacementDirty = m_isNormalsDirty = m_isFoamDirty = TRUE;
 	}
 
 	if(doJacobians && m_isAllocated)
@@ -139,8 +123,8 @@ void aaOcean::prepareOcean(bool doHeightField, bool doChopField, bool doJacobian
 			allocateFoamArrays();
 		if(!m_isSplashAllocated)
 			allocateSplashArrays();
+
 		evaluateJacobians();
-		m_isDisplacementDirty = m_isNormalsDirty = m_isFoamDirty = TRUE;
 	}
 	if(doNormals)
 	{
@@ -154,31 +138,31 @@ void aaOcean::allocateBaseArrays()
 {
 	if(m_isAllocated) 
 		clearArrays();
-
-	m_kX		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
-	m_kZ		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
-	m_omega		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
-	m_hokReal	= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
-	m_hokImag	= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
-	m_hktReal	= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
-	m_hktImag	= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
-	m_rand1		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
-	m_rand2		= (float*) aligned_malloc(m_resolution * m_resolution * sizeof(float), BOUNDARY);
-	m_xCoord	= (int*)   aligned_malloc(m_resolution * m_resolution * sizeof(int),   BOUNDARY);
-	m_zCoord	= (int*)   aligned_malloc(m_resolution * m_resolution * sizeof(int),   BOUNDARY);
-
+	m_xCoord	= (int*)   malloc(m_resolution * m_resolution * sizeof(int)); 
+	m_zCoord	= (int*)   malloc(m_resolution * m_resolution * sizeof(int)); 
+	
+	m_hokReal	= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
+	m_hokImag	= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
+	m_hktReal	= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
+	m_hktImag	= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
+	m_kX		= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
+	m_kZ		= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
+	m_omega		= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
+	m_rand1		= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
+	m_rand2		= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
+	
 	if(m_resolution > 254)
 	{
 		int threads = omp_get_num_procs();
 		fftwf_plan_with_nthreads(threads);
-		sprintf_s(m_state,"[aaOcean] : Launching threaded FFTW with %d threads", threads);
+		sprintf_s(m_state,"[aaOcean Core] : Launching threaded FFT with %d threads", threads);
 	}
 	else
 		fftwf_plan_with_nthreads(1);
 
-	m_fft_htField	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
-	m_fft_chopX		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
-	m_fft_chopZ		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
+	m_fft_htField	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));  
+	m_fft_chopX		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));  
+	m_fft_chopZ		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1))); 
 
 	m_planHeightField	= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_htField,m_fft_htField,1, FFTW_ESTIMATE);
 	m_planChopX			= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_chopX ,m_fft_chopX	 ,1, FFTW_ESTIMATE);
@@ -189,100 +173,89 @@ void aaOcean::allocateBaseArrays()
 void aaOcean::allocateNormalsArrays()
 {
 	int arSize = m_resolution + 1;
-	m_fft_normX	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((arSize)*(arSize)));
-	m_fft_normY	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((arSize)*(arSize)));
-	m_fft_normZ	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((arSize)*(arSize)));
+	m_fft_normX	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((arSize)*(arSize))); 
+	m_fft_normY	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((arSize)*(arSize))); 
+	m_fft_normZ	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((arSize)*(arSize))); 
 	m_isNormalsAllocated = TRUE;
 }
 
  void aaOcean::allocateFoamArrays()
 {
-	m_fft_jxx = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
-	m_fft_jxz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
-	m_fft_jzz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));
-	m_planJxx = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jxx, m_fft_jxx, 1, FFTW_MEASURE);
-	m_planJxz = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jxz, m_fft_jxz, 1, FFTW_MEASURE);
-	m_planJzz = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jzz, m_fft_jzz, 1, FFTW_MEASURE);
+	m_fft_jxx = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1))); 
+	m_fft_jxz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1))); 
+	m_fft_jzz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1))); 
+
+	m_planJxx = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jxx, m_fft_jxx, 1, FFTW_ESTIMATE);
+	m_planJxz = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jxz, m_fft_jxz, 1, FFTW_ESTIMATE);
+	m_planJzz = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jzz, m_fft_jzz, 1, FFTW_ESTIMATE);
 	m_isFoamAllocated = TRUE;
 }
 
 void aaOcean::allocateSplashArrays()
 {
-	m_eigenPlusX	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), BOUNDARY);
-	m_eigenPlusZ	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), BOUNDARY);
-	m_eigenMinusX	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), BOUNDARY);
-	m_eigenMinusZ	= (float*) aligned_malloc((m_resolution+1) * (m_resolution+1) * sizeof(float), BOUNDARY);
+	m_eigenPlusX	= (float*) malloc((m_resolution+1) * (m_resolution+1) * sizeof(float)); 
+	m_eigenPlusZ	= (float*) malloc((m_resolution+1) * (m_resolution+1) * sizeof(float)); 
+	m_eigenMinusX	= (float*) malloc((m_resolution+1) * (m_resolution+1) * sizeof(float)); 
+	m_eigenMinusZ	= (float*) malloc((m_resolution+1) * (m_resolution+1) * sizeof(float)); 
 	m_isSplashAllocated = TRUE;
 }
 
 void aaOcean::clearResidualArrays()
 {
-	if(m_kX)
+	if(m_rand2)
 	{
-		aligned_free(m_kX);
-		m_kX = FALSE;
-	}
-	if(m_kZ)
-	{
-		aligned_free(m_kZ);
-		m_kZ = FALSE;
-	}
-	if(m_omega)
-	{
-		aligned_free(m_omega);
-		m_omega = FALSE;
-	}
-	if(m_hokReal)
-	{
-		aligned_free(m_hokReal);
-		m_hokReal = FALSE;
-	}
-	if(m_hokImag)
-	{
-		aligned_free(m_hokImag);
-		m_hokImag = FALSE;
-	}
-	if(m_hktReal)
-	{
-		aligned_free(m_hktReal);
-		m_hktReal = FALSE;
-	}
-	if(m_hktImag)
-	{
-		aligned_free(m_hktImag);
-		m_hktImag = FALSE;
+		free(m_rand2); 
+		m_rand2 = FALSE;
 	}
 	if(m_rand1)
 	{
-		aligned_free(m_rand1);
+		free(m_rand1); 
 		m_rand1 = FALSE;
 	}
-	if(m_rand2)
+	if(m_omega)
 	{
-		aligned_free(m_rand2);
-		m_rand2 = FALSE;
+		free(m_omega); 
+		m_omega = FALSE;
 	}
-	if(m_xCoord)
+	if(m_kZ)
 	{
-		aligned_free(m_xCoord);
-		m_xCoord = FALSE;
+		free(m_kZ); 
+		m_kZ = FALSE;
+	}
+	if(m_kX)
+	{
+		free(m_kX); 
+		m_kX = FALSE;
+	}
+	if(m_hktImag)
+	{
+		free(m_hktImag); 
+		m_hktImag = FALSE;
+	}
+	if(m_hktReal)
+	{
+		free(m_hktReal); 
+		m_hktReal = FALSE;
+	}
+	if(m_hokImag)
+	{
+		free(m_hokImag); 
+		m_hokImag = FALSE;
+	}
+	if(m_hokReal)
+	{
+		free(m_hokReal); 
+		m_hokReal = FALSE;
 	}
 	if(m_zCoord)
 	{
-		aligned_free(m_zCoord);
+		free(m_zCoord); 
 		m_zCoord = FALSE;
 	}
-	if(m_fft_jxx)
+	if(m_xCoord)
 	{
-		fftwf_free(m_fft_jxx);
-		fftwf_destroy_plan(m_planJxx);
-		m_fft_jxx=0;
-	}
-	if(m_fft_jzz)
-	{
-		fftwf_free(m_fft_jzz);
-		fftwf_destroy_plan(m_planJzz);
-		m_fft_jzz = FALSE;
+		free(m_xCoord); 
+		m_xCoord = FALSE;
 	}
 }
 
@@ -290,82 +263,95 @@ void aaOcean::clearArrays()
 {
 	if(m_isAllocated)
 	{
-		clearResidualArrays();
-
-		if(m_fft_htField)
+		if(m_fft_jzz)
 		{
-			fftwf_free(m_fft_htField);
-			fftwf_destroy_plan(m_planHeightField);
-			m_fft_htField = FALSE;
+			fftwf_destroy_plan(m_planJzz);
+			fftwf_free(m_fft_jzz);  
+			m_fft_jzz = FALSE;
 		}
-		if(m_fft_chopX)
+		if(m_isFoamAllocated)
 		{
-			fftwf_free(m_fft_chopX);
-			fftwf_destroy_plan(m_planChopX);
-			m_fft_chopX = FALSE;
+			if(m_fft_jxz)
+			{
+				fftwf_destroy_plan(m_planJxz);
+				fftwf_free(m_fft_jxz); 
+				m_fft_jxz = FALSE;
+			}
+			m_isFoamAllocated = FALSE;
+		}
+		if(m_fft_jxx)
+		{
+			fftwf_destroy_plan(m_planJxx);
+			fftwf_free(m_fft_jxx); 
+			m_fft_jxx = FALSE;
 		}
 		if(m_fft_chopZ)
 		{
-			fftwf_free(m_fft_chopZ);
 			fftwf_destroy_plan(m_planChopZ);
+			fftwf_free(m_fft_chopZ); 
 			m_fft_chopZ = FALSE;
 		}
-		m_isAllocated = FALSE;
-	}
-	if(m_isFoamAllocated)
-	{
-		if(m_fft_jxz)
+		if(m_fft_chopX)
 		{
-			fftwf_free(m_fft_jxz);
-			fftwf_destroy_plan(m_planJxz);
-			m_fft_jxz = FALSE;
+			fftwf_destroy_plan(m_planChopX);
+			fftwf_free(m_fft_chopX); 
+			m_fft_chopX = FALSE;
 		}
-		m_isFoamAllocated = FALSE;
+		if(m_fft_htField)
+		{
+			fftwf_destroy_plan(m_planHeightField);
+			fftwf_free(m_fft_htField); 
+			m_fft_htField = FALSE;
+		}
+		m_isAllocated = FALSE;
+
+		if(m_isNormalsAllocated)
+		{
+			if(m_fft_normZ)
+			{
+				fftwf_free(m_fft_normZ); 
+				m_fft_normZ = FALSE;
+			}
+			if(m_fft_normY)
+			{
+				fftwf_free(m_fft_normY); 
+				m_fft_normY = FALSE;
+			}
+			if(m_fft_normX)
+			{
+				fftwf_free(m_fft_normX); 
+				m_fft_normX = FALSE; 
+			}
+			m_isNormalsAllocated = FALSE;
+		}
 	}
+	
 	if(m_isSplashAllocated)
 	{
-		if(m_eigenPlusX)
+		if(m_eigenMinusZ)
 		{
-			aligned_free(m_eigenPlusX);
-			m_eigenPlusX = FALSE;
-		}
-		if(m_eigenPlusZ)
-		{
-			aligned_free(m_eigenPlusZ);
-			m_eigenPlusZ = FALSE;
+			free(m_eigenMinusZ); 
+			m_eigenMinusZ = FALSE;
 		}
 		if(m_eigenMinusX)
 		{
-			aligned_free(m_eigenMinusX);
+			free(m_eigenMinusX); 
 			m_eigenMinusX = FALSE;
 		}
-		if(m_eigenMinusZ)
+		if(m_eigenPlusZ)
 		{
-			aligned_free(m_eigenMinusZ);
-			m_eigenMinusZ = FALSE;
+			free(m_eigenPlusZ); 
+			m_eigenPlusZ = FALSE;
 		}
-
+		if(m_eigenPlusX)
+		{
+			free(m_eigenPlusX); 
+			m_eigenPlusX = FALSE;
+		}
 		m_isSplashAllocated = FALSE;
 	}
-	if(m_isNormalsAllocated)
-	{
-		if(m_fft_normX)
-		{
-			fftwf_free(m_fft_normX);
-			m_fft_normX = FALSE;
-		}
-		if(m_fft_normZ)
-		{
-			fftwf_free(m_fft_normY);
-			m_fft_normY = FALSE;
-		}
-		if(m_fft_normZ)
-		{
-			fftwf_free(m_fft_normZ);
-			m_fft_normZ = FALSE;
-		}
-		m_isNormalsAllocated = FALSE;
-	}
+	clearResidualArrays();
+	
 }
 
 ULONG aaOcean::get_uID(float xCoord, float zCoord)

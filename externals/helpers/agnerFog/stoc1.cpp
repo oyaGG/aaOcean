@@ -22,6 +22,8 @@
 * Copyright 2002-2008 by Agner Fog. 
 * GNU General Public License http://www.gnu.org/licenses/gpl.html
 *****************************************************************************/
+#ifndef STOC1_CPP
+#define STOC1_CPP
 
 #include "stocc.h"     // class definition
 
@@ -816,3 +818,5 @@ void StochasticLib1::Shuffle(int * list, int min, int n) {
 }
 
 #endif  // ifndef R_BUILD
+
+#endif /*STOC1_CPP*/

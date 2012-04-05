@@ -1,9 +1,8 @@
 #ifndef FUNCTION_LIB_H
 #define FUNCTION_LIB_H
 
-#include <cmath>
 #include "constants.h"
-#include "fexp\t2exp.c"
+
 inline float DegsToRads(float degrees)	// Degrees to radians conversion...
 { 
 	return(degrees * aa_PIBY180);  
@@ -35,6 +34,7 @@ inline bool isfEqual(float x, float y, const float epsilon)
 
 inline float isEven(int x)
 {
+	// used in FFT
 	// (-1)^(x+y), shift back from centre representation for zero-frequencies to left
 	// x, y being coordinates of 2d array holding fft data
     if(!(x % 2))
@@ -127,13 +127,12 @@ inline float lerp(float t, float a, float b)
 	return a*(1.0f - t) + b * t;
 }
 
-
-bool isAligned(void* data, int alignment = 16)
-{
-	// check that the alignment is a power of two
-	assert((alignment & (alignment-1)) == 0); 
-	return ((uintptr_t)data & (alignment-1)) == 0;
-}
+//bool isAligned(void* data, int alignment = 16)
+//{
+//	// check that the alignment is a power of two
+//	assert((alignment & (alignment-1)) == 0); 
+//	return ((uintptr_t)data & (alignment-1)) == 0;
+//}
 
 //void* aligned_malloc(int size, int alignment)
 //{

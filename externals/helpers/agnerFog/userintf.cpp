@@ -17,6 +17,8 @@
 * Copyright 1997-2008 by Agner Fog. 
 * GNU General Public License http://www.gnu.org/licenses/gpl.html
 *****************************************************************************/
+#ifndef USERINTF_CPP
+#define USERINTF_CPP
 
 #include <stdio.h>                     // define printf() function
 #include <stdlib.h>                    // define exit() function
@@ -79,3 +81,5 @@ void FatalError(const char * ErrorText) {
   // Terminate program with error code
   exit(1);
 }
+
+#endif /* USERINTF_CPP */
