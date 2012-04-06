@@ -23,6 +23,7 @@ SICALLBACK XSILoadPlugin( PluginRegistrar& in_reg )
 	in_reg.RegisterShader(L"displacementShader", 1, 8);
 	in_reg.RegisterShader(L"foamShader", 1, 8);
 	in_reg.RegisterShader(L"normalsShader", 1, 8);
+	in_reg.RegisterShader(L"oceanDataShader", 1, 8);
 	//RegisteraaOcean( in_reg );
 
 	return CStatus::OK;

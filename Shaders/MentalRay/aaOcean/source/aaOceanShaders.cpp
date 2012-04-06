@@ -11,9 +11,10 @@
 #include "aaOceanClass.cpp"
 #include "shaders/oceanStore.h"
 #include "shaders/shader_funcs.h"
+#include "shaders/aaOceanData.cpp"
 #include "shaders/aaOceanDisplace.cpp"
 #include "shaders/aaOceanFoam.cpp"
 #include "shaders/aaOceanImgVecDisplace.cpp"
-//#include "aaOceanNormals.cpp"
+//#include "shaders/aaOceanNormals.cpp"
 
 
