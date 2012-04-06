@@ -60,13 +60,16 @@ void aaOceanDisplaceShader_init(miState *state, aaOceanDisplaceShader_t *params,
 		ocean->m_damp			= minimum<float>(*mi_eval_scalar(&params->damp),1);
 		ocean->m_time			= *mi_eval_scalar(&params->time);
 
+		miTag shaderInst; // tag of the currently running shader
+		mi_query(miQ_FUNC_TAG, state, 0, &shaderInst);
+
 		if(!ocean->reInit(resolution))
 		{
-			ocean->m_isValid = FALSE;
-			mi_error("[aaOcean] Displacement shader failed to initialize");	
+			mi_error("%s. Shader ID: %d", ocean->m_state, shaderInst);	
 			return;
 		}
-		ocean->m_redoHoK = TRUE;	
+		mi_info("%s. Shader ID: %d", ocean->m_state, shaderInst);	
+
 		ocean->prepareOcean(TRUE, TRUE, FALSE, FALSE);
 
 		copy_and_tile(ocean->m_fft_htField, ocean);
@@ -83,10 +86,8 @@ void aaOceanDisplaceShader_init(miState *state, aaOceanDisplaceShader_t *params,
 		ocean->clearResidualArrays();
 		timer.stop();
 
-		miTag shaderInst; // tag of the currently running shader
-		mi_query(miQ_FUNC_TAG, state, 0, &shaderInst);
-		mi_info("[aaOcean] Displacement shader initiated in %f seconds, at %dx%d, Shader Instance ID: %d, location: %p", 
-				timer.getElapsedTimeInSec(), resolution, resolution, shaderInst, ocean);	
+		mi_info("[aaOcean Shader] Displacement shader initiated in %f seconds. Shader ID: %d, location: %p", 
+				timer.getElapsedTimeInSec(), shaderInst, ocean);	
 	}
 }
 
@@ -105,7 +106,7 @@ void aaOceanDisplaceShader_exit(miState	*state,	aaOceanDisplaceShader_t *params)
 
 			miTag shaderInst; // tag of the currently running shader
 			mi_query(miQ_FUNC_TAG, state, 0, &shaderInst);
-			mi_info("[aaOcean] Displacement Shader Instance ID %d, terminated at location: %p",shaderInst, ocean);
+			mi_info("[aaOcean Shader] Displacement Shader ID %d, terminated at location: %p",shaderInst, ocean);
 		}
 	}
 	else
