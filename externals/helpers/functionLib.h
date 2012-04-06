@@ -29,7 +29,7 @@ inline float clamp(float x, float a, float b)
 
 inline bool isfEqual(float x, float y, const float epsilon)
 {
-   return fabs(x - y) <= epsilon * fabs(x);  // use this to compare float values
+   return fabs(x - y) <= epsilon;  // very basic float comparator
 }
 
 inline float isEven(int x)
