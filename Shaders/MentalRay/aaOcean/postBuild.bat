@@ -6,6 +6,7 @@ copy Softimage\spdls\aaOceanImgVecDisplace.spdl "%XSI_INSTALL_DIR%"\spdl
 REM copy spdls\aaOceanNormalsShader.spdl "%XSI_INSTALL_DIR%"\spdl
 
 copy ..\Output\aaOceanMentalRay.dll "%XSI_INSTALL_DIR%"\bin\nt-x86-64
+copy ..\Output\aaOceanShaderDefs.dll "%XSI_INSTALL_DIR%"\Plugins
 
 del ..\Output\aaOceanMentalRay.exp
 del ..\Output\aaOceanMentalRay.lib
