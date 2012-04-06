@@ -2,16 +2,11 @@
 #define AAOCEANFOAM_H
 
 #include <shader.h>
-#include <geoshader.h>
 
 typedef struct
 {
 	miVector	uv_coords;
-	miScalar	gamma;
-	miScalar	brightness;
 	miScalar	fade;
-	miBoolean	rawOutput;
-	
 	miInteger	resolution;
 	miScalar	oceanScale;
 	miInteger	seed;
@@ -24,6 +19,10 @@ typedef struct
 	miScalar	damp;
 	miInteger	windAlign;
 	miScalar	time;
+
+	miScalar	gamma;
+	miScalar	brightness;
+	miBoolean	rawOutput;
 	miScalar	fmin;
 	miScalar	fmax;
 

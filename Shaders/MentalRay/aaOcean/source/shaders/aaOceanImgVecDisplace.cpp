@@ -10,7 +10,7 @@ extern "C" DLLEXPORT miBoolean aaOceanImgVecDisplace(miScalar *result, miState *
 	miScalar fade		  = *mi_eval_scalar(&params->fade);
 	
 	miColor color;
-	mi_lookup_color_texture(&color,state,tex,coord);
+	mi_lookup_color_texture(&color, state, tex, coord);
 
 	miVector vec;
 	vec.x = color.r;
@@ -19,9 +19,9 @@ extern "C" DLLEXPORT miBoolean aaOceanImgVecDisplace(miScalar *result, miState *
 
 	mi_point_from_object(state,&vec,&vec);  // convert object-space vector from texture to internal space
 
-	state->point.x -= vec.x * scale_chop	*	(1.0f - fade); 
+	state->point.x += vec.x * scale_chop	*	(1.0f - fade); 
 	state->point.y += vec.y * scale_height	*	(1.0f - fade); 
-	state->point.z -= vec.z * scale_chop	*	(1.0f - fade); 
+	state->point.z += vec.z * scale_chop	*	(1.0f - fade); 
 
 	return( miTRUE );
 }

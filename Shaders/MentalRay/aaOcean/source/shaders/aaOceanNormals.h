@@ -13,7 +13,6 @@ typedef struct
 {
 	miVector	uv_coords;
 	miScalar	fade;
-	
 	miInteger	resolution;
 	miScalar	oceanScale;
 	miInteger	seed;
@@ -25,8 +24,8 @@ typedef struct
 	miScalar	windDir;
 	miScalar	damp;
 	miInteger	windAlign;
-
 	miScalar	time;
+
 	miVector	layerNormals;
 
 } aaOceanNormalsShader_t;

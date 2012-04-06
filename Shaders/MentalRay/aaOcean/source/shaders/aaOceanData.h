@@ -1,8 +1,7 @@
-#ifndef aaOceanDisplaceShader_H
-#define aaOceanDisplaceShader_H 
+#ifndef aaOceanDataShader_H
+#define aaOceanDataShader_H 
 
 #include <shader.h>
-#include <geoshader.h>
 
 typedef struct
 {
@@ -21,9 +20,16 @@ typedef struct
 	miInteger	windAlign;
 	miScalar	time;
 
-	miScalar	layerOcean;
-} aaOceanDisplaceShader_t;
+	miScalar	gamma;
+	miScalar	brightness;
+	miBoolean	rawOutput;
+	miScalar	fmin;
+	miScalar	fmax;
 
-#endif // aaOceanDisplaceShader_H
+	miScalar	layerOcean;
+
+} aaOceanDataShader_t;
+
+#endif // aaOceanDataShader_H
 
 

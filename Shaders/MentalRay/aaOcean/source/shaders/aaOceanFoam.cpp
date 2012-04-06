@@ -21,13 +21,10 @@ aaOceanFoamShader( miColor *result, miState *state, aaOceanFoamShader_t *params)
 
 		if(!rawOutput)
 		{
-			if(fabs(fmin) != 0.0f && fabs(fmax) != 0.0f)
-			{
-				foam  = rescale(foam, fmin, fmax, 0.0f, 1.0f);
-				foam  = maxim(foam, 0.0f);
-				foam  = pow((float)foam, (float)gamma);
-				foam *= brightness;
-			}
+			foam  = rescale(foam, fmin, fmax, 0.0f, 1.0f);
+			foam  = maxim(foam, 0.0f);
+			foam  = pow((float)foam, (float)gamma);
+			foam *= brightness;
 		}
 		result->b = result->g = result->r = foam * (1.0f - fade);
 	}
