@@ -65,7 +65,7 @@ inline void fetchICEUserInput(ICENodeContext& in_ctxt, aaOcean *&ICEocean)
 		CDataArrayFloat ranType( in_ctxt, ID_IN_RANDOM_TYPE);
 		ICEocean->m_randomType = ranType[0];
 		ICEocean->m_seed	= seed[0];
-		ICEocean->m_redoHoK = true;
+		ICEocean->m_redoHoK = TRUE;
 		ICEocean->setup_grid(); 	
 	}
 	//get grid dimensions 
@@ -75,12 +75,12 @@ inline void fetchICEUserInput(ICENodeContext& in_ctxt, aaOcean *&ICEocean)
 	ICEocean->m_3DGridVLength = gridV[0];
 
 	//set current time and frame values
-	ICEocean->m_time  = (float) in_ctxt.GetTime().GetTime(CTime::Seconds);
+	ICEocean->m_time  = (float)in_ctxt.GetTime().GetTime(CTime::Seconds) * -1.0f;
 }
 
 void displayHeightField(CDataArrayVector3f &outData, aaOcean *&ICEocean)
 {
-	bool chop = false;
+	bool chop = FALSE;
 	int index, i, j;	
 	float x,z,mult1, mult2, halfRes;
 	int gridRes = int_sqrt(ICEocean->m_pointCount) - 1;
@@ -89,7 +89,7 @@ void displayHeightField(CDataArrayVector3f &outData, aaOcean *&ICEocean)
 	mult2 = float(ICEocean->m_3DGridVLength) / float(gridRes);
 
 	if(ICEocean->m_chopAmount > 0.0f)
-		chop = true;
+		chop = TRUE;
 
 	if(!ICEocean->m_renderReady)
 	{

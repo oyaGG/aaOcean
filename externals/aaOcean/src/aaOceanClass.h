@@ -65,22 +65,21 @@ public:
 	bool	m_redoHoK;
 	bool	m_isShader;
 
+	fftwf_complex *m_fft_htField;
+	fftwf_complex *m_fft_chopX;
+	fftwf_complex *m_fft_chopZ;
+	fftwf_complex *m_fft_jxx;
+	fftwf_complex *m_fft_jzz;
+	fftwf_complex *m_fft_jxz;
 	fftwf_complex *m_fft_normX;
 	fftwf_complex *m_fft_normY;
 	fftwf_complex *m_fft_normZ;
 
-	fftwf_complex *m_fft_htField;
 	fftwf_plan m_planHeightField;
-	fftwf_complex *m_fft_chopX;
 	fftwf_plan m_planChopX;
-	fftwf_complex *m_fft_chopZ;
 	fftwf_plan m_planChopZ;
-
-	fftwf_complex *m_fft_jxx;
 	fftwf_plan m_planJxx;
-	fftwf_complex *m_fft_jxz;
 	fftwf_plan m_planJxz;
-	fftwf_complex *m_fft_jzz;
 	fftwf_plan m_planJzz;
 
 	aaOcean();

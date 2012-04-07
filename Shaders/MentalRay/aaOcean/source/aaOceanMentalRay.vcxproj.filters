@@ -3,9 +3,4 @@
   <ItemGroup>
     <ClCompile Include="aaOceanShaders.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Filter Include="aaOceanClass">
-      <UniqueIdentifier>{68e152ac-4e0c-46a2-a083-f57042f0a2aa}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
 </Project>

@@ -81,18 +81,18 @@ bool aaOcean::reInit(int data_size)
 {
 	if(((data_size & (data_size - 1)) != 0) || data_size == 0) //	not power of 2
 	{	
-		sprintf_s(m_state,"[aaOcean Core] :  invalid point resolution of %d. Please select a power-of-2 subdivision value", data_size);
+		sprintf_s(m_state,"[aaOcean Core] Invalid point resolution of %d. Please select a power-of-2 subdivision value", data_size);
 		m_isValid = FALSE;
 	}
 	else
 	{
 		if(m_resolution != data_size || !m_isAllocated )
 		{
-			sprintf_s(m_state,"[aaOcean Core] : Building ocean shader with resolution %dx%d", data_size, data_size);
 			m_resolution = data_size;
 			allocateBaseArrays();				
 			m_redoHoK  = TRUE;
 			setup_grid();
+			sprintf_s(m_state,"[aaOcean Core] Building ocean shader with resolution %dx%d", data_size, data_size);
 		}
 		m_isValid = TRUE;
 	}
@@ -155,7 +155,6 @@ void aaOcean::allocateBaseArrays()
 	{
 		int threads = omp_get_num_procs();
 		fftwf_plan_with_nthreads(threads);
-		sprintf_s(m_state,"[aaOcean Core] : Launching threaded FFT with %d threads", threads);
 	}
 	else
 		fftwf_plan_with_nthreads(1);

@@ -9,8 +9,13 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
 	
 	miScalar	layerOcean	= *mi_eval_scalar(&params->layerOcean);
 	miVector	*coord		=  mi_eval_vector(&params->uv_coords);
-	miScalar	fade		= *mi_eval_scalar(&params->fade);	
-		
+	miScalar	fade		= *mi_eval_scalar(&params->fade);
+
+	// rotating UV space by 90 degrees to align with ICE representation
+	coord->z = coord->x;
+	coord->x = coord->y * -1.0f;
+	coord->y = coord->z;
+
 	result->g = catromPrep(ocean, ocean->m_fft_htField,  state,  coord) * (1.0f - fade);
 	
 	if(ocean->m_chopAmount > 0.0f)
@@ -77,7 +82,7 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 		ocean->m_windDir		= DegsToRads(*mi_eval_scalar(&params->windDir));
 		ocean->m_windAlign		= maximum<int>(((*mi_eval_integer(&params->windAlign) + 1) * 2), 2); 
 		ocean->m_damp			= minimum<float>(*mi_eval_scalar(&params->damp),1);
-		ocean->m_time			= *mi_eval_scalar(&params->time);
+		ocean->m_time			= *mi_eval_scalar(&params->time) * -1.f;
 
 		miTag shaderInst; // tag of the currently running shader
 		mi_query(miQ_FUNC_TAG, state, 0, &shaderInst);
@@ -92,6 +97,7 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 		ocean->prepareOcean(TRUE, TRUE, TRUE, FALSE);
 
 		copy_and_tile(ocean->m_fft_htField, ocean);
+
 		bool doChop = FALSE;
 		if(ocean->m_chopAmount > 0.0f)
 			doChop = TRUE;
@@ -112,32 +118,6 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 			if(( !isfEqual(fmin, ocean->m_fmin, epsilon) || !isfEqual(fmax, ocean->m_fmax, epsilon) ) && !rawOutput)
 				mi_warning("[aaOcean Shader] Foam Min/Max mismatch. Please set the Foam Min/Max values in foam shader to Min: %f, Max: %f", 
 							ocean->m_fmin, ocean->m_fmax);
-		}
-
-		#pragma omp parallel
-		{
-			#pragma omp sections
-			{
-				#pragma omp section
-				{
-					rotateArray(ocean->m_fft_htField, ocean);
-				}
-				#pragma omp section
-				{
-					if(doChop)
-						rotateArray(ocean->m_fft_chopX, ocean);
-				}
-				#pragma omp section
-				{
-					if(doChop)
-						rotateArray(ocean->m_fft_chopZ,   ocean);
-				}
-				#pragma omp section
-				{
-					if(doChop)
-						rotateArray(ocean->m_fft_jxz, ocean);
-				}
-			}
 		}
 
 		//clear arrays that are not required
