@@ -11,10 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="aaOceanArnoldShader.cpp" />
+    <None Include="..\SPDLs\aaOceanArnold.spdl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\SPDLs\aaOceanArnold.spdl" />
+    <ClCompile Include="aaOceanArnold.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>aaOceanArnold</ProjectName>
