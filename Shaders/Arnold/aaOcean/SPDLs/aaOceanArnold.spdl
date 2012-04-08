@@ -7,7 +7,7 @@ PropertySet "aaOceanArnold_params"
 	{
 		title = "output";
 		guid = "{F3716DC9-8F2A-43c3-B8AD-1D6BCCB50A8A}";
-		type = vector;
+		type = color;
 		flags = 0;
 	}
 

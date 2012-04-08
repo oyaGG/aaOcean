@@ -97,15 +97,12 @@ shader_evaluate
 		uvPt.x = sg->v * -1.0f;
 		uvPt.y = sg->u;
 
-		//sg->out.RGBA.g 
-		sg->out.VEC.y = catromPrep( ocean,  ocean->m_fft_htField, uvPt);
+		sg->out.RGBA.g = catromPrep( ocean,  ocean->m_fft_htField, uvPt);
 
 		if((float)ocean->m_chopAmount > 0.0f)
 		{
-			//sg->out.RGBA.r 
-			sg->out.VEC.x = -catromPrep( ocean, ocean->m_fft_chopX, uvPt);
-			//sg->out.RGBA.b 
-			sg->out.VEC.z = -catromPrep( ocean, ocean->m_fft_chopZ, uvPt);
+			sg->out.RGBA.r = -catromPrep( ocean, ocean->m_fft_chopX, uvPt);
+			sg->out.RGBA.b = -catromPrep( ocean, ocean->m_fft_chopZ, uvPt);
 
 			float	gamma		= AiShaderEvalParamFlt(p_gamma);
 			float	brightness  = AiShaderEvalParamFlt(p_brightness);
@@ -123,7 +120,7 @@ shader_evaluate
 				foam *= brightness;
 				foam *= (1.0f - AiShaderEvalParamFlt(p_fade));
 			}
-			//sg->out.RGBA.a = foam;
+			sg->out.RGBA.a = foam;
 		}
 		else
 			sg->out.RGBA.a = 0.0f;
@@ -157,7 +154,7 @@ node_loader
       return FALSE;
 
    node->methods      = aaOceanArnoldMethods;
-   node->output_type  = AI_TYPE_VECTOR;
+   node->output_type  = AI_TYPE_RGBA;
    node->name         = "aaOceanArnold";
    node->node_type    = AI_NODE_SHADER;
    strcpy(node->version, AI_VERSION);
