@@ -75,7 +75,7 @@ inline void fetchICEUserInput(ICENodeContext& in_ctxt, aaOcean *&ICEocean)
 	ICEocean->m_3DGridVLength = gridV[0];
 
 	//set current time and frame values
-	ICEocean->m_time  = (float)in_ctxt.GetTime().GetTime(CTime::Seconds) * -1.0f;
+	ICEocean->m_time  = (float)in_ctxt.GetTime().GetTime(CTime::Seconds);
 }
 
 void displayHeightField(CDataArrayVector3f &outData, aaOcean *&ICEocean)
