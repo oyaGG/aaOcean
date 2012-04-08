@@ -33,7 +33,7 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
 
 		if(!rawOutput)
 		{
-			if(fabs(fmin) != 0.0f && fabs(fmax) != 0.0f)
+			//if(fabs(fmin) != 0.0f && fabs(fmax) != 0.0f)
 			{
 				foam  = rescale(foam, fmin, fmax, 0.0f, 1.0f);
 				foam  = maximum<float>(foam, 0.0f);
@@ -82,7 +82,7 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 		ocean->m_windDir		= DegsToRads(*mi_eval_scalar(&params->windDir));
 		ocean->m_windAlign		= maximum<int>(((*mi_eval_integer(&params->windAlign) + 1) * 2), 2); 
 		ocean->m_damp			= minimum<float>(*mi_eval_scalar(&params->damp),1);
-		ocean->m_time			= *mi_eval_scalar(&params->time) * -1.f;
+		ocean->m_time			= *mi_eval_scalar(&params->time);
 
 		miTag shaderInst; // tag of the currently running shader
 		mi_query(miQ_FUNC_TAG, state, 0, &shaderInst);
