@@ -68,7 +68,7 @@ void FatalError(const char * ErrorText) {
   #ifdef FatalAppExit  
 
   // in Windows, use FatalAppExit:
-  FatalAppExit(0, ErrorText);
+//  FatalAppExit(0, ErrorText);
 
   #else
 
