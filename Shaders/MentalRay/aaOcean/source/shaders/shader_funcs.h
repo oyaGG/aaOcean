@@ -93,15 +93,16 @@ void getArrayBounds(fftwf_complex *&fftw_array, int idx, int n, float &min, floa
 	max = -FLT_MAX;
 	min =  FLT_MAX;
 
-	int i,j,index;
+	int i, j, n1, index;
+	n1 = n+1;
 	//if fft_array has been copied and tiled, set idx = 1, else 0
-	#pragma omp parallel for private(index,i,j)
-	for(i = 0; i< n+1; i++)
+	//#pragma omp parallel for private(index,i,j) shared(min, max)
+	for(i = 0; i< n1; i++)
 	{
-		for(j = 0; j< n+1; j++)
+		for(j = 0; j< n1; j++)
 		{
-			index = i*(n+1)+j;
-			if(i==n)  //copy left-most col to right-most col
+			index = i*(n1)+j;
+			//#pragma omp critical  // not cool
 			{
 				if(max < fftw_array[index][idx]) //precision -- epsilon check
 					max = fftw_array[index][idx];
@@ -219,7 +220,7 @@ void copy_and_tile(fftwf_complex *&fft_array, aaOcean *&ocean)
 	int n1 = n + 1;
 	int index, i, j;
 	
-	#pragma omp parallel for private(index,i,j)
+	#pragma omp parallel for private(index, i, j)
 	for(i = 0; i< n1; i++)
 	{					
 		for(j = 0; j< n1; j++)
