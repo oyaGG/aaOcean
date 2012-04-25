@@ -155,7 +155,8 @@ inline float catrom(float &t, float &a, float &b, float &c, float &d)
 
 float catromPrep(aaOcean *&ocean, fftwf_complex *&fftw_array, AtPoint point)
 {
-	float u, v , du, dv = 0.f;
+	// prepares end points 
+	float u, v, du, dv = 0.f;
 	int xMinus1, yMinus1, x, y, xPlus1, yPlus1, xPlus2, yPlus2;
 	int n = ocean->m_resolution;
 
@@ -219,6 +220,11 @@ float catromPrep(aaOcean *&ocean, fftwf_complex *&fftw_array, AtPoint point)
 
 void copy_and_tile(fftwf_complex *&fft_array, aaOcean *&ocean)
 {
+	// This function is admittedly crap
+	// It makes the ocean grid tileable (when it should already be tileable!!)
+	// Needlessly inefficient. I should fix this.
+	// Also, optimze this from O(N^2) to O(2N) later
+
 	int n = ocean->m_resolution;
 	int n1 = n + 1;
 	int index, i, j;
@@ -229,7 +235,7 @@ void copy_and_tile(fftwf_complex *&fft_array, aaOcean *&ocean)
 		for(j = 0; j< n1; j++)
 		{
 			index = i*n1 + j;
-			if( i<n && j<n) // regular array copy
+			if( i<n && j<n) // regular array copy -- what a waste of resources
 			{
 				fft_array[index][1] = fft_array[i*n+j][0];
 			}

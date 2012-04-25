@@ -62,7 +62,6 @@ node_update
 	{
 		ocean->prepareOcean(TRUE, TRUE, TRUE, FALSE);
 
-		//prepare ocean arrays to display in arnold
 		copy_and_tile(ocean->m_fft_htField, ocean);
 
 		if(ocean->m_chopAmount > 0.0f)
@@ -71,6 +70,7 @@ node_update
 			copy_and_tile(ocean->m_fft_chopZ, ocean);
 			copy_and_tile(ocean->m_fft_jxz, ocean);
 			
+			// get foam array bounds to generate normalization information
 			getArrayBounds(ocean->m_fft_jxz, 1, ocean->m_resolution, ocean->m_fmin, ocean->m_fmax);
 
 			float	fmin		= params[p_fMin].FLT;
