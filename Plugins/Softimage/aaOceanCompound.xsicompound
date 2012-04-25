@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<xsi_file type="CompoundNode" name="aaOceanCompound" category="aaOcean Suite" author="Amaan Akram" url="http://www.amaanakram.com" formatversion="1.4" compoundversion="1.5" constructionmode="Current" backgroundcolor="6732954">
+	<description><![CDATA[aaOcean Suite implements Jerry Tessendorf's Siggraph 2004 paper on simulating ocean waves]]></description>
+	<definition>
+		<nodes>
+			<node type="GetDataNode" index="0">
+				<param name="reference" type="31" value="Self"></param>
+				<param_ext name="reference" type="31" value="Self"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-591</prop>
+					<prop name="posy">456</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetElementIndicesNode" index="1">
+				<param name="value.value_x" type="4" value="0.000000"></param>
+				<param name="value.value_y" type="4" value="0.000000"></param>
+				<param name="value.value_z" type="4" value="0.000000"></param>
+				<portdef name="value" type="16" structure="1" group="0" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-298</prop>
+					<prop name="posy">453</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="2">
+				<param name="reference" type="31" value=".PointPosition"></param>
+				<param_ext name="reference" type="31" value=".PointPosition"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-482</prop>
+					<prop name="posy">454</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="3">
+				<param name="reference" type="31" value="Self.aaOcean_Menu.Ready_to_Render"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Ready_to_Render"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-561</prop>
+					<prop name="posy">408</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="aaOcean" index="4">
+				<param name="Ocean_Size" type="4" value="93.877998"></param>
+				<param name="Wave_Height" type="4" value="0.000000"></param>
+				<param name="Wave_Size" type="4" value="5.000000"></param>
+				<param name="Wave_Speed" type="4" value="1.000000"></param>
+				<param name="Chopiness" type="4" value="0.000000"></param>
+				<param name="Smooth" type="4" value="0.000000"></param>
+				<param name="Wind_Direction" type="4" value="45.000000"></param>
+				<param name="Reflected_Waves" type="4" value="0.000000"></param>
+				<param name="Wind_Align" type="3" value="0"></param>
+				<param name="Seed" type="3" value="2"></param>
+				<param name="Render_Resolution" type="3" value="256"></param>
+				<param name="Grid_Length_U" type="4" value="0.000000"></param>
+				<param name="Grid_Length_V" type="4" value="0.000000"></param>
+				<param name="Performance_Log" type="11" value="false"></param>
+				<param name="Ready_to_Render" type="11" value="true"></param>
+				<param name="PointID" type="3" value="1"></param>
+				<portdef name="Ocean_Size" type="4" structure="1" group="0" instance="0" port="0"></portdef>
+				<portdef name="Wave_Height" type="4" structure="1" group="0" instance="0" port="1"></portdef>
+				<portdef name="Wave_Size" type="4" structure="1" group="0" instance="0" port="2"></portdef>
+				<portdef name="Wave_Speed" type="4" structure="1" group="0" instance="0" port="3"></portdef>
+				<portdef name="Chopiness" type="4" structure="1" group="0" instance="0" port="4"></portdef>
+				<portdef name="Smooth" type="4" structure="1" group="0" instance="0" port="5"></portdef>
+				<portdef name="Wind_Direction" type="4" structure="1" group="0" instance="0" port="6"></portdef>
+				<portdef name="Reflected_Waves" type="4" structure="1" group="0" instance="0" port="7"></portdef>
+				<portdef name="Wind_Align" type="2" structure="1" group="0" instance="0" port="8"></portdef>
+				<portdef name="Seed" type="2" structure="1" group="0" instance="0" port="9"></portdef>
+				<portdef name="Render_Resolution" type="2" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="Grid_Length_U" type="4" structure="1" group="1" instance="0" port="1"></portdef>
+				<portdef name="Grid_Length_V" type="4" structure="1" group="1" instance="0" port="2"></portdef>
+				<portdef name="Performance_Log" type="1" structure="1" group="2" instance="0" port="0"></portdef>
+				<portdef name="Ready_to_Render" type="1" structure="1" group="2" instance="0" port="1"></portdef>
+				<portdef name="PointID" type="2" structure="1" group="2" instance="0" port="2"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-29</prop>
+					<prop name="posy">-11</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="5">
+				<param name="reference" type="31" value="Self.aaOcean_Menu.Wind_Align"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Wind_Align"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-527</prop>
+					<prop name="posy">264</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="6">
+				<param name="reference" type="31" value="Self.aaOcean_Menu.Seed"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Seed"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-477</prop>
+					<prop name="posy">292</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="7">
+				<param name="reference" type="31" value="Self.aaOcean_Menu.Reflected_Waves"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Reflected_Waves"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-552</prop>
+					<prop name="posy">239</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="8">
+				<param name="reference" type="31" value="Self.aaOcean_Menu.Wind_dir"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Wind_dir"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-509</prop>
+					<prop name="posy">211</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="9">
+				<param name="reference" type="31" value="Self.aaOcean_Menu.Filter_small_waves"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Filter_small_waves"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-551</prop>
+					<prop name="posy">175</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="10">
+				<param name="reference" type="31" value="Self.aaOcean_Menu.Chop_Amount"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Chop_Amount"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-526</prop>
+					<prop name="posy">143</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="11">
+				<param name="reference" type="31" value="Self.aaOcean_Menu.Wave_Speed"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Wave_Speed"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-511</prop>
+					<prop name="posy">112</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="12">
+				<param name="reference" type="31" value="Self.aaOcean_Menu.Wind_Speed"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Wind_Speed"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-507</prop>
+					<prop name="posy">82</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="13">
+				<param name="reference" type="31" value="Self.aaOcean_Menu.Wave_height"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Wave_height"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-502</prop>
+					<prop name="posy">47</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="14">
+				<param name="reference" type="31" value="Self.aaOcean_Menu.Ocean_Size"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Ocean_Size"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-489</prop>
+					<prop name="posy">10</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="15">
+				<param name="reference" type="31" value="Self.aaOcean_Menu.RenderSubdivs"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.RenderSubdivs"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-512</prop>
+					<prop name="posy">-24</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="SetOneDataNode" index="16">
+				<param name="reference" type="31" value="Self.PointPosition"></param>
+				<param name="source.source_x" type="4" value="0.000000"></param>
+				<param name="source.source_y" type="4" value="0.000000"></param>
+				<param name="source.source_z" type="4" value="0.000000"></param>
+				<param_ext name="reference" type="31" value="Self.PointPosition"></param_ext>
+				<portdef name="source" type="16" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">297</prop>
+					<prop name="posy">-129</prop>
+					<prop name="state">Normal</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="17">
+				<param name="reference" type="31" value="Self.grid.ulength"></param>
+				<param_ext name="reference" type="31" value="Self.grid.ulength"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-471</prop>
+					<prop name="posy">322</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+			<node type="GetDataNode" index="18">
+				<param name="reference" type="31" value="Self.grid.vlength"></param>
+				<param_ext name="reference" type="31" value="Self.grid.vlength"></param_ext>
+				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
+				<datablob category="ui_infos">
+					<prop name="posx">-470</prop>
+					<prop name="posy">355</prop>
+					<prop name="state">Collapsed</prop>
+				</datablob>
+			</node>
+		</nodes>
+		<exposed_ports>
+			<port index="4" portname="Ocean" username="Ocean_Point_Position" basename="Ocean Point Position" portlabel="Ocean Point Position" exposetype="single"> </port>
+			<port index="4" portname="Foam" username="Foam" basename="Foam" portlabel="Foam" exposetype="single"> </port>
+			<port index="4" portname="egnVector_Minus" username="eigen_vector1" basename="eigen vector1" portlabel="eigen vector1" exposetype="single"> </port>
+			<port index="4" portname="egnVector_Plus" username="eigen_vector2" basename="eigen vector2" portlabel="eigen vector2" exposetype="single"> </port>
+			<port index="4" portname="Normals" username="surface_normals" basename="surface normals" portlabel="surface normals" exposetype="single"> </port>
+			<port index="16" portname="value" username="execute" basename="execute" portlabel="execute" exposetype="single"> </port>
+		</exposed_ports>
+		<connections>
+			<cnx from_node="17" from_port="value" to_node="4" to_port="Grid_Length_U"> </cnx>
+			<cnx from_node="18" from_port="value" to_node="4" to_port="Grid_Length_V"> </cnx>
+			<cnx from_node="5" from_port="value" to_node="4" to_port="Wind_Align"> </cnx>
+			<cnx from_node="6" from_port="value" to_node="4" to_port="Seed"> </cnx>
+			<cnx from_node="7" from_port="value" to_node="4" to_port="Reflected_Waves"> </cnx>
+			<cnx from_node="8" from_port="value" to_node="4" to_port="Wind_Direction"> </cnx>
+			<cnx from_node="9" from_port="value" to_node="4" to_port="Smooth"> </cnx>
+			<cnx from_node="1" from_port="indices" to_node="4" to_port="PointID"> </cnx>
+			<cnx from_node="10" from_port="value" to_node="4" to_port="Chopiness"> </cnx>
+			<cnx from_node="11" from_port="value" to_node="4" to_port="Wave_Speed"> </cnx>
+			<cnx from_node="12" from_port="value" to_node="4" to_port="Wave_Size"> </cnx>
+			<cnx from_node="13" from_port="value" to_node="4" to_port="Wave_Height"> </cnx>
+			<cnx from_node="14" from_port="value" to_node="4" to_port="Ocean_Size"> </cnx>
+			<cnx from_node="2" from_port="value" to_node="1" to_port="value"> </cnx>
+			<cnx from_node="3" from_port="value" to_node="4" to_port="Ready_to_Render"> </cnx>
+			<cnx from_node="4" from_port="Ocean" to_node="16" to_port="source"> </cnx>
+			<cnx from_node="0" from_port="outname" to_node="2" to_port="inname"> </cnx>
+			<cnx from_node="15" from_port="value" to_node="4" to_port="Render_Resolution"> </cnx>
+		</connections>
+		<layout>
+			<item type="output" name="execute"> </item>
+			<item type="output" name="Ocean_Point_Position"> </item>
+			<item type="output" name="Foam"> </item>
+			<item type="output" name="eigen_vector1"> </item>
+			<item type="output" name="eigen_vector2"> </item>
+			<item type="output" name="surface_normals"> </item>
+		</layout>
+		<blob_dictionary>
+		</blob_dictionary>
+	</definition>
+</xsi_file>
