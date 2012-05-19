@@ -106,7 +106,7 @@ shader_evaluate
 
 			float	gamma		= AiShaderEvalParamFlt(p_gamma);
 			float	brightness  = AiShaderEvalParamFlt(p_brightness);
-			float	rawOutput	= AiShaderEvalParamBool(p_raw);
+			bool	rawOutput	= AiShaderEvalParamBool(p_raw);
 			float	fmin		= AiShaderEvalParamFlt(p_fMin);
 			float	fmax		= AiShaderEvalParamFlt(p_fMax);
 
