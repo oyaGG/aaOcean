@@ -36,7 +36,6 @@ public:
 
 MTypeId     aaOceanMaya::id( 0x20B6EF34 ); //Maya Node ID 548859700
 MObject		aaOceanMaya::viewRes;	
-MObject		aaOceanMaya::renderRes;	
 MObject		aaOceanMaya::oceanSize;	
 MObject		aaOceanMaya::seed;	
 MObject		aaOceanMaya::waveHeight;
@@ -64,17 +63,6 @@ MStatus aaOceanMaya::initialize()
 	nAttrViewRes.setMax(6);	
     addAttribute( viewRes );
     attributeAffects( aaOceanMaya::viewRes, aaOceanMaya::outputGeom);
-
-	MFnNumericAttribute nAttrRenderRes;
-	renderRes = nAttrRenderRes.create( "renderRes", "Render Resolution", MFnNumericData::kInt, 4 );
-    nAttrRenderRes.setKeyable(  true );	
-	nAttrRenderRes.setWritable(true);
-	nAttrRenderRes.setSoftMin(1);	
-	nAttrRenderRes.setSoftMax(6);	
-	nAttrRenderRes.setMin(1);	
-	nAttrRenderRes.setMax(6);	
-    addAttribute( renderRes );
-    attributeAffects( aaOceanMaya::renderRes, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrOceanSize;
 	oceanSize= nAttrOceanSize.create( "oceanSize", "Ocean Size", MFnNumericData::kFloat, 100.f );
