@@ -77,13 +77,11 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::renderRes, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrOceanSize;
-	oceanSize= nAttrOceanSize.create( "oceanSize", "Ocean Size", MFnNumericData::kDouble, 100 );
+	oceanSize= nAttrOceanSize.create( "oceanSize", "Ocean Size", MFnNumericData::kFloat, 100.f );
     nAttrOceanSize.setKeyable(  true );	
 	nAttrOceanSize.setWritable(true);
-	nAttrOceanSize.setSoftMin(1);	
-	nAttrOceanSize.setSoftMax(1000);	
-	nAttrOceanSize.setMin(1);	
-	nAttrOceanSize.setMax(7);	
+	nAttrOceanSize.setSoftMin(1.f);	
+	nAttrOceanSize.setSoftMax(1000.f);		
     addAttribute( oceanSize );
     attributeAffects( aaOceanMaya::oceanSize, aaOceanMaya::outputGeom);
 
@@ -99,70 +97,70 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::seed, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveHeight;
-	waveHeight = nAttrWaveHeight.create( "waveHeight", "Wave Height", MFnNumericData::kDouble, 2.0 );
+	waveHeight = nAttrWaveHeight.create( "waveHeight", "Wave Height", MFnNumericData::kFloat, 2.0f );
     nAttrWaveHeight.setKeyable(  true );	
 	nAttrWaveHeight.setWritable(true);
-	nAttrWaveHeight.setSoftMin(0.001);	
-	nAttrWaveHeight.setSoftMax(100);	
-	nAttrWaveHeight.setMin(0.001);		
+	nAttrWaveHeight.setSoftMin(0.001f);	
+	nAttrWaveHeight.setSoftMax(100.f);	
+	nAttrWaveHeight.setMin(0.001f);		
     addAttribute( waveHeight );
     attributeAffects( aaOceanMaya::waveHeight, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveSize;
-	waveSize = nAttrWaveSize.create( "waveSize", "Wave Size", MFnNumericData::kDouble, 4.0 );
+	waveSize = nAttrWaveSize.create( "waveSize", "Wave Size", MFnNumericData::kFloat, 4.0f );
     nAttrWaveSize.setKeyable(  true );	
 	nAttrWaveSize.setWritable(true);
-	nAttrWaveSize.setSoftMin(1);	
-	nAttrWaveSize.setSoftMax(30);		
+	nAttrWaveSize.setSoftMin(1.f);	
+	nAttrWaveSize.setSoftMax(30.f);		
     addAttribute( waveSize );
     attributeAffects( aaOceanMaya::waveSize, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveSpeed;
-	waveSpeed = nAttrWaveSpeed.create( "waveSpeed", "Wave Speed", MFnNumericData::kDouble, 1.0 );
+	waveSpeed = nAttrWaveSpeed.create( "waveSpeed", "Wave Speed", MFnNumericData::kFloat, 1.0f );
     nAttrWaveSpeed.setKeyable(  true );	
 	nAttrWaveSpeed.setWritable(true);
-	nAttrWaveSpeed.setSoftMin(1);	
-	nAttrWaveSpeed.setSoftMax(10);	
+	nAttrWaveSpeed.setSoftMin(1.f);	
+	nAttrWaveSpeed.setSoftMax(10.f);	
     addAttribute( waveSpeed );
     attributeAffects( aaOceanMaya::waveSpeed, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveChop;
-	waveChop = nAttrWaveChop.create( "waveChop", "Wave Chop", MFnNumericData::kDouble, 2.0 );
+	waveChop = nAttrWaveChop.create( "waveChop", "Wave Chop", MFnNumericData::kFloat, 2.0f );
     nAttrWaveChop.setKeyable(  true );	
 	nAttrWaveChop.setWritable(true);
-	nAttrWaveChop.setSoftMin(0.0);	
-	nAttrWaveChop.setSoftMax(6.0);
+	nAttrWaveChop.setSoftMin(0.0f);	
+	nAttrWaveChop.setSoftMax(6.0f);
     addAttribute( waveChop );
     attributeAffects( aaOceanMaya::waveChop, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveSmooth;
-	waveSmooth = nAttrWaveSmooth.create( "waveSmooth", "Wave Smooth", MFnNumericData::kDouble, 0.0 );
+	waveSmooth = nAttrWaveSmooth.create( "waveSmooth", "Wave Smooth", MFnNumericData::kFloat, 0.0f);
     nAttrWaveSmooth.setKeyable(  true );	
 	nAttrWaveSmooth.setWritable(true);
-	nAttrWaveSmooth.setSoftMin(0.0);	
-	nAttrWaveSmooth.setSoftMax(20);
+	nAttrWaveSmooth.setSoftMin(0.0f);	
+	nAttrWaveSmooth.setSoftMax(20.f);
     addAttribute( waveSmooth );
     attributeAffects( aaOceanMaya::waveSmooth, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveDirection;
-	waveDirection = nAttrWaveDirection.create( "waveDirection", "Wave Direction", MFnNumericData::kDouble, 45.0 );
+	waveDirection = nAttrWaveDirection.create( "waveDirection", "Wave Direction", MFnNumericData::kFloat, 45.0f );
     nAttrWaveDirection.setKeyable(  true );	
 	nAttrWaveDirection.setWritable(true);
-	nAttrWaveDirection.setSoftMin(0.0);	
-	nAttrWaveDirection.setSoftMax(360.0);	
-	nAttrWaveDirection.setMin(0.0);	
-	nAttrWaveDirection.setMax(360.0);	
+	nAttrWaveDirection.setSoftMin(0.0f);	
+	nAttrWaveDirection.setSoftMax(360.0f);	
+	nAttrWaveDirection.setMin(0.0f);	
+	nAttrWaveDirection.setMax(360.0f);	
     addAttribute( waveDirection );
     attributeAffects( aaOceanMaya::waveDirection, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveReflection;
-	waveReflection = nAttrWaveReflection.create( "waveReflection", "Wave Reflection", MFnNumericData::kDouble, 0.0 );
+	waveReflection = nAttrWaveReflection.create( "waveReflection", "Wave Reflection", MFnNumericData::kFloat, 0.0f );
     nAttrWaveReflection.setKeyable(  true );	
 	nAttrWaveReflection.setWritable(true);
-	nAttrWaveReflection.setSoftMin(0.0);	
-	nAttrWaveReflection.setSoftMax(1.0);	
-	nAttrWaveReflection.setMin(0.0);	
-	nAttrWaveReflection.setMax(1.0);	
+	nAttrWaveReflection.setSoftMin(0.0f);	
+	nAttrWaveReflection.setSoftMax(1.0f);	
+	nAttrWaveReflection.setMin(0.0f);	
+	nAttrWaveReflection.setMax(1.0f);	
     addAttribute( waveReflection );
     attributeAffects( aaOceanMaya::waveReflection, aaOceanMaya::outputGeom);
 
@@ -178,7 +176,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveAlign, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrCurrTime;
-	currTime = nAttrCurrTime.create( "currTime", "currTime", MFnNumericData::kFloat, 0.042 );
+	currTime = nAttrCurrTime.create( "currTime", "currTime", MFnNumericData::kFloat, 0.042f );
     nAttrCurrTime.setKeyable(  true );
 	nAttrWaveAlign.setWritable(true);
     addAttribute( currTime );
@@ -226,41 +224,41 @@ MStatus uninitializePlugin( MObject obj)
 
 void aaOceanMaya::fetchInput(MDataBlock& block)
 {	
-	double temp;
+	float temp;
 	int temp1;
 
-	temp =  ((block.inputValue(waveDirection).asDouble())/180.0) * aa_PI;
-	if((float)pOcean->m_windDir != (float)temp)
+	temp =  ((block.inputValue(waveDirection).asFloat())/180.0f) * aa_PI;
+	if(pOcean->m_windDir != temp)
 	{
 		pOcean->m_windDir = temp;
 		pOcean->m_redoHoK = true;
 	}
-	temp = (block.inputValue(waveSmooth).asDouble() * 0.01f);
-	if((float)pOcean->m_cutoff != (float)temp)
+	temp = (block.inputValue(waveSmooth).asFloat() * 0.01f);
+	if(pOcean->m_cutoff != temp)
 	{
 		pOcean->m_cutoff = temp;
 		pOcean->m_redoHoK = true;
 	}
-	temp = maximum<double>(block.inputValue(oceanSize).asDouble(),0.00001f);
-	if((float)pOcean->m_oceanScale	!= (float)temp)
+	temp = maximum<float>(block.inputValue(oceanSize).asFloat(),0.00001f);
+	if(pOcean->m_oceanScale	!= temp)
 	{
 		pOcean->m_oceanScale = temp;
 		pOcean->m_redoHoK = true;
 	}
-	temp = maximum<double>(((block.inputValue(waveSize).asDouble()  * block.inputValue(waveSize).asDouble()) / (9.81)),0.00001);
-	if((float)pOcean->m_velocity !=  (float)temp)
+	temp = maximum<float>(((block.inputValue(waveSize).asFloat()  * block.inputValue(waveSize).asFloat()) / (9.81f)),0.00001f);
+	if(pOcean->m_velocity !=  temp)
 	{
 		pOcean->m_velocity = temp;
 		pOcean->m_redoHoK = true;
 	}
-	temp1 = maximum<int>	 (((block.inputValue(waveAlign).asInt() + 1) * 2),2);
+	temp1 = maximum<int>(((block.inputValue(waveAlign).asInt() + 1) * 2),2);
 	if(pOcean->m_windAlign != temp1)
 	{
 		pOcean->m_windAlign = temp1;
 		pOcean->m_redoHoK = true;
 	}
-	temp = block.inputValue(waveReflection).asDouble();
-	if((float)pOcean->m_damp != (float)temp)
+	temp = block.inputValue(waveReflection).asFloat();
+	if(pOcean->m_damp != temp)
 	{
 		pOcean->m_damp = temp;
 		pOcean->m_redoHoK = true;
@@ -273,8 +271,8 @@ void aaOceanMaya::fetchInput(MDataBlock& block)
 		pOcean->m_redoHoK = true;
 		pOcean->setup_grid(); 
 	}
-	pOcean->m_chopAmount	= block.inputValue(waveChop).asDouble()  * .01;		//divided by scale for better ocean control;
-	pOcean->m_waveHeight	= block.inputValue(waveHeight).asDouble()* .01;		//divided by scale for better ocean control;
-	pOcean->m_waveSpeed		= block.inputValue(waveSpeed).asDouble();
-	pOcean->m_time			= block.inputValue(currTime).asFloat() / 24.0; // divide by fps
+	pOcean->m_chopAmount	= block.inputValue(waveChop).asFloat()  * .01f;		//divided by scale for better ocean control;
+	pOcean->m_waveHeight	= block.inputValue(waveHeight).asFloat()* .01f;		//divided by scale for better ocean control;
+	pOcean->m_waveSpeed		= block.inputValue(waveSpeed).asFloat();
+	pOcean->m_time			= block.inputValue(currTime).asFloat() / 24.0f;		// divide by fps -- fix this
 }
