@@ -54,22 +54,6 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 		copy_and_tile(pOcean->m_fft_chopX,pOcean);
 		copy_and_tile(pOcean->m_fft_chopZ,pOcean);
 
-		/*#pragma omp sections
-		{
-			#pragma omp section
-			{
-				rotateArray(pOcean->m_fft_htField,pOcean);
-			}
-			#pragma omp section
-			{
-				rotateArray(pOcean->m_fft_chopX,pOcean);
-			}
-			#pragma omp section
-			{
-				rotateArray(pOcean->m_fft_chopZ,pOcean);
-			}
-		}*/
-
 		#pragma omp parallel for
 		for(int i = 0; i<verts.length(); i++)
 		{
