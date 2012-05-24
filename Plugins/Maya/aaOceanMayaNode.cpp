@@ -31,8 +31,6 @@
 #include <maya/MThreadUtils.h>
 #include <maya/MDagModifier.h>
 
-//////////////////////////
-
 #include "aaOceanMayaNode.h"
 
 MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix& mat, unsigned int multiIndex)
@@ -45,7 +43,7 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 	if(pOcean->reInit(gridRes))
 	{
 		bool chop = false;
-		if((float)pOcean->m_chopAmount > 0.01f)
+		if((float)pOcean->m_chopAmount > 0.0001f)
 			chop = true;
 
 		pOcean->prepareOcean(1,chop,0,0);
@@ -54,11 +52,36 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 		copy_and_tile(pOcean->m_fft_chopX,pOcean);
 		copy_and_tile(pOcean->m_fft_chopZ,pOcean);
 
+		// If rotation is needed, do via vec(x, y) -> vec(-y, x)
+		// like in arnold/mental ray shaders. 
+		#pragma omp sections
+		{
+			#pragma omp section
+			{
+				rotateArray(pOcean->m_fft_htField,pOcean);
+			}
+			#pragma omp section
+			{
+				rotateArray(pOcean->m_fft_chopX,pOcean);
+			}
+			#pragma omp section
+			{
+				rotateArray(pOcean->m_fft_chopZ,pOcean);
+			}
+		}
+
 		#pragma omp parallel for
 		for(int i = 0; i<verts.length(); i++)
 		{
-			verts[i].y -= pOcean->m_fft_htField[i][1];
+			/*
+			// this block of code for vec(x, y) -> vec(-y, x)
+			// fix this later
+			verts[i].y -= pOcean->m_fft_htField[i][1]; // why flip y?
 			verts[i].x += pOcean->m_fft_chopZ[i][1];
+			verts[i].z -= pOcean->m_fft_chopX[i][1];*/
+
+			verts[i].y += pOcean->m_fft_htField[i][1];
+			verts[i].x -= pOcean->m_fft_chopZ[i][1];
 			verts[i].z -= pOcean->m_fft_chopX[i][1];
 		}
 

@@ -12,7 +12,6 @@ public:
     virtual MStatus  deform(MDataBlock& block, MItGeometry& iter, const MMatrix& mat, unsigned int multiIndex);
 
 	static  MObject  viewRes;	
-	static  MObject  renderRes;	
 	static  MObject  oceanSize;	
 	static  MObject  seed;	
 
@@ -34,7 +33,6 @@ public:
 
 };
 
-MTypeId     aaOceanMaya::id( 0x20B6EF34 ); //Maya Node ID 548859700
 MObject		aaOceanMaya::viewRes;	
 MObject		aaOceanMaya::oceanSize;	
 MObject		aaOceanMaya::seed;	
@@ -47,6 +45,7 @@ MObject		aaOceanMaya::waveDirection;
 MObject		aaOceanMaya::waveReflection;
 MObject		aaOceanMaya::waveAlign;
 MObject		aaOceanMaya::currTime;
+MTypeId     aaOceanMaya::id( 0x20B6EF34 ); //Maya Node ID 548859700
 
 aaOcean* aaOceanMaya::pOcean;
 
@@ -54,7 +53,7 @@ aaOcean* aaOceanMaya::pOcean;
 MStatus aaOceanMaya::initialize()
 {
 	MFnNumericAttribute nAttrViewRes;
-	viewRes = nAttrViewRes.create( "viewRes", "View Resolution", MFnNumericData::kInt, 2 );
+	viewRes = nAttrViewRes.create( "Resolution", "viewRes", MFnNumericData::kInt, 2 );
     nAttrViewRes.setKeyable (true);	
 	nAttrViewRes.setWritable(true);
 	nAttrViewRes.setSoftMin(1);	
@@ -65,7 +64,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::viewRes, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrOceanSize;
-	oceanSize= nAttrOceanSize.create( "oceanSize", "Ocean Size", MFnNumericData::kFloat, 100.f );
+	oceanSize= nAttrOceanSize.create( "Ocean Size", "oceanSize", MFnNumericData::kFloat, 100.f );
     nAttrOceanSize.setKeyable(  true );	
 	nAttrOceanSize.setWritable(true);
 	nAttrOceanSize.setSoftMin(1.f);	
@@ -74,7 +73,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::oceanSize, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrSeed;
-	seed = nAttrSeed.create( "seed", "Seed", MFnNumericData::kInt, 1 );
+	seed = nAttrSeed.create( "Seed", "seed", MFnNumericData::kInt, 1 );
     nAttrSeed.setKeyable(  true );	
 	nAttrSeed.setWritable(true);
 	nAttrSeed.setSoftMin(1);	
@@ -85,7 +84,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::seed, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveHeight;
-	waveHeight = nAttrWaveHeight.create( "waveHeight", "Wave Height", MFnNumericData::kFloat, 2.0f );
+	waveHeight = nAttrWaveHeight.create( "Wave Height", "waveHeight", MFnNumericData::kFloat, 2.0f );
     nAttrWaveHeight.setKeyable(  true );	
 	nAttrWaveHeight.setWritable(true);
 	nAttrWaveHeight.setSoftMin(0.001f);	
@@ -95,7 +94,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveHeight, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveSize;
-	waveSize = nAttrWaveSize.create( "waveSize", "Wave Size", MFnNumericData::kFloat, 4.0f );
+	waveSize = nAttrWaveSize.create( "Wave Size", "waveSize", MFnNumericData::kFloat, 4.0f );
     nAttrWaveSize.setKeyable(  true );	
 	nAttrWaveSize.setWritable(true);
 	nAttrWaveSize.setSoftMin(1.f);	
@@ -104,7 +103,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveSize, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveSpeed;
-	waveSpeed = nAttrWaveSpeed.create( "waveSpeed", "Wave Speed", MFnNumericData::kFloat, 1.0f );
+	waveSpeed = nAttrWaveSpeed.create( "Wave Speed", "waveSpeed", MFnNumericData::kFloat, 1.0f );
     nAttrWaveSpeed.setKeyable(  true );	
 	nAttrWaveSpeed.setWritable(true);
 	nAttrWaveSpeed.setSoftMin(1.f);	
@@ -113,7 +112,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveSpeed, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveChop;
-	waveChop = nAttrWaveChop.create( "waveChop", "Wave Chop", MFnNumericData::kFloat, 2.0f );
+	waveChop = nAttrWaveChop.create( "Wave Chop", "waveChop", MFnNumericData::kFloat, 2.0f );
     nAttrWaveChop.setKeyable(  true );	
 	nAttrWaveChop.setWritable(true);
 	nAttrWaveChop.setSoftMin(0.0f);	
@@ -122,7 +121,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveChop, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveSmooth;
-	waveSmooth = nAttrWaveSmooth.create( "waveSmooth", "Wave Smooth", MFnNumericData::kFloat, 0.0f);
+	waveSmooth = nAttrWaveSmooth.create( "Wave Smooth", "waveSmooth", MFnNumericData::kFloat, 0.0f);
     nAttrWaveSmooth.setKeyable(  true );	
 	nAttrWaveSmooth.setWritable(true);
 	nAttrWaveSmooth.setSoftMin(0.0f);	
@@ -131,7 +130,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveSmooth, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveDirection;
-	waveDirection = nAttrWaveDirection.create( "waveDirection", "Wave Direction", MFnNumericData::kFloat, 45.0f );
+	waveDirection = nAttrWaveDirection.create( "Wave Direction", "waveDirection", MFnNumericData::kFloat, 45.0f );
     nAttrWaveDirection.setKeyable(  true );	
 	nAttrWaveDirection.setWritable(true);
 	nAttrWaveDirection.setSoftMin(0.0f);	
@@ -142,7 +141,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveDirection, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveReflection;
-	waveReflection = nAttrWaveReflection.create( "waveReflection", "Wave Reflection", MFnNumericData::kFloat, 0.0f );
+	waveReflection = nAttrWaveReflection.create( "Wave Reflection", "waveReflection", MFnNumericData::kFloat, 0.0f );
     nAttrWaveReflection.setKeyable(  true );	
 	nAttrWaveReflection.setWritable(true);
 	nAttrWaveReflection.setSoftMin(0.0f);	
@@ -153,7 +152,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveReflection, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveAlign;
-	waveAlign = nAttrWaveAlign.create( "waveAlign", "Wave Align", MFnNumericData::kInt, 1 );
+	waveAlign = nAttrWaveAlign.create( "Wave Align", "waveAlign", MFnNumericData::kInt, 1 );
     nAttrWaveAlign.setKeyable(  true );	
 	nAttrWaveAlign.setWritable(true);
 	nAttrWaveAlign.setSoftMin(0);	
@@ -176,14 +175,14 @@ MStatus aaOceanMaya::initialize()
 aaOceanMaya::aaOceanMaya() 
 {
 	pOcean = new aaOcean;
-	MGlobal::displayInfo( "aaOcean Maya created" );
+	MGlobal::displayInfo( "[aaOcean Maya] Created a new ocean patch" );
 }
 aaOceanMaya::~aaOceanMaya() 
 {
 	if(pOcean)
 	{
 		delete pOcean;
-		MGlobal::displayInfo( "aaOcean Maya deleted" );
+		MGlobal::displayInfo( "[aaOcean Maya] Deleted ocean patch" );
 	}
 }
 void* aaOceanMaya::creator()
@@ -215,7 +214,7 @@ void aaOceanMaya::fetchInput(MDataBlock& block)
 	float temp;
 	int temp1;
 
-	temp =  ((block.inputValue(waveDirection).asFloat())/180.0f) * aa_PI;
+	temp =  DegsToRads(block.inputValue(waveDirection).asFloat());
 	if(pOcean->m_windDir != temp)
 	{
 		pOcean->m_windDir = temp;
@@ -233,7 +232,7 @@ void aaOceanMaya::fetchInput(MDataBlock& block)
 		pOcean->m_oceanScale = temp;
 		pOcean->m_redoHoK = true;
 	}
-	temp = maximum<float>(((block.inputValue(waveSize).asFloat()  * block.inputValue(waveSize).asFloat()) / (9.81f)),0.00001f);
+	temp = maximum<float>(((block.inputValue(waveSize).asFloat()  * block.inputValue(waveSize).asFloat()) / (aa_GRAVITY)),0.00001f);
 	if(pOcean->m_velocity !=  temp)
 	{
 		pOcean->m_velocity = temp;
