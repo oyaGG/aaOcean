@@ -81,7 +81,7 @@ bool aaOcean::reInit(int data_size)
 {
 	if(((data_size & (data_size - 1)) != 0) || data_size == 0) //	not power of 2
 	{	
-		sprintf_s(m_state,"[aaOcean Core] Invalid point resolution of %d. Please select a power-of-2 subdivision value", data_size);
+		sprintf(m_state,"[aaOcean Core] Invalid point resolution of %d. Please select a power-of-2 subdivision value", data_size);
 		m_isValid = FALSE;
 	}
 	else
@@ -92,7 +92,7 @@ bool aaOcean::reInit(int data_size)
 			allocateBaseArrays();				
 			m_redoHoK  = TRUE;
 			setup_grid();
-			sprintf_s(m_state,"[aaOcean Core] Building ocean shader with resolution %dx%d", data_size, data_size);
+			sprintf(m_state,"[aaOcean Core] Building ocean shader with resolution %dx%d", data_size, data_size);
 		}
 		m_isValid = TRUE;
 	}
@@ -530,73 +530,74 @@ void aaOcean::setup_grid()
 
 void aaOcean::evaluateNormalsFinDiff()
 {
-	int i,j, nextI, prevI, nextJ, prevJ;
-	float X,Z, nextX, prevX, nextZ, prevZ;
-	vector3 current, prev_iPos, next_iPos, prev_jPos, next_jPos, a, b, c, d, v1, v2;
+	return;
+	//int i,j, nextI, prevI, nextJ, prevJ;
+	//float X,Z, nextX, prevX, nextZ, prevZ;
+	//vector3 current, prev_iPos, next_iPos, prev_jPos, next_jPos, a, b, c, d, v1, v2;
 
-	const int n = m_resolution;	
-	const int halfRes = n / 2;	
-	register const float mult1 = float(m_oceanScale) / float(n);
-	register const float mult2 = float(m_oceanScale) / float(n);
+	//const int n = m_resolution;	
+	//const int halfRes = n / 2;	
+	//register const float mult1 = float(m_oceanScale) / float(n);
+	//register const float mult2 = float(m_oceanScale) / float(n);
 
-	// #pragma omp parallel for private( i,j, nextI, prevI, nextJ, prevJ, nextX, prevX, nextZ, prevZ, current, prev_iPos, next_iPos, prev_jPos, next_jPos,a,b,c,d,v1,v2)  
-	for(i = 0; i< n; ++i)
-	{					
-		for(j = 0; j< n; ++j)
-		{
-			nextI = i+1;
-			prevI = i-1;
-			nextJ = j+1;
-			prevJ = j-1;
+	//// #pragma omp parallel for private( i,j, nextI, prevI, nextJ, prevJ, nextX, prevX, nextZ, prevZ, current, prev_iPos, next_iPos, prev_jPos, next_jPos,a,b,c,d,v1,v2)  
+	//for(i = 0; i< n; ++i)
+	//{					
+	//	for(j = 0; j< n; ++j)
+	//	{
+	//		nextI = i+1;
+	//		prevI = i-1;
+	//		nextJ = j+1;
+	//		prevJ = j-1;
 
-			X = (-halfRes + i) * mult1;
-			Z =	(-halfRes + j) * mult2;
-			nextX = (-halfRes + nextI) * mult1;
-			nextZ =	(-halfRes + nextJ) * mult2;
-			prevX = (-halfRes + prevI) * mult1;
-			prevZ =	(-halfRes + prevJ) * mult2;
+	//		X = (-halfRes + i) * mult1;
+	//		Z =	(-halfRes + j) * mult2;
+	//		nextX = (-halfRes + nextI) * mult1;
+	//		nextZ =	(-halfRes + nextJ) * mult2;
+	//		prevX = (-halfRes + prevI) * mult1;
+	//		prevZ =	(-halfRes + prevJ) * mult2;
 
-			nextI = wrap(i+1, n-1);
-			prevI = wrap(i-1, n-1);
-			nextJ = wrap(j+1, n-1);
-			prevJ = wrap(j-1, n-1);
-			
-			current.x = (X - m_fft_chopX		[i * n + j][0]);
-			current.y = (m_fft_htField			[i * n + j][0]);
-			current.z = (Z - m_fft_chopZ		[i * n + j][0]);
-			
-			prev_iPos.x = (X - m_fft_chopX		[prevI * n + j][0]);
-			prev_iPos.y = (m_fft_htField		[i * n + prevJ][0]);
-			prev_iPos.z = (prevZ - m_fft_chopZ	[prevI * n + j][0]);					
-			
-			next_iPos.x = (X - m_fft_chopX		[nextI * n + j][0]);
-			next_iPos.y = (m_fft_htField		[i * n + nextJ][0]);
-			next_iPos.z = (nextZ - m_fft_chopZ	[nextI * n + j][0]);
-			
-			prev_jPos.x = (prevX - m_fft_chopX	[i * n + prevJ][0]);
-			prev_jPos.y = (m_fft_htField		[prevI * n + j][0]);
-			prev_jPos.z = (Z - m_fft_chopZ		[i * n + prevJ][0]);
+	//		nextI = wrap(i+1, n-1);
+	//		prevI = wrap(i-1, n-1);
+	//		nextJ = wrap(j+1, n-1);
+	//		prevJ = wrap(j-1, n-1);
+	//		
+	//		current.x = (X - m_fft_chopX		[i * n + j][0]);
+	//		current.y = (m_fft_htField			[i * n + j][0]);
+	//		current.z = (Z - m_fft_chopZ		[i * n + j][0]);
+	//		
+	//		prev_iPos.x = (X - m_fft_chopX		[prevI * n + j][0]);
+	//		prev_iPos.y = (m_fft_htField		[i * n + prevJ][0]);
+	//		prev_iPos.z = (prevZ - m_fft_chopZ	[prevI * n + j][0]);					
+	//		
+	//		next_iPos.x = (X - m_fft_chopX		[nextI * n + j][0]);
+	//		next_iPos.y = (m_fft_htField		[i * n + nextJ][0]);
+	//		next_iPos.z = (nextZ - m_fft_chopZ	[nextI * n + j][0]);
+	//		
+	//		prev_jPos.x = (prevX - m_fft_chopX	[i * n + prevJ][0]);
+	//		prev_jPos.y = (m_fft_htField		[prevI * n + j][0]);
+	//		prev_jPos.z = (Z - m_fft_chopZ		[i * n + prevJ][0]);
 
-			next_jPos.x = (nextX - m_fft_chopX	[i * n + nextJ][0]);
-			next_jPos.y = (m_fft_htField		[nextI * n + j][0]);
-			next_jPos.z = (Z - m_fft_chopZ		[i * n + nextJ][0]);
-			
-			a = prev_iPos - current;
-			b = next_iPos - current;
+	//		next_jPos.x = (nextX - m_fft_chopX	[i * n + nextJ][0]);
+	//		next_jPos.y = (m_fft_htField		[nextI * n + j][0]);
+	//		next_jPos.z = (Z - m_fft_chopZ		[i * n + nextJ][0]);
+	//		
+	//		a = prev_iPos - current;
+	//		b = next_iPos - current;
 
-			c = prev_jPos - current;
-			d = next_jPos - current ;
+	//		c = prev_jPos - current;
+	//		d = next_jPos - current ;
 
-			v1 = a / c;			
-			v2 = b / d;
-			v1 = ((v1 + v2) / 2.0f);
-			v1 = v1.normalize();
+	//		v1 = a / c;			
+	//		v2 = b / d;
+	//		v1 = ((v1 + v2) / 2.0f);
+	//		v1 = v1.normalize();
 
-			m_fft_normX[i * n + j][0] = v1.x; 
-			m_fft_normY[i * n + j][0] = v1.y; 
-			m_fft_normZ[i * n + j][0] = v1.z; 
-		}
-	}
+	//		m_fft_normX[i * n + j][0] = v1.x; 
+	//		m_fft_normY[i * n + j][0] = v1.y; 
+	//		m_fft_normZ[i * n + j][0] = v1.z; 
+	//	}
+	//}
 }
 
 void aaOcean::evaluateJacobians()

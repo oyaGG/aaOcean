@@ -8,12 +8,10 @@
 #include "fftw3.h"
 #include "constants.h"
 #include "functionLib.h"
-#include "alignedMalloc.h"
-#include "vectorSSE.h"
-#include "agnerFog\sfmt.cpp" 
-#include "agnerFog\stocc.h"
-#include "agnerFog\stoc1.cpp"
-#include "agnerFog\userintf.cpp"
+#include "agnerFog/sfmt.cpp" 
+#include "agnerFog/stocc.h"
+#include "agnerFog/stoc1.cpp"
+#include "agnerFog/userintf.cpp"
 
 class aaOcean
 { 
