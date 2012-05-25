@@ -6,7 +6,7 @@
 #include <shader.h>
 #include <geoshader.h>
 
-#include "timer\Timer.cpp"
+#include "timer/Timer.cpp"
 #include "fftw3.h"
 #include "aaOceanClass.cpp"
 #include "shaders/oceanStore.h"
@@ -15,6 +15,5 @@
 #include "shaders/aaOceanDisplace.cpp"
 #include "shaders/aaOceanFoam.cpp"
 #include "shaders/aaOceanImgVecDisplace.cpp"
-//#include "shaders/aaOceanNormals.cpp"
 
 
