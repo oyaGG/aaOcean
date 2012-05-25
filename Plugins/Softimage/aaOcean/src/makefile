@@ -1,9 +1,9 @@
 XSISDKLOC:= 
 GXXLOC	 := 
-FFTWLOC  := 
+FFTWLOC  := ../../../../externals/fftw
 TARGETLOC:= 
 
-INCLUDES := -I$(XSISDKLOC)/include -I$(FFTWLOC) -I../../../../aaOcean/src -I../../../../helpers
+INCLUDES := -I$(XSISDKLOC)/include -I$(FFTWLOC) -I../../../../external/aaOcean/src -I../../../../external/helpers
 LDFLAGS  := -fopenmp $(FFTWLOC)libfftw3f.a
 CXXFLAGS := -w -O2 -fPIC -fvisibility=hidden
 CXX	     := $(GXXLOC)g++

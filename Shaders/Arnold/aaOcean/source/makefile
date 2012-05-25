@@ -1,7 +1,7 @@
 ARNOLD	 := 
-FFTWLOC  := 
+FFTWLOC  := ../../../../externals/fftw
 GXXLOC	 := 
-TARGETLOC:= ../deploy/
+TARGETLOC:= 
 
 INCLUDES := -I$(ARNOLD)/include -I../../../../externals/aaOcean/src -I../../../../externals/helpers  -I$(FFTWLOC)
 LDFLAGS  := -fopenmp -L$(ARNOLD)/bin -lai $(FFTWLOC)/libfftw3f.a

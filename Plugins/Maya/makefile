@@ -1,7 +1,7 @@
 MAYAINC	 := 
-FFTWLOC  := 
+FFTWLOC  := ../../externals
 GXXLOC	 := 
-TARGETLOC:= deploy/
+TARGETLOC:= 
 
 INCLUDES := -I$(MAYAINC) -I$(FFTWLOC) -I../../externals/aaOcean/src -I../../externals/helpers 
 LDFLAGS  := -fopenmp $(FFTWLOC)/libfftw3f.a

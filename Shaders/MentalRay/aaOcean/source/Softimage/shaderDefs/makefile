@@ -5,8 +5,8 @@ TARGETLOC:=
 
 INCLUDES := -I$(XSISDK)
 LDFLAGS  := 
-CXXFLAGS := -w -O2 -fPIC -fvisibility=hidden
-CXX	     := $(GXXLOC)g++
+CXXFLAGS := -w -O2 -fPIC
+CXX      := $(GXXLOC)g++
 SOURCES  := shaderDefs.cpp
 OBJECTS  := $(SOURCES:.cpp=.o)
 TARGET   := aaOceanShaderDefs.so

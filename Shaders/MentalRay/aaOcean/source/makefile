@@ -1,11 +1,11 @@
 MENTALSDKLOC:= 
 GXXLOC	 := 
-FFTWLOC  := 
+FFTWLOC  := ../../../../external/fftw
 TARGETLOC:= 
 
-INCLUDES := -I$(MENTALSDKLOC) -I$(FFTWLOC)/libfftw3f.a -I../../../../aaOcean/src -I../../../../helpers
+INCLUDES := -I$(MENTALSDKLOC) -I$(FFTWLOC)/libfftw3f.a -I../../../../external/aaOcean/src -I../../../../external/helpers
 LDFLAGS  := -fopenmp $(FFTWLOC)libfftw3f.a
-CXXFLAGS := -w -O2 -fPIC -fopenmp -fvisibility=hidden
+CXXFLAGS := -w -O2 -fPIC -fopenmp
 CXX	 	 := $(GXXLOC)g++
 SOURCES  := aaOceanShaders.cpp
 OBJECTS  := $(SOURCES:.cpp=.o)
