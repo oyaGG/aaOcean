@@ -33,14 +33,11 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
 
 		if(!rawOutput)
 		{
-			//if(fabs(fmin) != 0.0f && fabs(fmax) != 0.0f)
-			{
-				foam  = rescale(foam, fmin, fmax, 0.0f, 1.0f);
-				foam  = maximum<float>(foam, 0.0f);
-				foam  = pow(foam, gamma);
-				foam *= brightness;
-				foam *= (1.0f - fade);
-			}
+			foam  = rescale(foam, fmin, fmax, 0.0f, 1.0f);
+			foam  = maximum<float>(foam, 0.0f);
+			foam  = pow(foam, gamma);
+			foam *= brightness;
+			foam *= (1.0f - fade);
 		}
 		result->a = foam;
 	}
