@@ -113,8 +113,9 @@ public:
 	void evaluateChopField();
 	void evaluateJacobians();
 	void evaluateNormalsFinDiff();
-	void prepareOcean(bool doHeightField, bool doChopField, bool doJacobians, bool doNormals);
+	void prepareOcean(bool doHeightField, bool doChopField, bool doJacobians, bool doNormals, bool copyTile, bool rotate);
 	void makeTileable(fftwf_complex *&fft_array);
+	void rotateArray(fftwf_complex *&fft_array);
 };
 
 #endif  /* AAOCEAN_H */

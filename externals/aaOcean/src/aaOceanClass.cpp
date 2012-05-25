@@ -99,7 +99,7 @@ bool aaOcean::reInit(int data_size)
 	return m_isValid;
 }
 
-void aaOcean::prepareOcean(bool doHeightField, bool doChopField, bool doJacobians, bool doNormals)
+void aaOcean::prepareOcean(bool doHeightField, bool doChopField, bool doJacobians, bool doNormals, bool copyTile = 0, bool rotate = 0)
 {
 	if( m_redoHoK )
 	{
@@ -110,11 +110,15 @@ void aaOcean::prepareOcean(bool doHeightField, bool doChopField, bool doJacobian
 	if(doHeightField)
 	{
 		evaluateHieghtField();
+		if(copyTile) { makeTileable(m_fft_htField);  }
+		if(rotate)	 { rotateArray(m_fft_htField);   }
 	}
 
-	if(doChopField && m_chopAmount > 0.0f)
+	if(doChopField && m_chopAmount > 0.0f)// chopAmount comparison most likely redundant
 	{
 		evaluateChopField();
+		if(copyTile) { makeTileable(m_fft_chopX); makeTileable(m_fft_chopZ); }
+		if(rotate)	 { rotateArray(m_fft_chopX); rotateArray(m_fft_chopZ); }
 	}
 
 	if(doJacobians && m_isAllocated)
@@ -125,12 +129,16 @@ void aaOcean::prepareOcean(bool doHeightField, bool doChopField, bool doJacobian
 			allocateSplashArrays();
 
 		evaluateJacobians();
+		if(copyTile) { makeTileable(m_fft_jxz);  }
+		if(rotate)	 { rotateArray(m_fft_jxz);   }
 	}
 	if(doNormals)
 	{
 		if(!m_isNormalsAllocated)
 			allocateNormalsArrays();
 		evaluateNormalsFinDiff();
+		if(copyTile) { /* tile array makeTileable() */}
+		if(rotate)	 { /* rotate array rotateArray(); */}
 	}
 }
 
@@ -663,6 +671,67 @@ void aaOcean::evaluateJacobians()
 		//store foam back in this array for convenience
 		//fft_jxz[index][0] =   (Jxx * Jzz) - (Jxz * Jxz); //original jacobian.
 		m_fft_jxz[index][0] =   (Jxz * Jxz) - (Jxx * Jzz) + 1.0f; // invert hack
+	}
+}
+
+void aaOcean::rotateArray(fftwf_complex *&fft_array)
+{
+	// this function is used sometimes because in some cases
+	// there is a 90 degree rotation difference between deformer and ocean
+	// which is often fixable by a simple vec(x,y)->vec(-y,x), but if not
+	// then this function is used
+
+	int n = m_resolution + 1;
+	float tmp;
+	for (int i=0; i<n/2; i++)
+	{
+        for (int j=i; j<n-i-1; j++)
+		{
+            tmp								 = fft_array[i*n+j][1];
+            fft_array[i*n+j][1]				 = fft_array[j*n +(n-i-1)][1];
+            fft_array[j*n +(n-i-1)][1]		 = fft_array[(n-i-1)*n +(n-j-1)][1];
+            fft_array[(n-i-1)*n +(n-j-1)][1] = fft_array[(n-j-1)*n + i][1];
+            fft_array[(n-j-1)*n + i][1]		 = tmp;
+        }
+	}
+}
+void aaOcean::makeTileable(fftwf_complex *&fft_array)
+{
+	// This function is admittedly crap
+	// It makes the ocean grid tileable (when it should already be tileable!!)
+	// Needlessly inefficient. I should fix this.
+	// Also, optimze this from O(N^2) to O(2N) later
+
+	int n = m_resolution;
+	int n1 = n + 1;
+	int index, i, j;
+	
+	#pragma omp parallel for private(index,i,j)
+	for(i = 0; i< n1; i++)
+	{					
+		for(j = 0; j< n1; j++)
+		{
+			index = i*n1 + j;
+			if( i<n && j<n) // regular array copy -- what a waste of resources
+			{
+				fft_array[index][1] = fft_array[i*n+j][0];
+			}
+			else
+			{
+				if(i==n)  //copy left-most col to right-most col
+				{
+					fft_array[index][1] = fft_array[j][0];
+				}
+				if(j==n) // copy top row to bottom row
+				{
+					fft_array[index][1] = fft_array[i*n][0];
+				}
+				if(i==n && j==n) // copy top-left corner to bottom-left
+				{
+					fft_array[index][1] = fft_array[0][0];
+				}
+			}
+		}
 	}
 }
 #endif  /* AAOCEANCLASS_CPP */
