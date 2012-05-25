@@ -46,29 +46,7 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 		if((float)pOcean->m_chopAmount > 0.0001f)
 			chop = true;
 
-		pOcean->prepareOcean(1,chop,0,0);
-
-		copy_and_tile(pOcean->m_fft_htField,pOcean);
-		copy_and_tile(pOcean->m_fft_chopX,pOcean);
-		copy_and_tile(pOcean->m_fft_chopZ,pOcean);
-
-		// If rotation is needed, do via vec(x, y) -> vec(-y, x)
-		// like in arnold/mental ray shaders. 
-		#pragma omp sections
-		{
-			#pragma omp section
-			{
-				rotateArray(pOcean->m_fft_htField,pOcean);
-			}
-			#pragma omp section
-			{
-				rotateArray(pOcean->m_fft_chopX,pOcean);
-			}
-			#pragma omp section
-			{
-				rotateArray(pOcean->m_fft_chopZ,pOcean);
-			}
-		}
+		pOcean->prepareOcean(1,chop,0,0,1,1);
 
 		#pragma omp parallel for
 		for(int i = 0; i<verts.length(); i++)
