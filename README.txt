@@ -1,0 +1,28 @@
+aaOcean v2.5
+Author: Amaan Akram 
+www.amaanakram.com
+aaOcean is free software and can be redistributed and modified under the terms of the 
+GNU General Public License (Version 3) as provided by the Free Software Foundation.
+GNU General Public License http://www.gnu.org/licenses/gpl.html
+Please note that this aaOcean core code is not the one used to generate the binaries that are downloadable from my website
+
+This repository contains the following
+
+-aaOcean core class
+-aaOcean Mental Ray shaders
+-Shader Definitions for Mental Ray shaders
+-aaOcean Arnold shaders
+-aaOcean Softimage ICE deformer
+-aaOcean Maya Deformer
+-Houdini FFT node, which I used to port aaOcean as a deformer to Houdini
+-several helper functions that I often use
+
+LINUX:
+All plugins/shaders come with makefiles
+You will need single-precision fftw library installed. See 'externals/fftw' for a ./configure script that 
+I use to generate a static library to link with. Download source from fftw.org
+
+WINDOWS:
+Look at the linux makefiles to make your Visual Studio projects
+You will need single-precision fftw library to link with. Download from fftw.org
+
