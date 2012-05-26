@@ -1,5 +1,13 @@
+// aaOcean v2.5 Maya Deformer
+// Author: Amaan Akram 
+// www.amaanakram.com
+// aaOcean is free software and can be redistributed and modified under the terms of the 
+// GNU General Public License (Version 3) as provided by the Free Software Foundation.
+// GNU General Public License http://www.gnu.org/licenses/gpl.html
+
 #include "aaOceanClass.cpp"
-#include "utility_funcs.h"
+
+//Maya Node ID 0x20B6EF34  (548859700)  -- Randomly generated. Change if this conflicts
 
 class aaOceanMaya : public MPxDeformerNode
 {

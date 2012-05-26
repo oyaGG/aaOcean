@@ -1,5 +1,12 @@
-#ifndef AAOCEAN_H
-#define AAOCEAN_H
+// aaOcean v2.5 header file
+// Author: Amaan Akram 
+// www.amaanakram.com
+// aaOcean is free software and can be redistributed and modified under the terms of the 
+// GNU General Public License (Version 3) as provided by the Free Software Foundation.
+// GNU General Public License http://www.gnu.org/licenses/gpl.html
+
+#ifndef AAOCEANCLASS_H
+#define AAOCEANCLASS_H
 
 #include <float.h>
 #include <cmath>
@@ -118,5 +125,5 @@ public:
 	void rotateArray(fftwf_complex *&fft_array);
 };
 
-#endif  /* AAOCEAN_H */
+#endif  /* AAOCEANCLASS_H */
 

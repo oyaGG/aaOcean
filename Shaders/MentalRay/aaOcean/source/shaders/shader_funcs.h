@@ -1,63 +1,68 @@
+// aaOcean Mental Ray Shader functions
+// Author: Amaan Akram 
+// www.amaanakram.com
+// aaOcean is free software and can be redistributed and modified under the terms of the 
+// GNU General Public License (Version 3) as provided by the Free Software Foundation.
+// GNU General Public License http://www.gnu.org/licenses/gpl.html
+
 #ifndef SHADER_FUNCS_H
 #define SHADER_FUNCS_H
-
-#define maxim(a,b) (((a) > (b)) ? (a) : (b))
 
 void shaderCleanup(aaOcean *&ocean)
 {
 	if(ocean->m_kX)
 	{
-		aligned_free(ocean->m_kX);
+		free(ocean->m_kX);
 		ocean->m_kX=0;
 	}
 	if(ocean->m_kZ)
 	{
-		aligned_free(ocean->m_kZ);
+		free(ocean->m_kZ);
 		ocean->m_kZ=0;
 	}
 	if(ocean->m_omega)
 	{
-		aligned_free(ocean->m_omega);
+		free(ocean->m_omega);
 		ocean->m_omega=0;
 	}
 	if(ocean->m_hokReal)
 	{
-		aligned_free(ocean->m_hokReal);
+		free(ocean->m_hokReal);
 		ocean->m_hokReal=0;
 	}
 	if(ocean->m_hokImag)
 	{
-		aligned_free(ocean->m_hokImag);
+		free(ocean->m_hokImag);
 		ocean->m_hokImag=0;
 	}
 	if(ocean->m_hktReal)
 	{
-		aligned_free(ocean->m_hktReal);
+		free(ocean->m_hktReal);
 		ocean->m_hktReal=0;
 	}
 	if(ocean->m_hktImag)
 	{
-		aligned_free(ocean->m_hktImag);
+		free(ocean->m_hktImag);
 		ocean->m_hktImag=0;
 	}
 	if(ocean->m_rand1)
 	{
-		aligned_free(ocean->m_rand1);
+		free(ocean->m_rand1);
 		ocean->m_rand1=0;
 	}
 	if(ocean->m_rand2)
 	{
-		aligned_free(ocean->m_rand2);
+		free(ocean->m_rand2);
 		ocean->m_rand2=0;
 	}
 	if(ocean->m_xCoord)
 	{
-		aligned_free(ocean->m_xCoord);
+		free(ocean->m_xCoord);
 		ocean->m_xCoord=0;
 	}
 	if(ocean->m_zCoord)
 	{
-		aligned_free(ocean->m_zCoord);
+		free(ocean->m_zCoord);
 		ocean->m_zCoord=0;
 	}
 	if(ocean->m_fft_jxx)
@@ -194,60 +199,6 @@ float catromPrep(aaOcean *&ocean, fftwf_complex *&fftw_array, miState *&state, m
 
 	return catrom(dv,a1,b1,c1,d1);
 	
-}
-
-void rotateArray(fftwf_complex *&fft_array, aaOcean *&ocean)
-{
-	int n = ocean->m_resolution + 1;
-	int halfn = n/2;
-	float tmp;
-	for (int i = 0; i < halfn; ++i)
-	{
-        for (int j = i; j < n-i-1; ++j)
-		{
-            tmp								 = fft_array[i*n+j][1];
-            fft_array[i*n+j][1]				 = fft_array[j*n +(n-i-1)][1];
-            fft_array[j*n +(n-i-1)][1]		 = fft_array[(n-i-1)*n +(n-j-1)][1];
-            fft_array[(n-i-1)*n +(n-j-1)][1] = fft_array[(n-j-1)*n + i][1];
-            fft_array[(n-j-1)*n + i][1]		 = tmp;
-        }
-	}
-}
-
-void copy_and_tile(fftwf_complex *&fft_array, aaOcean *&ocean)
-{
-	int n = ocean->m_resolution;
-	int n1 = n + 1;
-	int index, i, j;
-	
-	#pragma omp parallel for private(index, i, j)
-	for(i = 0; i< n1; i++)
-	{					
-		for(j = 0; j< n1; j++)
-		{
-			index = i*n1 + j;
-			if( i<n && j<n) // regular array copy
-			{
-				fft_array[index][1] = fft_array[i*n+j][0];
-			}
-			else
-			{
-				if(i==n)  //copy left-most col to right-most col
-				{
-					fft_array[index][1] = fft_array[j][0];
-				}
-				if(j==n) // copy top row to bottom row
-				{
-					fft_array[index][1] = fft_array[i*n][0];
-				}
-				if(i==n && j==n) // copy top-left corner to bottom-left
-				{
-					fft_array[index][1] = fft_array[0][0];
-				}
-			}
-			
-		}
-	}
 }
 
 #endif //SHADER_FUNCS

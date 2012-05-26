@@ -1,3 +1,10 @@
+// aaOcean v2.5 Softimage ICE Deformer functions
+// Author: Amaan Akram 
+// www.amaanakram.com
+// aaOcean is free software and can be redistributed and modified under the terms of the 
+// GNU General Public License (Version 3) as provided by the Free Software Foundation.
+// GNU General Public License http://www.gnu.org/licenses/gpl.html
+
 #ifndef ICE_FUNCS_H
 #define ICE_FUNCS_H
 

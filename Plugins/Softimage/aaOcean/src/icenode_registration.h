@@ -1,3 +1,10 @@
+// aaOcean v2.5 Softimage ICE Plugin Registration
+// Author: Amaan Akram 
+// www.amaanakram.com
+// aaOcean is free software and can be redistributed and modified under the terms of the 
+// GNU General Public License (Version 3) as provided by the Free Software Foundation.
+// GNU General Public License http://www.gnu.org/licenses/gpl.html
+
 XSI::CStatus RegisteraaOcean( XSI::PluginRegistrar& in_reg );
 
 SICALLBACK XSILoadPlugin( PluginRegistrar& in_reg )
@@ -6,7 +13,7 @@ SICALLBACK XSILoadPlugin( PluginRegistrar& in_reg )
 	in_reg.PutName(L"aaOceanICENODE");
 	in_reg.PutEmail(L"amaan@amaanakram.com");
 	in_reg.PutURL(L"http://www.amaanakram.com");
-	in_reg.PutVersion(2,0);
+	in_reg.PutVersion(2,5);
 
 	//in_reg.RegisterProperty(L"aaOcean_Menu");
 	//in_reg.RegisterMenu(siMenuTbGetPropertyID,L"aaOcean_Menu_Menu",false,false);

@@ -1,4 +1,11 @@
-SICALLBACK aaOceanMR_oceanDataShader_1_8_DefineInfo(const CRef& in_ctxt)
+// aaOcean Mental Ray Shaders, Softimage Shader Definitions
+// Author: Amaan Akram 
+// www.amaanakram.com
+// aaOcean is free software and can be redistributed and modified under the terms of the 
+// GNU General Public License (Version 3) as provided by the Free Software Foundation.
+// GNU General Public License http://www.gnu.org/licenses/gpl.html
+
+SICALLBACK aaOceanMR_oceanDataShader_2_5_DefineInfo(const CRef& in_ctxt)
 {
 	Context ctxt(in_ctxt);
 
@@ -8,7 +15,7 @@ SICALLBACK aaOceanMR_oceanDataShader_1_8_DefineInfo(const CRef& in_ctxt)
 	return CStatus::OK;
 }
 
-SICALLBACK aaOceanMR_oceanDataShader_1_8_Define(const CRef& in_ctxt)
+SICALLBACK aaOceanMR_oceanDataShader_2_5_Define(const CRef& in_ctxt)
 {
 	Application app;
 	Context ctxt(in_ctxt);

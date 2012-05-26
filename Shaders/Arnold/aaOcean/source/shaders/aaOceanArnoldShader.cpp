@@ -1,3 +1,12 @@
+// aaOcean Arnold Shader
+// Outputs RGBA, with Vector Displacement in RGB, and foam in Alpha
+// Run RGB through a Color to Vector and feed into sta_displacement
+// Author: Amaan Akram 
+// www.amaanakram.com
+// aaOcean is free software and can be redistributed and modified under the terms of the 
+// GNU General Public License (Version 3) as provided by the Free Software Foundation.
+// GNU General Public License http://www.gnu.org/licenses/gpl.html
+
 #include <limits>
 #include <string>
 
@@ -60,16 +69,10 @@ node_update
 	int renderRes = (int)pow(2.0f, params[p_resolution].INT + 4);
 	if(ocean->reInit(renderRes))
 	{
-		ocean->prepareOcean(TRUE, TRUE, TRUE, FALSE);
-
-		copy_and_tile(ocean->m_fft_htField, ocean);
+		ocean->prepareOcean(TRUE, TRUE, TRUE, FALSE, TRUE);
 
 		if(ocean->m_chopAmount > 0.0f)
 		{
-			copy_and_tile(ocean->m_fft_chopX, ocean);
-			copy_and_tile(ocean->m_fft_chopZ, ocean);
-			copy_and_tile(ocean->m_fft_jxz, ocean);
-			
 			// get foam array bounds to generate normalization information
 			getArrayBounds(ocean->m_fft_jxz, 1, ocean->m_resolution, ocean->m_fmin, ocean->m_fmax);
 

@@ -1,4 +1,9 @@
-//////FFT START
+// Houdini FFT functions
+// FORWARD FFT NOT TESTED
+// Author: Amaan Akram 
+// www.amaanakram.com
+// IFFT and FFT routines based on Paul Bourke
+// http://paulbourke.net/miscellaneous/dft/
 
 #include <stdlib.h>
 #include <math.h>

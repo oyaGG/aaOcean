@@ -1,3 +1,10 @@
+// Houdini FFT SOP
+// FORWARD FFT NOT TESTED
+// Author: Amaan Akram 
+// www.amaanakram.com
+// IFFT and FFT routines based on Paul Bourke
+// http://paulbourke.net/miscellaneous/dft/
+
 #ifndef __SOP_FFT_h__
 #define __SOP_FFT_h__
 

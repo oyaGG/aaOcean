@@ -1,3 +1,14 @@
+// aaOcean Mental Ray Main Shader
+// Outputs RGBA, with Vector Displacement in RGB, and foam in Alpha
+// Author: Amaan Akram 
+// www.amaanakram.com
+// aaOcean is free software and can be redistributed and modified under the terms of the 
+// GNU General Public License (Version 3) as provided by the Free Software Foundation.
+// GNU General Public License http://www.gnu.org/licenses/gpl.html
+
+#ifndef aaOceanDataShader_CPP
+#define aaOceanDataShader_CPP
+
 #include "aaOceanData.h"
 
 extern "C" DLLEXPORT 
@@ -91,9 +102,7 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 		}
 		mi_info("%s. Shader ID: %d", ocean->m_state, shaderInst);	
 
-		ocean->prepareOcean(TRUE, TRUE, TRUE, FALSE);
-
-		copy_and_tile(ocean->m_fft_htField, ocean);
+		ocean->prepareOcean(TRUE, TRUE, TRUE, FALSE, TRUE);
 
 		bool doChop = FALSE;
 		if(ocean->m_chopAmount > 0.0f)
@@ -101,10 +110,6 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 		
 		if(doChop)
 		{
-			copy_and_tile(ocean->m_fft_chopX, ocean);
-			copy_and_tile(ocean->m_fft_chopZ, ocean);
-			copy_and_tile(ocean->m_fft_jxz, ocean);
-			
 			getArrayBounds(ocean->m_fft_jxz, 1, ocean->m_resolution, ocean->m_fmin, ocean->m_fmax);
 
 			miScalar	fmin		= *mi_eval_scalar(&params->fmin);
@@ -146,6 +151,7 @@ void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
 	}
 	else
 	{
+		// commented out because of possible conflict between openmp and fftw
 		//fftwf_cleanup_threads();
 		//fftwf_cleanup();
 	}
@@ -156,3 +162,5 @@ extern "C" DLLEXPORT int aaOceanDataShader_version( )
 {
 	return( 1 );
 }
+
+#endif /* aaOceanDataShader_CPP */

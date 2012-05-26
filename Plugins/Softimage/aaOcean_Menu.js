@@ -1,12 +1,18 @@
+// aaOcean v2.5 Softimage aaOcean Menu
+// Author: Amaan Akram 
+// www.amaanakram.com
+// aaOcean is free software and can be redistributed and modified under the terms of the 
+// GNU General Public License (Version 3) as provided by the Free Software Foundation.
+// GNU General Public License http://www.gnu.org/licenses/gpl.html
 
 function XSILoadPlugin( in_reg )
 {
 	in_reg.Author = "Amaan Akram";
 	in_reg.Name = "aaOcean_Menu";
-	in_reg.Email = "";
+	in_reg.Email = "amaan@amaanakram.com";
 	in_reg.URL = "http://www.amaanakram.com";
-	in_reg.Major = 1;
-	in_reg.Minor = 7;
+	in_reg.Major = 2;
+	in_reg.Minor = 5;
 
 	in_reg.RegisterProperty("aaOcean_Menu");
 	in_reg.RegisterMenu(siMenuTbGetPropertyID,"aaOcean_Menu_Menu",false,false);

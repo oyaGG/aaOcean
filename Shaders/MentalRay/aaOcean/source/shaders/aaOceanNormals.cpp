@@ -1,3 +1,10 @@
+// aaOcean Mental Ray Normals
+// Author: Amaan Akram 
+// www.amaanakram.com
+// aaOcean is free software and can be redistributed and modified under the terms of the 
+// GNU General Public License (Version 3) as provided by the Free Software Foundation.
+// GNU General Public License http://www.gnu.org/licenses/gpl.html
+
 #include "aaOceanNormals.h"
 
 extern "C" DLLEXPORT miBoolean aaOceanNormalsShader( miVector *result, miState *state, aaOceanNormalsShader_t *params)
