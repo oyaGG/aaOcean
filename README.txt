@@ -6,6 +6,9 @@ GNU General Public License (Version 3) as provided by the Free Software Foundati
 GNU General Public License http://www.gnu.org/licenses/gpl.html
 Please note that this aaOcean core code is not the one used to generate the binaries that are downloadable from my website
 
+Example of work done with aaOcean:
+https://vimeo.com/42087457
+
 This repository contains the following
 
 -aaOcean core class
