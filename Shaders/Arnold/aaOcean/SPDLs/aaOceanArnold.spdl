@@ -285,6 +285,14 @@ PropertySet "aaOceanArnold_params"
 		readable = on;
 		inspectable = on;
 	}
+	Parameter "outputFileName" input
+	{
+	 GUID = "{6CCE7520-807E-43e3-8743-DF6B38ABD047}";
+	 type = string;
+	 flags = 1;
+	 Value = "";   
+	 Animatable = off;
+	}
 }
 phenomenon "aaOceanArnold_declare"
 {
@@ -411,6 +419,12 @@ Defaults
 		Name = "Foam Max";
 		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
 	}
+	outputFileName
+	{
+		Name = "Output File Location";
+	    UIAttr = disabled;
+	    UIType = "String";
+	}
 }
 
 Layout "Default"
@@ -450,6 +464,11 @@ Layout "Default"
 			fMin;
 			fMax;
 		}
+	}
+	
+	Tab "File Output"
+	{
+		outputFileName;
 	}
 }
 

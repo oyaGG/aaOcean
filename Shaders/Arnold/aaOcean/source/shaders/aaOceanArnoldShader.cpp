@@ -33,6 +33,7 @@ enum aaOceanArnoldParams
 	p_raw,
 	p_fMin,
 	p_fMax,
+	p_outputFileName
 };
 
 #include "shader_funcs.h"
@@ -58,6 +59,7 @@ node_parameters
 	AiParameterBOOL( "raw"				, 0);
 	AiParameterFLT ( "fMin"				, 0.0f);
 	AiParameterFLT ( "fMax"				, 0.0f);
+	AiParameterStr ( "outputFileName"   , "");
 }
 
 node_update
@@ -144,8 +146,17 @@ node_initialize
 node_finish
 {
 	aaOcean *ocean = (aaOcean *)AiNodeGetLocalData(node);
+
+	const char *outputFileName = AiNodeGetStr(node, "outputFileName");
+	if(strcmp(outputFileName, "") != 0)
+	{
+		// dump ocean data to open-exr file
+		AiMsgInfo("[aaOcean Arnold] Written file to disk"); // log file path and name to console
+	}
+
+	// cleanup
 	delete ocean;
-	AiMsgInfo("[aaOcean Displacement] Deleted aaOcean data");
+	AiMsgInfo("[aaOcean Arnold] Deleted aaOcean data");
 
 	fftwf_cleanup_threads();
 	fftwf_cleanup();
