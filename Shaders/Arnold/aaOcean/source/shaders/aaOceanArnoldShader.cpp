@@ -33,6 +33,7 @@ enum aaOceanArnoldParams
 	p_raw,
 	p_fMin,
 	p_fMax,
+	p_writeFile,
 	p_outputFileName
 };
 
@@ -59,6 +60,7 @@ node_parameters
 	AiParameterBOOL( "raw"				, 0);
 	AiParameterFLT ( "fMin"				, 0.0f);
 	AiParameterFLT ( "fMax"				, 0.0f);
+	AiParameterBOOL( "writeFile"		, 0);
 	AiParameterStr ( "outputFileName"   , "");
 }
 

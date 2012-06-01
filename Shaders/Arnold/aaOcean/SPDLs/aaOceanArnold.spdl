@@ -285,22 +285,35 @@ PropertySet "aaOceanArnold_params"
 		readable = on;
 		inspectable = on;
 	}
+	Parameter "writeFile" input
+	{
+		GUID = "{3F88889E-A511-4f59-A3DC-ACD335CE9D3F}";
+		type = boolean;
+		flags = 0;
+		texturable = off;
+		value = 0;
+		writable = on;
+		animatable = off;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
 	Parameter "outputFileName" input
 	{
-	 GUID = "{6CCE7520-807E-43e3-8743-DF6B38ABD047}";
-	 type = string;
-	 flags = 1;
-	 Value = "";   
-	 Animatable = off;
+		GUID = "{6CCE7520-807E-43e3-8743-DF6B38ABD047}";
+		type = string;
+		flags = 1;
+		Value = "";   
+		Animatable = off;
 	}
 }
+
 phenomenon "aaOceanArnold_declare"
 {
 	Name = "aaOceanArnold";
 	Version = 1;
 	Use = texture;
 }
-
 
 Defaults
 {
@@ -419,9 +432,14 @@ Defaults
 		Name = "Foam Max";
 		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
 	}
+	writeFile
+	{
+		Name = "Write shader data";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+	}
 	outputFileName
 	{
-		Name = "Output File Location";
+		Name = "Output File Name";
 	    UIAttr = disabled;
 	    UIType = "String";
 	}

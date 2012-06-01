@@ -140,6 +140,12 @@ void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
 		if(mi_query( miQ_FUNC_USERPTR, state, 0, (void *)&os))
 		{
 			aaOcean *ocean = (*os)->ocean;
+
+			if(params->writeFile)
+			{
+				char* objfile = miaux_tag_to_string(params->outputFileName,"");
+			}
+
 			if(ocean)
 				delete ocean;
 			mi_mem_release( (void *)(*os) );

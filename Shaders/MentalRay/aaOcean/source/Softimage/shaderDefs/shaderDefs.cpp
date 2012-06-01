@@ -87,6 +87,22 @@ SICALLBACK aaOceanMentalRay_oceanDataShader_2_5_Define(const CRef& in_ctxt)
 	layerOcean_opts.SetLongName("Layer Ocean");
 	inpdefs.AddParamDef(L"layerOcean", siShaderDataTypeScalar, layerOcean_popts);
 
+	CRef writeFile_popts = fact.CreateShaderParamDefOptions();
+	ShaderParamDefOptions writeFile_opts = ShaderParamDefOptions(writeFile_popts);
+	writeFile_opts.SetTexturable(false);
+	writeFile_opts.SetInspectable(true);
+	writeFile_opts.SetDefaultValue(false);
+	writeFile_opts.SetLongName("Write shader data");
+	inpdefs.AddParamDef(L"writeFile", siShaderDataTypeBoolean, writeFile_popts);
+
+	CRef outputFileName_popts = fact.CreateShaderParamDefOptions();
+	ShaderParamDefOptions outputFileName_opts = ShaderParamDefOptions(outputFileName_popts);
+	outputFileName_opts.SetTexturable(false);
+	outputFileName_opts.SetInspectable(true);
+	outputFileName_opts.SetDefaultValue(false);
+	outputFileName_opts.SetLongName("Output File Name");
+	inpdefs.AddParamDef(L"outputFileName", siShaderDataTypeBoolean, outputFileName_popts);
+
 	PPGLayout oPPGLayout = sdef.GetPPGLayout();
 
 	oPPGLayout.AddTab("Ocean Parameters");
@@ -120,14 +136,16 @@ SICALLBACK aaOceanMentalRay_oceanDataShader_2_5_Define(const CRef& in_ctxt)
 	oPPGLayout.AddItem("fmin");
 	oPPGLayout.AddItem("fmax");
 
+	oPPGLayout.AddTab("Output Parameters");
+	oPPGLayout.AddItem("writeFile");
+	oPPGLayout.AddItem("outputFileName");
+
 	// RENDERERS
 	MetaShaderRendererDef rend = sdef.AddRendererDef(L"mental ray");
 	rend.PutSymbolName(L"aaOceanDataShader");
 	rend.PutCodePath(L"aaOceanMentalRay");
 	ValueMap ropts = rend.GetRendererOptions();
 	ropts.Set(L"version", CValue(1));
-	return CStatus::OK;
-
 	return CStatus::OK;
 }
 //

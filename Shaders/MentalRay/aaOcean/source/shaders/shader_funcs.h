@@ -8,6 +8,16 @@
 #ifndef SHADER_FUNCS_H
 #define SHADER_FUNCS_H
 
+char* miaux_tag_to_string(miTag tag, char *default_value) 
+{ 
+    char *result = default_value; 
+    if (tag != 0) { 
+	result = (char*)mi_db_access(tag); 
+	mi_db_unpin(tag); 
+    } 
+    return result; 
+} 
+
 void shaderCleanup(aaOcean *&ocean)
 {
 	if(ocean->m_kX)
