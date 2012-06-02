@@ -6,11 +6,9 @@
 // GNU General Public License http://www.gnu.org/licenses/gpl.html
 
 // aaOcean Mental Ray Shader, main compile file
-
-
-#include <omp.h>
 #include <shader.h>
 #include <geoshader.h>
+#include <omp.h>
 
 #include "timer/Timer.cpp"
 #include "fftw3.h"

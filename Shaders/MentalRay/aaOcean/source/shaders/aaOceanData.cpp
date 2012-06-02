@@ -10,6 +10,7 @@
 #define aaOceanDataShader_CPP
 
 #include "aaOceanData.h"
+#include <string>
 
 extern "C" DLLEXPORT 
 miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t *params)
@@ -131,6 +132,7 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 	}
 }
 
+
 extern "C" DLLEXPORT 
 void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
 {
@@ -143,7 +145,19 @@ void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
 
 			if(params->writeFile)
 			{
-				char* objfile = miaux_tag_to_string(params->outputFileName,"");
+				char* outputFolder	= miaux_tag_to_string(params->outputFolder,"");
+
+				if(!dirExists(outputFolder))
+					mi_error("[aaOcean Shader] Invalid folder path: %s", outputFolder);
+				else
+				{
+					char* postfix = miaux_tag_to_string(params->postfix,"");
+					int frame = *mi_eval_integer(&params->currentFrame);
+					char outputFile[255];
+					genFullFilePath(&outputFile[0], &outputFolder[0], &postfix[0], frame);
+					// writefile(&outputFile[0])
+					mi_warning("[aaOcean Shader] Image written to %s", outputFile);
+				}
 			}
 
 			if(ocean)

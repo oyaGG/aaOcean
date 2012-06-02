@@ -37,7 +37,9 @@ typedef struct
 	miScalar	layerOcean;
 
 	miBoolean	writeFile;
-	miTag		outputFileName;
+	miTag		outputFolder;
+	miTag		postfix;
+	miInteger	currentFrame;
 
 } aaOceanDataShader_t;
 

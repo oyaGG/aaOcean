@@ -9,7 +9,7 @@ SICALLBACK aaOceanMentalRay_oceanDataShader_2_5_DefineInfo(const CRef& in_ctxt)
 {
 	Context ctxt(in_ctxt);
 
-	ctxt.PutAttribute(L"Category", CValue(L"aaOceanMR"));
+	ctxt.PutAttribute(L"Category", CValue(L"aaOceanMRay"));
 	ctxt.PutAttribute(L"DisplayName", CValue(L"aaOcean Data Shader"));
 
 	return CStatus::OK;
@@ -95,13 +95,30 @@ SICALLBACK aaOceanMentalRay_oceanDataShader_2_5_Define(const CRef& in_ctxt)
 	writeFile_opts.SetLongName("Write shader data");
 	inpdefs.AddParamDef(L"writeFile", siShaderDataTypeBoolean, writeFile_popts);
 
-	CRef outputFileName_popts = fact.CreateShaderParamDefOptions();
-	ShaderParamDefOptions outputFileName_opts = ShaderParamDefOptions(outputFileName_popts);
-	outputFileName_opts.SetTexturable(false);
-	outputFileName_opts.SetInspectable(true);
-	outputFileName_opts.SetDefaultValue(false);
-	outputFileName_opts.SetLongName("Output File Name");
-	inpdefs.AddParamDef(L"outputFileName", siShaderDataTypeBoolean, outputFileName_popts);
+	CRef outputFolder_popts = fact.CreateShaderParamDefOptions();
+	ShaderParamDefOptions outputFolder_opts = ShaderParamDefOptions(outputFolder_popts);
+	outputFolder_opts.SetTexturable(false);
+	outputFolder_opts.SetInspectable(true);
+	outputFolder_opts.SetDefaultValue("");
+	outputFolder_opts.SetLongName("Output Folder");
+	outputFolder_opts.SetAttribute(siUIInitialDir, "c:\\");
+	inpdefs.AddParamDef(L"outputFolder", siShaderDataTypeString, outputFolder_popts);
+
+	CRef postfix_popts = fact.CreateShaderParamDefOptions();
+	ShaderParamDefOptions postfix_opts = ShaderParamDefOptions(outputFolder_popts);
+	postfix_opts.SetTexturable(false);
+	postfix_opts.SetInspectable(true);
+	postfix_opts.SetDefaultValue("");
+	postfix_opts.SetLongName("Postfix");
+	inpdefs.AddParamDef(L"postfix", siShaderDataTypeString, postfix_popts);
+
+	CRef currentFrame_popts = fact.CreateShaderParamDefOptions();
+	ShaderParamDefOptions currentFrame_opts = ShaderParamDefOptions(currentFrame_popts);
+	currentFrame_opts.SetTexturable(true);
+	currentFrame_opts.SetInspectable(true);
+	currentFrame_opts.SetDefaultValue(1);
+	currentFrame_opts.SetLongName("Current Frame");
+	inpdefs.AddParamDef(L"currentFrame", siShaderDataTypeInteger, currentFrame_popts);
 
 	PPGLayout oPPGLayout = sdef.GetPPGLayout();
 
@@ -135,10 +152,15 @@ SICALLBACK aaOceanMentalRay_oceanDataShader_2_5_Define(const CRef& in_ctxt)
 	oPPGLayout.AddItem("brightness");
 	oPPGLayout.AddItem("fmin");
 	oPPGLayout.AddItem("fmax");
+	oPPGLayout.EndGroup();
 
-	oPPGLayout.AddTab("Output Parameters");
+	oPPGLayout.AddTab("File Output");
 	oPPGLayout.AddItem("writeFile");
-	oPPGLayout.AddItem("outputFileName");
+	oPPGLayout.AddGroup("File Name");
+	oPPGLayout.AddItem("outputFolder", "", siControlFolder );
+	oPPGLayout.AddItem("postfix");
+	oPPGLayout.AddItem("currentFrame");
+	oPPGLayout.EndGroup();
 
 	// RENDERERS
 	MetaShaderRendererDef rend = sdef.AddRendererDef(L"mental ray");
