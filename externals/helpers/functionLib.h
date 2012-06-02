@@ -3,6 +3,12 @@
 
 #include "constants.h"
 
+#if defined(_MSC_VER)
+	#include <io.h> // For access().
+#else
+	#include <sys/io.h> // For access().
+#endif
+
 inline float DegsToRads(float degrees)	// Degrees to radians conversion...
 { 
 	return(degrees * aa_PIBY180);  
@@ -125,6 +131,26 @@ inline float lerp(float t, float a, float b)
 	// t = 0 retunes a
 	// t = 1 returns b
 	return a*(1.0f - t) + b * t;
+}
+
+inline bool dirExists(const char* path)
+{
+	#ifdef _MSC_VER
+		if ( _access(path, 0) == 0 )
+		{
+			return true;
+		}
+		else
+    		return false;
+	#else
+		if ( access(path, 0) == 0 )
+		{
+			return true;
+		}
+		else
+    		return false;
+	#endif
+	
 }
 
 //bool isAligned(void* data, int alignment = 16)
