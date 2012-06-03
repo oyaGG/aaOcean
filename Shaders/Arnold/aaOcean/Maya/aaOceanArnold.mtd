@@ -58,3 +58,12 @@
 		default             FLOAT   0.0
 	[attr fMax]
 		default             FLOAT   0.0
+	[attr writeFile]
+		default             BOOL   False
+	[attr outputFolder]
+		default             STRING ""
+	[attr postfix]
+		default             STRING ""
+	[attr currentFrame]
+		default             INT   	1
+		

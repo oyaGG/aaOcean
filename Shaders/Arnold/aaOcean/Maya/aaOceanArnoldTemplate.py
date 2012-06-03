@@ -40,6 +40,13 @@ class AEaaOceanArnoldTemplate(ShaderAETemplate):
 		self.addControl("fMin", label="Foam Min")
 		self.addControl("fMax", label="Foam Max")
 		self.endLayout()
+		
+		self.beginLayout("File Output", collapse=True)
+		self.addControl("writeFile", label="Write Files")
+		self.addControl("outputFolder", label="Output Folder")
+		self.addControl("postfix", label="Postfix")
+		self.addControl("currentFrame", label="Current Frame")
+		self.endLayout()
 
 
 		pm.mel.AEdependNodeTemplate(self.nodeName)
