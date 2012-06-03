@@ -161,10 +161,10 @@ node_finish
 		{
 			const char* postfix = AiNodeGetStr(node, "postfix");
 			int frame = AiNodeGetInt(node, "currentFrame");
-			char outputFile[255];
-			genFullFilePath(&outputFile[0], &outputFolder[0], &postfix[0], frame);
-			// writefile(&outputFile[0])
-			AiMsgInfo("[aaOcean Arnold] Image written to %s", outputFile); // log file path and name to console
+			char outputFileName[255];
+			genFullFilePath(&outputFileName[0], &outputFolder[0], &postfix[0], frame);
+			writeExr(&outputFileName[0], ocean);
+			AiMsgInfo("[aaOcean Arnold] Image written to %s", outputFileName);
 		}
 	}
 

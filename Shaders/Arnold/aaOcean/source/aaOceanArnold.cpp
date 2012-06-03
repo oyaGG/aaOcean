@@ -9,4 +9,7 @@
 
 #include "ai.h"
 #include "aaOceanClass.cpp"
+#include <ImfArray.h>
+#include <half.h>
+#include <ImfRgbaFile.h>
 #include "shaders/aaOceanArnoldShader.cpp"

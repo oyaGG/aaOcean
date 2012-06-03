@@ -50,6 +50,27 @@ void genFullFilePath(char* dest, const char* outputFolder, const char* postfix, 
 	strcat(dest, ".exr");
 }
 
+void writeExr(const char* outputFileName, aaOcean *&ocean)
+{
+	int res = ocean->m_resolution;
+	Imf::Array2D<Imf::Rgba> pixels(res, res);
+
+	#pragma omp parallel for
+	for(int i = 0; i < res; i++)
+	{
+		for(int j = 0; j < res; j++)
+		{
+			pixels[j][i].r = ocean->m_fft_chopX[i*res+j][1];
+			pixels[j][i].g = ocean->m_fft_htField[i*res+j][1];
+			pixels[j][i].b = ocean->m_fft_chopZ[i*res+j][1];
+			pixels[j][i].a = ocean->m_fft_jxz[i*res+j][1];
+		}
+	}
+	Imf::RgbaOutputFile outA(&outputFileName[0], Imf::Header(ocean->m_resolution, ocean->m_resolution), Imf::WRITE_RGBA);
+	outA.setFrameBuffer (&pixels[0][0], 1, ocean->m_resolution);
+	outA.writePixels (ocean->m_resolution);
+}
+
 void shaderCleanup(aaOcean *&ocean)
 {
 	if(ocean->m_kX)

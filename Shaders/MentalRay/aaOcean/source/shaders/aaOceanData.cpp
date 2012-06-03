@@ -153,10 +153,10 @@ void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
 				{
 					char* postfix = miaux_tag_to_string(params->postfix,"");
 					int frame = *mi_eval_integer(&params->currentFrame);
-					char outputFile[255];
-					genFullFilePath(&outputFile[0], &outputFolder[0], &postfix[0], frame);
-					// writefile(&outputFile[0])
-					mi_warning("[aaOcean Shader] Image written to %s", outputFile);
+					char outputFileName[255];
+					genFullFilePath(&outputFileName[0], &outputFolder[0], &postfix[0], frame);
+					writeExr(&outputFileName[0], ocean);
+					mi_warning("[aaOcean Shader] Image written to %s", outputFileName);
 				}
 			}
 
