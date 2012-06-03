@@ -298,13 +298,34 @@ PropertySet "aaOceanArnold_params"
 		readable = on;
 		inspectable = on;
 	}
-	Parameter "outputFileName" input
+	Parameter "outputFolder" input
 	{
 		GUID = "{6CCE7520-807E-43e3-8743-DF6B38ABD047}";
 		type = string;
 		flags = 1;
 		Value = "";   
 		Animatable = off;
+	}
+	Parameter "postfix" input
+	{
+		GUID = "{C6712AC4-8A40-452f-B9F7-7756F0CA779D}";
+		type = string;
+		flags = 1;
+		Value = "";   
+		Animatable = off;
+	}
+	Parameter "currentFrame" input
+	{		
+		guid = "{5C09B0B3-97BE-480d-803B-957F9978471C}";
+		type = integer;
+		flags = 0;
+		texturable = on;
+		value = 1;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
 	}
 }
 
@@ -437,11 +458,21 @@ Defaults
 		Name = "Write shader data";
 		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
 	}
-	outputFileName
+	outputFolder
 	{
-		Name = "Output File Name";
+		Name = "Output Folder";
 	    UIAttr = disabled;
 	    UIType = "String";
+	}
+	postfix
+	{
+		Name = "Postfix";
+	    UIAttr = disabled;
+	    UIType = "String";
+	}
+	currentFrame
+	{
+		Name = "Current Frame";
 	}
 }
 
@@ -454,6 +485,7 @@ Layout "Default"
 			resolution;
 			oceanScale;
 			seed;
+			time;
 		}
 		Group "Wave Parameters"
 		{
@@ -469,7 +501,6 @@ Layout "Default"
 			damp;
 			windAlign;
 		}
-		time;
 	}
 
 	Tab	"Foam Parameters"
@@ -486,7 +517,13 @@ Layout "Default"
 	
 	Tab "File Output"
 	{
-		outputFileName;
+		writeFile;
+		Group "File Name"
+		{
+			outputFolder;
+			postFix;
+			currentFrame;
+		}
 	}
 }
 

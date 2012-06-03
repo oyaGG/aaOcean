@@ -10,6 +10,38 @@
 #ifndef SHADER_FUNCS_H
 #define SHADER_FUNCS_H
 
+void genFullFilePath(char* dest, const char* outputFolder, const char* postfix, const int frame)
+{
+	#ifdef _MSC_VER
+	char* slash = "\\";
+	#else
+	char* slash = "/";
+	#endif
+
+	char cFrame[10];
+	char prefixFrame[10];
+	if ( frame < 10)
+		strcpy(prefixFrame, "000");
+	else if ( frame < 100) 
+		strcpy(prefixFrame, "00");
+	else if ( frame < 1000) 
+		strcpy(prefixFrame, "0");
+	sprintf(cFrame, "%s%d", prefixFrame, frame);
+					
+	strcpy(dest, outputFolder);
+	strcat(dest, slash);
+
+	if(strcmp(postfix,"") == 0)
+		strcat(dest, "aaOceanData");
+	else
+		strcat(dest, "aaOceanData_");
+
+	strcat(dest, postfix);
+	strcat(dest, ".");
+	strcat(dest, cFrame);
+	strcat(dest, ".exr");
+}
+
 bool fetchInput(AtParamValue *&params, aaOcean *&ocean)
 {
 	float tempFLT;

@@ -34,7 +34,9 @@ enum aaOceanArnoldParams
 	p_fMin,
 	p_fMax,
 	p_writeFile,
-	p_outputFileName
+	p_outputFolder,
+	p_postfix,
+	p_currentFrame
 };
 
 #include "shader_funcs.h"
@@ -61,7 +63,9 @@ node_parameters
 	AiParameterFLT ( "fMin"				, 0.0f);
 	AiParameterFLT ( "fMax"				, 0.0f);
 	AiParameterBOOL( "writeFile"		, 0);
-	AiParameterStr ( "outputFileName"   , "");
+	AiParameterStr ( "outputFolder"     , "");
+	AiParameterStr ( "postfix"			, "");
+	AiParameterINT ( "currentFrame"		, 1);
 }
 
 node_update
@@ -142,18 +146,26 @@ node_initialize
 	ocean = new aaOcean;
 	AiMsgInfo("[aaOcean Arnold] Created new aaOcean data");
 	AiNodeSetLocalData(node, ocean);
-
 }
 
 node_finish
 {
 	aaOcean *ocean = (aaOcean *)AiNodeGetLocalData(node);
 
-	const char *outputFileName = AiNodeGetStr(node, "outputFileName");
-	if(strcmp(outputFileName, "") != 0)
+	if(AiNodeGetBool(node, "writeFile"))
 	{
-		// dump ocean data to open-exr file
-		AiMsgInfo("[aaOcean Arnold] Written file to disk"); // log file path and name to console
+		const char *outputFolder = AiNodeGetStr(node, "outputFolder");
+		if(!dirExists(outputFolder))
+			AiMsgWarning("[aaOcean Arnold] Invalid folder path: %s", outputFolder);
+		else
+		{
+			const char* postfix = AiNodeGetStr(node, "postfix");
+			int frame = AiNodeGetInt(node, "currentFrame");
+			char outputFile[255];
+			genFullFilePath(&outputFile[0], &outputFolder[0], &postfix[0], frame);
+			// writefile(&outputFile[0])
+			AiMsgInfo("[aaOcean Arnold] Image written to %s", outputFile); // log file path and name to console
+		}
 	}
 
 	// cleanup
