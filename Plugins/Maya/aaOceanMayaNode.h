@@ -269,5 +269,5 @@ void aaOceanMaya::fetchInput(MDataBlock& block)
 	pOcean->m_chopAmount	= block.inputValue(waveChop).asFloat()  * .01f;		//divided by scale for better ocean control;
 	pOcean->m_waveHeight	= block.inputValue(waveHeight).asFloat()* .01f;		//divided by scale for better ocean control;
 	pOcean->m_waveSpeed		= block.inputValue(waveSpeed).asFloat();
-	pOcean->m_time			= block.inputValue(currTime).asFloat() / 24.0f;		// divide by fps -- fix this
+	pOcean->m_time			= block.inputValue(currTime).asFloat(); // time in seconds
 }
