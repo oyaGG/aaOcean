@@ -27,8 +27,9 @@ This repository contains the following
 
 LINUX:
 All plugins/shaders come with makefiles
-You will need single-precision fftw library installed. See 'externals/fftw' for a ./configure script that 
+You will need single-precision, threaded fftw library installed. See 'externals/fftw' for a ./configure script that 
 I use to generate a static library to link with. Download source from fftw.org
+You will also need OpenEXR and Z-lib installed
 
 WINDOWS:
 Look at the linux makefiles to make your Visual Studio projects
