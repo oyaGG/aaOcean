@@ -20,13 +20,22 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
 	aaOcean *ocean = (*os)->ocean;
 	
 	miScalar	layerOcean	= *mi_eval_scalar(&params->layerOcean);
-	miVector	*coord		=  mi_eval_vector(&params->uv_coords);
+	miVector	*coord = mi_eval_vector(&params->uv_coords);
 	miScalar	fade		= *mi_eval_scalar(&params->fade);
-
-	// rotating UV space by 90 degrees to align with ICE representation
-	coord->z = coord->x;
-	coord->x = coord->y * -1.0f;
-	coord->y = coord->z;
+	
+	if(*mi_eval_boolean(&params->use_uv_input))
+	{
+		// rotating UV space by 90 degrees to align with ICE representation
+		coord->z = coord->x;
+		coord->x = coord->y * -1.0f;
+		coord->y = coord->z;
+	}
+	else
+	{
+		coord->x = state->tex.y * -1.0f;
+		coord->y = state->tex.x;
+		coord->z = 0.0f;
+	}
 
 	result->g = catromPrep(ocean, ocean->m_fft_htField,  state,  coord) * (1.0f - fade);
 	

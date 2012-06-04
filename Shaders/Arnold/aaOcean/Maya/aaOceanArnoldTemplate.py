@@ -17,6 +17,7 @@ class AEaaOceanArnoldTemplate(ShaderAETemplate):
 		self.addControl("seed", label="Seed")
 		self.addControl("oceanScale", label="Ocean Scale")
 		self.addControl("time", label="Time (secs)")
+		self.addControl("use_uv_input", label="Use Input UVs")
 		self.endLayout()
 		
 		self.beginLayout("Wave Parameters", collapse=False)

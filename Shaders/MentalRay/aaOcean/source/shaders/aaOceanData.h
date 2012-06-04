@@ -14,6 +14,7 @@
 typedef struct
 {
 	miVector	uv_coords;			// uv_coords
+	miBoolean	use_uv_input;
 	miScalar	fade;
 	miInteger	resolution;
 	miScalar	oceanScale;

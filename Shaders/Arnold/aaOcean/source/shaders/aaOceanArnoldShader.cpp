@@ -15,6 +15,7 @@ AI_SHADER_NODE_EXPORT_METHODS(aaOceanArnoldMethods);
 enum aaOceanArnoldParams
 {
 	p_uv_coords,
+	p_useUVInput,
 	p_fade,
 	p_resolution,
 	p_oceanScale,
@@ -44,6 +45,7 @@ enum aaOceanArnoldParams
 node_parameters
 {
 	AiParameterVEC ( "uv_coords"		, 1.0f, 1.0f, 1.0f);
+	AiParameterBOOL( "use_uv_input"		, 0);
 	AiParameterFLT ( "fade"				, 0.0f);
 	AiParameterINT ( "resolution"		, 4);
 	AiParameterFLT ( "oceanScale"		, 100.0f);
@@ -105,8 +107,20 @@ shader_evaluate
 	if(ocean->m_isValid)
 	{
 		AtPoint uvPt;
-		uvPt.x = sg->v * -1.0f;
-		uvPt.y = sg->u;
+		if(AiShaderEvalParamBool(p_useUVInput))
+		{
+			uvPt = AiShaderEvalParamVec(p_uv_coords);
+			// Rotating UV space to be in line with deformer
+			uvPt.z = uvPt.y * -1.0f;
+			uvPt.y = uvPt.x;
+			uvPt.x = uvPt.z;
+		}
+		else
+		{
+			// Rotating UV space to be in line with deformer
+			uvPt.x = sg->v * -1.0f;
+			uvPt.y = sg->u;
+		}
 
 		sg->out.RGBA.g = catromPrep( ocean,  ocean->m_fft_htField, uvPt);
 

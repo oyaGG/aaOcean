@@ -6,6 +6,7 @@ declare shader
 	color "aaOceanDataShader" 
 	(
 		vector	"uv_coords",  	#: default 0.0 0.0 0.0
+		boolean	"use_uv_input",	#: default 0
 		scalar	"fade",		   	#: default 0.0
 		integer	"resolution",	#: default 3
 		scalar	"oceanScale",	#: default 100.0

@@ -23,6 +23,19 @@ PropertySet "aaOceanArnold_params"
 		readable = on;
 		inspectable = on;
 	}
+	Parameter "use_uv_input" input
+	{
+		GUID = "{A0402B49-4660-470b-8D5A-F566ED50C13E}";
+		type = boolean;
+		flags = 0;
+		texturable = off;
+		value = 0;
+		writable = on;
+		animatable = off;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
 	Parameter "fade" input
 	{		
 		guid = "{72D5B15B-79AE-4058-ABA6-FA1DE5651CC7}";
@@ -343,6 +356,10 @@ Defaults
 		Name = "uv coords";
 		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
 	}
+	use_uv_input
+	{
+		Name = "use input uv";
+	}
 	fade
 	{
 		Name = "fade";
@@ -486,6 +503,7 @@ Layout "Default"
 			oceanScale;
 			seed;
 			time;
+			use_uv_input;
 		}
 		Group "Wave Parameters"
 		{
