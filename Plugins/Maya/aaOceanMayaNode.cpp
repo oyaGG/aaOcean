@@ -58,16 +58,9 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 		#pragma omp parallel for
 		for(int i = 0; i<verts.length(); i++)
 		{
-			/*
-			// this block of code for vec(x, y) -> vec(-y, x)
-			// fix this later
-			verts[i].y -= pOcean->m_fft_htField[i][1]; // why flip y?
-			verts[i].x += pOcean->m_fft_chopZ[i][1];
-			verts[i].z -= pOcean->m_fft_chopX[i][1];*/
-
 			verts[i].y += pOcean->m_fft_htField[i][1];
-			verts[i].x -= pOcean->m_fft_chopZ[i][1];
-			verts[i].z -= pOcean->m_fft_chopX[i][1];
+			verts[i].x -= pOcean->m_fft_chopX[i][1];
+			verts[i].z -= pOcean->m_fft_chopZ[i][1];
 		}
 
 		iter.setAllPositions(verts);
