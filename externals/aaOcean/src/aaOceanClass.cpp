@@ -9,6 +9,16 @@
 #define AAOCEANCLASS_CPP
 
 #include "aaOceanClass.h"
+#include <cmath>
+#include <omp.h>
+#include <climits>
+#include <float.h>
+#include "constants.h"
+#include "functionLib.h"
+#include "agnerFog/sfmt.cpp" 
+#include "agnerFog/stocc.h"
+#include "agnerFog/stoc1.cpp"
+#include "agnerFog/userintf.cpp"
 
 aaOcean::aaOcean() :	
 	m_pointCount(0),			m_resolution(0),			m_windAlign(0),			m_seed(1),			

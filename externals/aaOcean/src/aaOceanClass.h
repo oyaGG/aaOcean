@@ -8,17 +8,7 @@
 #ifndef AAOCEANCLASS_H
 #define AAOCEANCLASS_H
 
-#include <float.h>
-#include <cmath>
-#include <omp.h>
-#include <climits>
 #include "fftw3.h"
-#include "constants.h"
-#include "functionLib.h"
-#include "agnerFog/sfmt.cpp" 
-#include "agnerFog/stocc.h"
-#include "agnerFog/stoc1.cpp"
-#include "agnerFog/userintf.cpp"
 
 class aaOcean
 { 
