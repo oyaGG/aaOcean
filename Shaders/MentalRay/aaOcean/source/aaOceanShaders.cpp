@@ -21,10 +21,6 @@
 #include "shaders/shader_funcs.h"
 #include "shaders/aaOceanData.cpp"
 
-// The shaders below are now redundant
-// #include "shaders/aaOceanImgVecDisplace.cpp"
-// #include "shaders/aaOceanDisplace.cpp"
-// #include "shaders/aaOceanFoam.cpp"
 
 
 

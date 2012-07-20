@@ -32,8 +32,8 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
 	}
 	else
 	{
-		coord->x = state->tex.y * -1.0f;
-		coord->y = state->tex.x;
+		coord->x = state->tex_list[0].y * -1.0f;
+		coord->y = state->tex_list[0].x;
 		coord->z = 0.0f;
 	}
 
