@@ -72,7 +72,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::viewRes, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrOceanSize;
-	oceanSize= nAttrOceanSize.create( "Ocean Size", "oceanSize", MFnNumericData::kFloat, 100.f );
+	oceanSize= nAttrOceanSize.create( "oceanSize", "oceanSize", MFnNumericData::kFloat, 100.f );
     nAttrOceanSize.setKeyable(  true );	
 	nAttrOceanSize.setWritable(true);
 	nAttrOceanSize.setSoftMin(1.f);	
@@ -92,7 +92,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::seed, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveHeight;
-	waveHeight = nAttrWaveHeight.create( "Wave Height", "waveHeight", MFnNumericData::kFloat, 2.0f );
+	waveHeight = nAttrWaveHeight.create( "waveHeight", "waveHeight", MFnNumericData::kFloat, 2.0f );
     nAttrWaveHeight.setKeyable(  true );	
 	nAttrWaveHeight.setWritable(true);
 	nAttrWaveHeight.setSoftMin(0.001f);	
@@ -102,7 +102,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveHeight, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveSize;
-	waveSize = nAttrWaveSize.create( "Wave Size", "waveSize", MFnNumericData::kFloat, 4.0f );
+	waveSize = nAttrWaveSize.create( "waveSize", "waveSize", MFnNumericData::kFloat, 4.0f );
     nAttrWaveSize.setKeyable(  true );	
 	nAttrWaveSize.setWritable(true);
 	nAttrWaveSize.setSoftMin(1.f);	
@@ -111,7 +111,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveSize, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveSpeed;
-	waveSpeed = nAttrWaveSpeed.create( "Wave Speed", "waveSpeed", MFnNumericData::kFloat, 1.0f );
+	waveSpeed = nAttrWaveSpeed.create( "waveSpeed", "waveSpeed", MFnNumericData::kFloat, 1.0f );
     nAttrWaveSpeed.setKeyable(  true );	
 	nAttrWaveSpeed.setWritable(true);
 	nAttrWaveSpeed.setSoftMin(1.f);	
@@ -120,7 +120,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveSpeed, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveChop;
-	waveChop = nAttrWaveChop.create( "Wave Chop", "waveChop", MFnNumericData::kFloat, 2.0f );
+	waveChop = nAttrWaveChop.create( "waveChop", "waveChop", MFnNumericData::kFloat, 2.0f );
     nAttrWaveChop.setKeyable(  true );	
 	nAttrWaveChop.setWritable(true);
 	nAttrWaveChop.setSoftMin(0.0f);	
@@ -129,7 +129,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveChop, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveSmooth;
-	waveSmooth = nAttrWaveSmooth.create( "Wave Smooth", "waveSmooth", MFnNumericData::kFloat, 0.0f);
+	waveSmooth = nAttrWaveSmooth.create( "waveSmooth", "waveSmooth", MFnNumericData::kFloat, 0.0f);
     nAttrWaveSmooth.setKeyable(  true );	
 	nAttrWaveSmooth.setWritable(true);
 	nAttrWaveSmooth.setSoftMin(0.0f);	
@@ -138,7 +138,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveSmooth, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveDirection;
-	waveDirection = nAttrWaveDirection.create( "Wave Direction", "waveDirection", MFnNumericData::kFloat, 45.0f );
+	waveDirection = nAttrWaveDirection.create( "waveDirection", "waveDirection", MFnNumericData::kFloat, 45.0f );
     nAttrWaveDirection.setKeyable(  true );	
 	nAttrWaveDirection.setWritable(true);
 	nAttrWaveDirection.setSoftMin(0.0f);	
@@ -149,7 +149,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveDirection, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveReflection;
-	waveReflection = nAttrWaveReflection.create( "Wave Reflection", "waveReflection", MFnNumericData::kFloat, 0.0f );
+	waveReflection = nAttrWaveReflection.create( "waveReflection", "waveReflection", MFnNumericData::kFloat, 0.0f );
     nAttrWaveReflection.setKeyable(  true );	
 	nAttrWaveReflection.setWritable(true);
 	nAttrWaveReflection.setSoftMin(0.0f);	
@@ -160,7 +160,7 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::waveReflection, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrWaveAlign;
-	waveAlign = nAttrWaveAlign.create( "Wave Align", "waveAlign", MFnNumericData::kInt, 1 );
+	waveAlign = nAttrWaveAlign.create( "waveAlign", "waveAlign", MFnNumericData::kInt, 1 );
     nAttrWaveAlign.setKeyable(  true );	
 	nAttrWaveAlign.setWritable(true);
 	nAttrWaveAlign.setSoftMin(0);	
