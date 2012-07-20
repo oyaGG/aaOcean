@@ -72,7 +72,7 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 		{
 			CDataArrayVector3f outData( in_ctxt );
 			if(!ICEocean->m_renderReady)
-				ICEocean->prepareOcean(1,1,0,0);			
+				ICEocean->prepareOcean(1,1,0,0,0,0);			
 				displayHeightField(outData,ICEocean);
 		}
 		break;
@@ -81,7 +81,7 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 		{
 			if(ICEocean->m_isAllocated)
 			{				
-				ICEocean->prepareOcean(0,0,1,0);
+				ICEocean->prepareOcean(0,0,1,0,0,0);
 				CDataArrayFloat outData( in_ctxt );
 				displayFoam(outData,ICEocean);
 			}
@@ -93,7 +93,7 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 			CDataArrayVector3f outData( in_ctxt );
 			if( ICEocean->m_isAllocated && ICEocean->m_chopAmount > 0.0 && !ICEocean->m_renderReady)
 			{
-				ICEocean->prepareOcean(0,0,1,0);				
+				ICEocean->prepareOcean(0,0,1,0,0,0);				
 				displayEigenMinus(outData,ICEocean);
 			}
 			else
@@ -109,7 +109,7 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 			CDataArrayVector3f outData( in_ctxt );
 			if(ICEocean->m_isAllocated && ICEocean->m_chopAmount > 0.0 && !ICEocean->m_renderReady)
 			{
-				ICEocean->prepareOcean(0,0,1,0);				
+				ICEocean->prepareOcean(0,0,1,0,0,0);				
 				displayEigenPlus(outData,ICEocean);
 			}
 			else
@@ -129,7 +129,7 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 			CDataArrayVector3f outData( in_ctxt );
 			if(ICEocean->m_isAllocated)
 			{
-				ICEocean->prepareOcean(1,1,0,1);
+				ICEocean->prepareOcean(1,1,0,1,0,0);
 				displayNormals(outData,ICEocean);
 			}
 		}
