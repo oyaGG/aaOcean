@@ -5,7 +5,7 @@ TARGETLOC:=
 
 INCLUDES := -I$(XSISDKLOC)/include -I$(FFTWLOC) -I../../../../external/aaOcean/src -I../../../../external/helpers
 LDFLAGS  := -fopenmp $(FFTWLOC)libfftw3f.a
-CXXFLAGS := -w -O2 -fPIC -fvisibility=hidden
+CXXFLAGS := -w -O2 -fPIC
 CXX	     := $(GXXLOC)g++
 SOURCES  := icenode.cpp
 OBJECTS  := $(SOURCES:.cpp=.o)
