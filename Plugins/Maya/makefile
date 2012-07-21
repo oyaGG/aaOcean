@@ -1,11 +1,12 @@
 MAYAINC	 := 
+MAYA_LIB :=
 FFTWLOC  := ../../externals
 GXXLOC	 := 
 TARGETLOC:= 
 
 INCLUDES := -I$(MAYAINC) -I$(FFTWLOC) -I../../externals/aaOcean/src -I../../externals/helpers 
-LDFLAGS  := -fopenmp $(FFTWLOC)/libfftw3f.a
-CXXFLAGS := -w -O2 -fPIC -fvisibility=hidden -DLINUX -D_BOOL -DI386 -ffast-math
+LDFLAGS  := -fopenmp $(FFTWLOC)/libfftw3f.a -L$(MAYA_LIB)/lib -lOpenMaya
+CXXFLAGS := -w -O2 -fPIC -DLINUX -D_BOOL -DI386 -ffast-math
 CXX	     := $(GXXLOC)g++
 SOURCES  := aaOceanMayaNode.cpp
 OBJECTS  := $(SOURCES:.cpp=.o)
