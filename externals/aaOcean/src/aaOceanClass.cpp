@@ -8,7 +8,7 @@
 #ifndef AAOCEANCLASS_CPP
 #define AAOCEANCLASS_CPP
 
-#include "aaOceanClass.h"
+
 #include <cmath>
 #include <omp.h>
 #include <climits>
@@ -19,6 +19,7 @@
 #include "agnerFog/stocc.h"
 #include "agnerFog/stoc1.cpp"
 #include "agnerFog/userintf.cpp"
+#include "aaOceanClass.h"
 
 aaOcean::aaOcean() :	
 	m_pointCount(0),			m_resolution(0),			m_windAlign(0),			m_seed(1),			
