@@ -46,8 +46,20 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 	iter.allPositions(verts);
 
 	int gridRes = int_sqrt(verts.length()) - 1;	
-	fetchInput(block);
-	if(pOcean->reInit(gridRes))
+	pOcean->input(	gridRes,
+					block.inputValue(seed).asInt(),
+					block.inputValue(oceanSize).asFloat(),
+					block.inputValue(waveSize).asFloat(),
+					block.inputValue(waveSmooth).asFloat(),
+					block.inputValue(waveDirection).asFloat(),
+					block.inputValue(waveAlign).asInt(),
+					block.inputValue(waveReflection).asFloat(),
+					block.inputValue(waveSpeed).asFloat(),
+					block.inputValue(waveHeight).asFloat(),
+					block.inputValue(waveChop).asFloat(),
+					block.inputValue(currTime).asFloat());
+					
+	if(pOcean->m_isValid)
 	{
 		bool chop = false;
 		if((float)pOcean->m_chopAmount > 0.0001f)
@@ -62,11 +74,13 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 			verts[i].x -= pOcean->m_fft_chopX[i][1];
 			verts[i].z -= pOcean->m_fft_chopZ[i][1];
 		}
-
 		iter.setAllPositions(verts);
+		return MS::kSuccess;
 	}
+	else
+		return MS::kFailure;
 
-	return MS::kSuccess;
+	
 }
 
 
