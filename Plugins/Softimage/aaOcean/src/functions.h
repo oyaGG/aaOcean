@@ -65,42 +65,34 @@ inline void fetchICEUserInput(ICENodeContext& in_ctxt, aaOcean *&ICEocean)
 	}
 	
 	CICEPortState pState_seed( in_ctxt, ID_IN_SEED);
-	CICEPortState pState_ranType( in_ctxt, ID_IN_RANDOM_TYPE);
-	if( isPortDirty(pState_seed) || isPortDirty(pState_ranType))
+	if( isPortDirty(pState_seed))
 	{
 		CDataArrayLong seed( in_ctxt, ID_IN_SEED);
-		CDataArrayFloat ranType( in_ctxt, ID_IN_RANDOM_TYPE);
-		ICEocean->m_randomType = ranType[0];
 		ICEocean->m_seed	= seed[0];
 		ICEocean->m_redoHoK = TRUE;
 		ICEocean->setup_grid(); 	
 	}
-	//get grid dimensions 
-	CDataArrayFloat gridU( in_ctxt, ID_IN_GRID_LENGTH_U);
-	CDataArrayFloat gridV( in_ctxt, ID_IN_GRID_LENGTH_V);
-	ICEocean->m_3DGridULength = gridU[0];
-	ICEocean->m_3DGridVLength = gridV[0];
 
 	//set current time and frame values
 	ICEocean->m_time  = (float)in_ctxt.GetTime().GetTime(CTime::Seconds);
 }
 
-void displayHeightField(CDataArrayVector3f &outData, aaOcean *&ICEocean)
+void displayHeightField(CDataArrayVector3f &outData, aaOcean *&ICEocean, bool bEnable, const float lengthU, const float lengthV)
 {
 	bool chop = FALSE;
 	int index, i, j;	
 	float x,z,mult1, mult2, halfRes;
-	int gridRes = int_sqrt(ICEocean->m_pointCount) - 1;
-	halfRes = (float)gridRes/2;
-	mult1 = float(ICEocean->m_3DGridULength) / float(gridRes);
-	mult2 = float(ICEocean->m_3DGridVLength) / float(gridRes);
+	int resolution = ICEocean->m_resolution;
+	halfRes = (float)resolution/2;
+	mult1 = lengthU / float(resolution);
+	mult2 = lengthV / float(resolution);
 
 	if(ICEocean->m_chopAmount > 0.0f)
 		chop = TRUE;
 
-	if(!ICEocean->m_renderReady)
+	if(bEnable)
 	{
-		int n = gridRes;
+		int n = resolution;
 		if(chop)
 		{
 			#pragma omp parallel for private(i,j,index, x, z) 
@@ -166,7 +158,7 @@ void displayHeightField(CDataArrayVector3f &outData, aaOcean *&ICEocean)
 	else
 	{
 		//Rendering, display flat mesh
-		int n = int_sqrt(ICEocean->m_pointCount);
+		int n = resolution + 1;
 		#pragma omp parallel for private(i,j,index, x, z) 
 		for(i = 0; i< n; i++)
 		{					
@@ -274,46 +266,6 @@ void displayEigenPlus(CDataArrayVector3f &outData, aaOcean *&ICEocean)
 				outData[index].PutX(ICEocean->m_eigenPlusX[i*n+j]);
 				outData[index].PutZ(ICEocean->m_eigenPlusZ[i*n+j]);
 			}		
-		}
-	}
-}
-
-void displayNormals(CDataArrayVector3f &outData, aaOcean *&ICEocean)
-{
-	int index;
-	const int n = ICEocean->m_resolution;
-
-	#pragma omp parallel for private(index)
-	for(int i = 0; i< (n+1); i++)
-	{					
-		for(int j = 0; j< (n+1); j++)
-		{
-			index = i*(n+1)+j;
-			
-			if(i==n)  //copy left col to right col
-			{
-				outData[index].PutY(ICEocean->m_fft_normY[j][0]);
-				outData[index].PutX(ICEocean->m_fft_normX[j][0]);
-				outData[index].PutZ(ICEocean->m_fft_normZ[j][0]);
-			}
-			if(j==n) // copy top row to bottom row
-			{
-				outData[index].PutY(ICEocean->m_fft_normY[i*n][0]);
-				outData[index].PutX(ICEocean->m_fft_normX[i*n][0]);
-				outData[index].PutZ(ICEocean->m_fft_normZ[i*n][0]);
-			}
-			if(i==n && j==n)
-			{
-				outData[index].PutY(ICEocean->m_fft_normY[0][0]);
-				outData[index].PutX(ICEocean->m_fft_normX[0][0]);
-				outData[index].PutZ(ICEocean->m_fft_normZ[0][0]);
-			}
-			if( i<n && j<n)
-			{
-				outData[index].PutY(ICEocean->m_fft_normY[i*n+j][0]);
-				outData[index].PutX(ICEocean->m_fft_normX[i*n+j][0]);
-				outData[index].PutZ(ICEocean->m_fft_normZ[i*n+j][0]);
-			}			
 		}
 	}
 }

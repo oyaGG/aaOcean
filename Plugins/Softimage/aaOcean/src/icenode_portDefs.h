@@ -20,12 +20,10 @@ enum IDs
 	ID_IN_GRID_SCALE = 600,
 	ID_IN_WAVE_HEIGHT = 25,
 	ID_IN_SEED = 29,
-	ID_IN_RENDER_READY = 30,
+	ID_IN_ENABLE = 30,
 	ID_IN_GRID_LENGTH_U = 31,
 	ID_IN_GRID_LENGTH_V = 32,
 
-	ID_IN_RANDOM_TYPE = 40,
-	
 	ID_G_100 = 100,
 	ID_G_101,
 	ID_G_102,
@@ -41,7 +39,6 @@ enum IDs
 	ID_OUT_FOAM,
 	ID_OUT_EIGEN_MINUS,
 	ID_OUT_EIGEN_PLUS,
-	ID_OUT_NORMALS,
 
 	ID_UNDEF = ULONG_MAX
 };
@@ -151,18 +148,11 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 	st.AssertSucceeded( ) ;
 	
 
-	st = nodeDef.AddInputPort(	ID_IN_RANDOM_TYPE,
-								ID_G_101,
-								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
-								L"Random Type",L"Random_Type",
-								0.f,0.0f, 1.0f, UINT_MAX,UINT_MAX,UINT_MAX);
-	st.AssertSucceeded( ) ;
-
-	st = nodeDef.AddInputPort(	ID_IN_RENDER_READY,
+	st = nodeDef.AddInputPort(	ID_IN_ENABLE,
 								ID_G_102,
 								siICENodeDataBool,siICENodeStructureSingle,siICENodeContextSingleton,
-								L"Ready to Render",L"Ready_to_Render",
-								false);
+								L"Enable",L"Enable",
+								true);
 	st.AssertSucceeded( ) ;
 
 	st = nodeDef.AddInputPort(	ID_IN_PointID,
@@ -208,11 +198,6 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 	st.AssertSucceeded( ) ;
 
 	st = nodeDef.AddPortGroup(ID_G_204);
-	st.AssertSucceeded( ) ;
-	st = nodeDef.AddOutputPort(	ID_OUT_NORMALS,
-								ID_G_204,
-								siICENodeDataVector3,siICENodeStructureSingle,siICENodeContextComponent0D,
-								L"Normals",L"Normals");
 	st.AssertSucceeded( ) ;
 
 	PluginItem nodeItem = in_reg.RegisterICENode(nodeDef);

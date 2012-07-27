@@ -27,7 +27,7 @@ function aaOcean_Menu_Define( in_ctxt )
 	
 	var oCustomProperty;
 	oCustomProperty = in_ctxt.Source;
-	oCustomProperty.AddParameter2("Ready_to_Render",siBool,false,null,null,null,null,siClassifUnknown,siPersistable | siKeyable | siAnimatable, "Ready To Render Displacement? (flatten grid)");
+	oCustomProperty.AddParameter2("Enable",siBool,false,null,null,null,null,siClassifUnknown,siPersistable | siKeyable | siAnimatable, "Enable");
 	oCustomProperty.AddParameter2("ViewportResolution",siInt4,2,1,7,1,7,siClassifUnknown,siPersistable | siKeyable, "Resolution");
 	oCustomProperty.AddParameter2("RenderResolution",siInt4,4,3,8,3,8,siClassifUnknown,siPersistable | siKeyable, "Render Res.");
 	oCustomProperty.AddParameter2("ViewSubdivs",siInt4,32,4,1024,32,1024,siClassifUnknown,siPersistable | siKeyable | siReadOnly, "View SubDs");
@@ -42,10 +42,7 @@ function aaOcean_Menu_Define( in_ctxt )
 	oCustomProperty.AddParameter2("Filter_small_waves",siFloat,0,0,2000,0,10,siClassifUnknown,siPersistable | siKeyable | siAnimatable, "Smooth");
 	oCustomProperty.AddParameter2("Chop_Amount",siFloat,1,0,1000,0,5,siClassifUnknown,siPersistable | siKeyable | siAnimatable, "Chop Amount");
 	oCustomProperty.AddParameter2("Seed",siInt4,1,1,20,1,20,siClassifUnknown,siPersistable | siKeyable , "Seed");
-	
-	oCustomProperty.AddParameter2("EXR_Prefix",siString,"",null,null,null,null,siClassifUnknown,siPersistable | siKeyable, "Filename Prefix");
-	oCustomProperty.AddParameter3("Directory",siString, path);
-	
+		
 	return true;
 }
 
@@ -60,16 +57,12 @@ function aaOcean_Menu_DefineLayout( in_ctxt )
 	oLayout.AddTab("Ocean Controls");
 	oLayout.AddSpacer(00 , 10);
 	
-		oLayout.AddItem("Ready_to_Render");
+		oLayout.AddItem("Enable");
 		oLayout.AddGroup("Ocean Parameters");
 			oLayout.AddRow();
 				oLayout.AddItem("ViewportResolution");
 				oLayout.AddItem("ViewSubdivs");
 			oLayout.EndRow();
-			//oLayout.AddRow();
-			//	oLayout.AddItem("RenderResolution");
-			//	oLayout.AddItem("RenderSubdivs");
-			//oLayout.EndRow();
 			oLayout.AddItem("Ocean_Size");
 			oLayout.AddItem("Seed");
 		oLayout.EndGroup();
@@ -87,11 +80,7 @@ function aaOcean_Menu_DefineLayout( in_ctxt )
 			oLayout.AddItem("Reflected_Waves");
 			oLayout.AddItem("Wind_Align");
 		oLayout.EndGroup();
-		
-	    //oLayout.AddTab("EXR Export");
-	    //    oLayout.AddItem("EXR_Prefix");
-	    //    oLayout.AddItem( "Directory", "Output Folder", siControlFolder );
-	
+
 	return true;
 }
 

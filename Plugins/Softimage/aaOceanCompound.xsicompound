@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<xsi_file type="CompoundNode" name="aaOceanCompound" category="aaOcean Suite" author="Amaan Akram" url="http://www.amaanakram.com" formatversion="1.4" compoundversion="1.5" constructionmode="Current" backgroundcolor="6732954">
+<?xml version="1.0" encoding="UTF-8"?>
+<xsi_file type="CompoundNode" name="aaOceanCompound" category="aaOcean Suite" tasks="" author="Amaan Akram" url="http://www.amaanakram.com" formatversion="1.4" compoundversion="2.5" versiontag="" constructionmode="Current" backgroundcolor="6732954">
 	<description><![CDATA[aaOcean Suite implements Jerry Tessendorf's Siggraph 2004 paper on simulating ocean waves]]></description>
 	<definition>
 		<nodes>
@@ -37,8 +37,8 @@
 				</datablob>
 			</node>
 			<node type="GetDataNode" index="3">
-				<param name="reference" type="31" value="Self.aaOcean_Menu.Ready_to_Render"></param>
-				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Ready_to_Render"></param_ext>
+				<param name="reference" type="31" value="Self.aaOcean_Menu.Enable"></param>
+				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.Enable"></param_ext>
 				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
 				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
 				<datablob category="ui_infos">
@@ -58,11 +58,9 @@
 				<param name="Reflected_Waves" type="4" value="0.000000"></param>
 				<param name="Wind_Align" type="3" value="0"></param>
 				<param name="Seed" type="3" value="2"></param>
-				<param name="Render_Resolution" type="3" value="256"></param>
 				<param name="Grid_Length_U" type="4" value="0.000000"></param>
 				<param name="Grid_Length_V" type="4" value="0.000000"></param>
-				<param name="Performance_Log" type="11" value="false"></param>
-				<param name="Ready_to_Render" type="11" value="true"></param>
+				<param name="Enable" type="11" value="true"></param>
 				<param name="PointID" type="3" value="1"></param>
 				<portdef name="Ocean_Size" type="4" structure="1" group="0" instance="0" port="0"></portdef>
 				<portdef name="Wave_Height" type="4" structure="1" group="0" instance="0" port="1"></portdef>
@@ -74,12 +72,10 @@
 				<portdef name="Reflected_Waves" type="4" structure="1" group="0" instance="0" port="7"></portdef>
 				<portdef name="Wind_Align" type="2" structure="1" group="0" instance="0" port="8"></portdef>
 				<portdef name="Seed" type="2" structure="1" group="0" instance="0" port="9"></portdef>
-				<portdef name="Render_Resolution" type="2" structure="1" group="1" instance="0" port="0"></portdef>
-				<portdef name="Grid_Length_U" type="4" structure="1" group="1" instance="0" port="1"></portdef>
-				<portdef name="Grid_Length_V" type="4" structure="1" group="1" instance="0" port="2"></portdef>
-				<portdef name="Performance_Log" type="1" structure="1" group="2" instance="0" port="0"></portdef>
-				<portdef name="Ready_to_Render" type="1" structure="1" group="2" instance="0" port="1"></portdef>
-				<portdef name="PointID" type="2" structure="1" group="2" instance="0" port="2"></portdef>
+				<portdef name="Grid_Length_U" type="4" structure="1" group="1" instance="0" port="0"></portdef>
+				<portdef name="Grid_Length_V" type="4" structure="1" group="1" instance="0" port="1"></portdef>
+				<portdef name="Enable" type="1" structure="1" group="2" instance="0" port="0"></portdef>
+				<portdef name="PointID" type="2" structure="1" group="2" instance="0" port="1"></portdef>
 				<datablob category="ui_infos">
 					<prop name="posx">-29</prop>
 					<prop name="posy">-11</prop>
@@ -196,17 +192,6 @@
 					<prop name="state">Collapsed</prop>
 				</datablob>
 			</node>
-			<node type="GetDataNode" index="15">
-				<param name="reference" type="31" value="Self.aaOcean_Menu.RenderSubdivs"></param>
-				<param_ext name="reference" type="31" value="Self.aaOcean_Menu.RenderSubdivs"></param_ext>
-				<portdef name="source" type="2048" structure="1" group="1" instance="0" port="0"></portdef>
-				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
-				<datablob category="ui_infos">
-					<prop name="posx">-512</prop>
-					<prop name="posy">-24</prop>
-					<prop name="state">Collapsed</prop>
-				</datablob>
-			</node>
 			<node type="SetOneDataNode" index="16">
 				<param name="reference" type="31" value="Self.PointPosition"></param>
 				<param name="source.source_x" type="4" value="0.000000"></param>
@@ -216,8 +201,8 @@
 				<portdef name="source" type="16" structure="1" group="1" instance="0" port="0"></portdef>
 				<portdef name="inname" type="8192" structure="1" group="3" instance="0" port="0"></portdef>
 				<datablob category="ui_infos">
-					<prop name="posx">297</prop>
-					<prop name="posy">-129</prop>
+					<prop name="posx">188</prop>
+					<prop name="posy">-138</prop>
 					<prop name="state">Normal</prop>
 				</datablob>
 			</node>
@@ -249,28 +234,26 @@
 			<port index="4" portname="Foam" username="Foam" basename="Foam" portlabel="Foam" exposetype="single"> </port>
 			<port index="4" portname="egnVector_Minus" username="eigen_vector1" basename="eigen vector1" portlabel="eigen vector1" exposetype="single"> </port>
 			<port index="4" portname="egnVector_Plus" username="eigen_vector2" basename="eigen vector2" portlabel="eigen vector2" exposetype="single"> </port>
-			<port index="4" portname="Normals" username="surface_normals" basename="surface normals" portlabel="surface normals" exposetype="single"> </port>
 			<port index="16" portname="value" username="execute" basename="execute" portlabel="execute" exposetype="single"> </port>
 		</exposed_ports>
 		<connections>
-			<cnx from_node="17" from_port="value" to_node="4" to_port="Grid_Length_U"> </cnx>
-			<cnx from_node="18" from_port="value" to_node="4" to_port="Grid_Length_V"> </cnx>
+			<cnx from_node="4" from_port="Ocean" to_node="16" to_port="source"> </cnx>
+			<cnx from_node="2" from_port="value" to_node="1" to_port="value"> </cnx>
+			<cnx from_node="3" from_port="value" to_node="4" to_port="Enable"> </cnx>
 			<cnx from_node="5" from_port="value" to_node="4" to_port="Wind_Align"> </cnx>
 			<cnx from_node="6" from_port="value" to_node="4" to_port="Seed"> </cnx>
 			<cnx from_node="7" from_port="value" to_node="4" to_port="Reflected_Waves"> </cnx>
 			<cnx from_node="8" from_port="value" to_node="4" to_port="Wind_Direction"> </cnx>
 			<cnx from_node="9" from_port="value" to_node="4" to_port="Smooth"> </cnx>
-			<cnx from_node="1" from_port="indices" to_node="4" to_port="PointID"> </cnx>
 			<cnx from_node="10" from_port="value" to_node="4" to_port="Chopiness"> </cnx>
 			<cnx from_node="11" from_port="value" to_node="4" to_port="Wave_Speed"> </cnx>
 			<cnx from_node="12" from_port="value" to_node="4" to_port="Wave_Size"> </cnx>
 			<cnx from_node="13" from_port="value" to_node="4" to_port="Wave_Height"> </cnx>
 			<cnx from_node="14" from_port="value" to_node="4" to_port="Ocean_Size"> </cnx>
-			<cnx from_node="2" from_port="value" to_node="1" to_port="value"> </cnx>
-			<cnx from_node="3" from_port="value" to_node="4" to_port="Ready_to_Render"> </cnx>
-			<cnx from_node="4" from_port="Ocean" to_node="16" to_port="source"> </cnx>
+			<cnx from_node="17" from_port="value" to_node="4" to_port="Grid_Length_U"> </cnx>
+			<cnx from_node="18" from_port="value" to_node="4" to_port="Grid_Length_V"> </cnx>
 			<cnx from_node="0" from_port="outname" to_node="2" to_port="inname"> </cnx>
-			<cnx from_node="15" from_port="value" to_node="4" to_port="Render_Resolution"> </cnx>
+			<cnx from_node="1" from_port="indices" to_node="4" to_port="PointID"> </cnx>
 		</connections>
 		<layout>
 			<item type="output" name="execute"> </item>
@@ -278,7 +261,6 @@
 			<item type="output" name="Foam"> </item>
 			<item type="output" name="eigen_vector1"> </item>
 			<item type="output" name="eigen_vector2"> </item>
-			<item type="output" name="surface_normals"> </item>
 		</layout>
 		<blob_dictionary>
 		</blob_dictionary>
