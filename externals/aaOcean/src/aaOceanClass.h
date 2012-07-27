@@ -13,7 +13,6 @@
 class aaOcean
 { 
 public:
-	int		m_pointCount;
 	int		m_resolution;
 	ULONG	m_seed;
 	int		m_windAlign;
@@ -26,8 +25,6 @@ public:
 	float	m_waveHeight;
 	float	m_waveSpeed;
 	float	m_time;
-	float	m_3DGridULength;
-	float	m_3DGridVLength;
 	float	m_fmin, m_fmax; //for holding min/max foam
 	char	m_state[256];
 
@@ -48,17 +45,12 @@ public:
 	float	*m_eigenMinusX;
 	float	*m_eigenMinusZ;
 
-	float m_randomType;
-
 	//bool types for various checks during run-time
-	bool	m_renderReady;
 	bool	m_isAllocated;
 	bool	m_isValid;
-	bool	m_isNormalsAllocated;
 	bool	m_isFoamAllocated;
 	bool	m_isSplashAllocated;
 	bool	m_redoHoK;
-	bool	m_isShader;
 
 	fftwf_complex *m_fft_htField;
 	fftwf_complex *m_fft_chopX;
@@ -66,9 +58,6 @@ public:
 	fftwf_complex *m_fft_jxx;
 	fftwf_complex *m_fft_jzz;
 	fftwf_complex *m_fft_jxz;
-	fftwf_complex *m_fft_normX;
-	fftwf_complex *m_fft_normY;
-	fftwf_complex *m_fft_normZ;
 
 	fftwf_plan m_planHeightField;
 	fftwf_plan m_planChopX;
@@ -92,14 +81,11 @@ public:
 				float 	waveSpeed, 
 				float 	waveHeight,
 				float 	chopAmount,
-				float 	time,
-				float	randomType);
+				float 	time);
 
-	void init();
 	void allocateBaseArrays();
 	void allocateFoamArrays();
 	void allocateSplashArrays();
-	void allocateNormalsArrays();
 	void clearArrays();
 	void clearResidualArrays();
 	bool reInit(int data_size);
@@ -109,8 +95,7 @@ public:
 	void evaluateHieghtField();
 	void evaluateChopField();
 	void evaluateJacobians();
-	void evaluateNormalsFinDiff();
-	void prepareOcean(bool doHeightField, bool doChopField, bool doJacobians, bool doNormals, bool copyTile, bool rotate);
+	void prepareOcean(bool doHeightField, bool doChopField, bool doJacobians, bool copyTile, bool rotate);
 	void makeTileable(fftwf_complex *&fft_array);
 	void rotateArray(fftwf_complex *&fft_array);
 };

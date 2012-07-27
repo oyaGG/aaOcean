@@ -22,18 +22,16 @@
 #include "aaOceanClass.h"
 
 aaOcean::aaOcean() :	
-	m_pointCount(0),			m_resolution(0),			m_windAlign(0),			m_seed(1),			
-	m_3DGridULength(-1.0f),		m_3DGridVLength(-1.0f),		m_velocity(-1.0f),		m_windDir(-1.0f),
+	m_resolution(0),			m_windAlign(0),				m_seed(1),			
+	m_velocity(-1.0f),		m_windDir(-1.0f),
 	m_cutoff(-1.0f),			m_damp(-1.0f),				m_oceanScale(-1.0f),	m_waveHeight(-1.0f), 
-	m_time(-1.0),				m_isAllocated(FALSE),		m_isValid(FALSE),		m_isNormalsAllocated(FALSE),
-	m_isFoamAllocated(FALSE),	m_isSplashAllocated(FALSE),	m_redoHoK(FALSE),		m_isShader(FALSE), m_fmin(FLT_MAX), 
+	m_isFoamAllocated(FALSE),	m_isSplashAllocated(FALSE),	m_redoHoK(FALSE),		m_fmin(FLT_MAX), 
 	m_fmax(-FLT_MAX),			m_zCoord(0),				m_xCoord(0),			m_hokReal(0),
 	m_hokImag(0),				m_hktReal(0),				m_hktImag(0),			m_kX(0),
 	m_kZ(0),					m_omega(0),					m_rand1(0),				m_rand2(0),
 	m_eigenPlusX(0),			m_eigenPlusZ(0),			m_eigenMinusX(0),		m_eigenMinusZ(0),
 	m_fft_htField(0),			m_fft_chopX(0),				m_fft_chopZ(0),			m_fft_jxx(0),
-	m_fft_jzz(0),				m_fft_jxz(0),				m_fft_normX(0),			m_fft_normY(0),
-	m_fft_normZ(0),				m_randomType(0.f)
+	m_fft_jzz(0),				m_fft_jxz(0)
 {
 }
 
@@ -49,9 +47,9 @@ aaOcean::~aaOcean()
 }
 
 void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity, float cutoff, float windDir, 
-			int windAlign, float damp, float waveSpeed, float waveHeight, float chopAmount, float time, float randomType)
+			int windAlign, float damp, float waveSpeed, float waveHeight, float chopAmount, float time)
 {
-	resolution	= (int)pow(2.0f, (4 + resolution));
+	//resolution	= (int)pow(2.0f, (4 + resolution));
 	oceanScale	= maximum<float>(oceanScale, 0.00001f);
 	velocity	= maximum<float>(((velocity  * velocity) / aa_GRAVITY), 0.00001f);
 	cutoff		= fabs(cutoff * 0.01f);
@@ -90,9 +88,7 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 		if(m_resolution == resolution)
 			setup_grid(); 
 	}
-
 	reInit(resolution);
-
 }
 
 bool aaOcean::reInit(int data_size)
@@ -117,7 +113,7 @@ bool aaOcean::reInit(int data_size)
 	return m_isValid;
 }
 
-void aaOcean::prepareOcean(bool doHeightField, bool doChopField, bool doJacobians, bool doNormals, bool copyTile = 0, bool rotate = 0)
+void aaOcean::prepareOcean(bool doHeightField, bool doChopField, bool doJacobians, bool copyTile = 0, bool rotate = 0)
 {
 	if( m_redoHoK )
 	{
@@ -149,14 +145,6 @@ void aaOcean::prepareOcean(bool doHeightField, bool doChopField, bool doJacobian
 		evaluateJacobians();
 		if(copyTile) { makeTileable(m_fft_jxz);  }
 		if(rotate)	 { rotateArray(m_fft_jxz);   }
-	}
-	if(doNormals)
-	{
-		if(!m_isNormalsAllocated)
-			allocateNormalsArrays();
-		evaluateNormalsFinDiff();
-		if(copyTile) { /* tile array makeTileable() */}
-		if(rotate)	 { /* rotate array rotateArray(); */}
 	}
 }
 
@@ -193,15 +181,6 @@ void aaOcean::allocateBaseArrays()
 	m_planChopX			= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_chopX ,m_fft_chopX	 ,1, FFTW_ESTIMATE);
 	m_planChopZ			= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_chopZ ,m_fft_chopZ	 ,1, FFTW_ESTIMATE);
 	m_isAllocated		= TRUE;
-}
-
-void aaOcean::allocateNormalsArrays()
-{
-	int arSize = m_resolution + 1;
-	m_fft_normX	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((arSize)*(arSize))); 
-	m_fft_normY	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((arSize)*(arSize))); 
-	m_fft_normZ	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((arSize)*(arSize))); 
-	m_isNormalsAllocated = TRUE;
 }
 
  void aaOcean::allocateFoamArrays()
@@ -329,26 +308,6 @@ void aaOcean::clearArrays()
 			m_fft_htField = FALSE;
 		}
 		m_isAllocated = FALSE;
-
-		if(m_isNormalsAllocated)
-		{
-			if(m_fft_normZ)
-			{
-				fftwf_free(m_fft_normZ); 
-				m_fft_normZ = FALSE;
-			}
-			if(m_fft_normY)
-			{
-				fftwf_free(m_fft_normY); 
-				m_fft_normY = FALSE;
-			}
-			if(m_fft_normX)
-			{
-				fftwf_free(m_fft_normX); 
-				m_fft_normX = FALSE; 
-			}
-			m_isNormalsAllocated = FALSE;
-		}
 	}
 	
 	if(m_isSplashAllocated)
@@ -552,78 +511,6 @@ void aaOcean::setup_grid()
 			m_fft_chopZ[index][0] *= m_chopAmount * isEven(i+j);
 		}
 	}
-}
-
-void aaOcean::evaluateNormalsFinDiff()
-{
-	return;
-	//int i,j, nextI, prevI, nextJ, prevJ;
-	//float X,Z, nextX, prevX, nextZ, prevZ;
-	//vector3 current, prev_iPos, next_iPos, prev_jPos, next_jPos, a, b, c, d, v1, v2;
-
-	//const int n = m_resolution;	
-	//const int halfRes = n / 2;	
-	//register const float mult1 = float(m_oceanScale) / float(n);
-	//register const float mult2 = float(m_oceanScale) / float(n);
-
-	//// #pragma omp parallel for private( i,j, nextI, prevI, nextJ, prevJ, nextX, prevX, nextZ, prevZ, current, prev_iPos, next_iPos, prev_jPos, next_jPos,a,b,c,d,v1,v2)  
-	//for(i = 0; i< n; ++i)
-	//{					
-	//	for(j = 0; j< n; ++j)
-	//	{
-	//		nextI = i+1;
-	//		prevI = i-1;
-	//		nextJ = j+1;
-	//		prevJ = j-1;
-
-	//		X = (-halfRes + i) * mult1;
-	//		Z =	(-halfRes + j) * mult2;
-	//		nextX = (-halfRes + nextI) * mult1;
-	//		nextZ =	(-halfRes + nextJ) * mult2;
-	//		prevX = (-halfRes + prevI) * mult1;
-	//		prevZ =	(-halfRes + prevJ) * mult2;
-
-	//		nextI = wrap(i+1, n-1);
-	//		prevI = wrap(i-1, n-1);
-	//		nextJ = wrap(j+1, n-1);
-	//		prevJ = wrap(j-1, n-1);
-	//		
-	//		current.x = (X - m_fft_chopX		[i * n + j][0]);
-	//		current.y = (m_fft_htField			[i * n + j][0]);
-	//		current.z = (Z - m_fft_chopZ		[i * n + j][0]);
-	//		
-	//		prev_iPos.x = (X - m_fft_chopX		[prevI * n + j][0]);
-	//		prev_iPos.y = (m_fft_htField		[i * n + prevJ][0]);
-	//		prev_iPos.z = (prevZ - m_fft_chopZ	[prevI * n + j][0]);					
-	//		
-	//		next_iPos.x = (X - m_fft_chopX		[nextI * n + j][0]);
-	//		next_iPos.y = (m_fft_htField		[i * n + nextJ][0]);
-	//		next_iPos.z = (nextZ - m_fft_chopZ	[nextI * n + j][0]);
-	//		
-	//		prev_jPos.x = (prevX - m_fft_chopX	[i * n + prevJ][0]);
-	//		prev_jPos.y = (m_fft_htField		[prevI * n + j][0]);
-	//		prev_jPos.z = (Z - m_fft_chopZ		[i * n + prevJ][0]);
-
-	//		next_jPos.x = (nextX - m_fft_chopX	[i * n + nextJ][0]);
-	//		next_jPos.y = (m_fft_htField		[nextI * n + j][0]);
-	//		next_jPos.z = (Z - m_fft_chopZ		[i * n + nextJ][0]);
-	//		
-	//		a = prev_iPos - current;
-	//		b = next_iPos - current;
-
-	//		c = prev_jPos - current;
-	//		d = next_jPos - current ;
-
-	//		v1 = a / c;			
-	//		v2 = b / d;
-	//		v1 = ((v1 + v2) / 2.0f);
-	//		v1 = v1.normalize();
-
-	//		m_fft_normX[i * n + j][0] = v1.x; 
-	//		m_fft_normY[i * n + j][0] = v1.y; 
-	//		m_fft_normZ[i * n + j][0] = v1.z; 
-	//	}
-	//}
 }
 
 void aaOcean::evaluateJacobians()
