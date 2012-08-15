@@ -4,7 +4,7 @@ FFTWLOC  := ../../../../externals/fftw
 TARGETLOC:= 
 
 INCLUDES := -I$(XSISDKLOC)/include -I$(FFTWLOC) -I../../../../external/aaOcean/src -I../../../../external/helpers
-LDFLAGS  := -fopenmp $(FFTWLOC)libfftw3f.a
+LDFLAGS  := -fopenmp $(FFTWLOC)libfftw3f.a $(FFTWLOC)libfftw3f_omp.a
 CXXFLAGS := -w -O2 -fPIC
 CXX	     := $(GXXLOC)g++
 SOURCES  := icenode.cpp
