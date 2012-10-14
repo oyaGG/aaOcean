@@ -65,14 +65,17 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 		if((float)pOcean->m_chopAmount > 0.0001f)
 			chop = true;
 
-		pOcean->prepareOcean(1,chop,0,0,1,1);
+		pOcean->prepareOcean(1,chop,chop,1,1);
 
 		#pragma omp parallel for
 		for(int i = 0; i<verts.length(); i++)
 		{
 			verts[i].y += pOcean->m_fft_htField[i][1];
-			verts[i].x -= pOcean->m_fft_chopX[i][1];
-			verts[i].z -= pOcean->m_fft_chopZ[i][1];
+			if(chop)
+			{
+				verts[i].x -= pOcean->m_fft_chopX[i][1];
+				verts[i].z -= pOcean->m_fft_chopZ[i][1];
+			}
 		}
 		iter.setAllPositions(verts);
 		return MS::kSuccess;
