@@ -22,7 +22,7 @@
 #include "aaOceanClass.h"
 
 aaOcean::aaOcean() :	
-	m_resolution(0),			m_windAlign(0),				m_seed(1),			
+	m_resolution(0),			m_windAlign(0),				m_seed(0),			
 	m_velocity(-1.0f),		m_windDir(-1.0f),
 	m_cutoff(-1.0f),			m_damp(-1.0f),				m_oceanScale(-1.0f),	m_waveHeight(-1.0f), 
 	m_isFoamAllocated(FALSE),	m_isSplashAllocated(FALSE),	m_redoHoK(FALSE),		m_fmin(FLT_MAX), 
