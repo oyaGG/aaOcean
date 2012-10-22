@@ -8,9 +8,9 @@
 	maya.output_shortname STRING "out"
 
 	[attr uv_coords]
-		default				FLOAT 	1.0
-	[attr use_uv_input]
-		default             BOOL   False
+		default				VECTOR 	1.0 1.0 1.0
+	[attr use_uv_input]		
+		default				BOOL	False
 	[attr fade]
 		default             FLOAT   0.0
 	[attr resolution]
@@ -68,4 +68,6 @@
 		default             STRING ""
 	[attr currentFrame]
 		default             INT   	1
+	[attr rotateUV]		
+		default				BOOL	False
 		
