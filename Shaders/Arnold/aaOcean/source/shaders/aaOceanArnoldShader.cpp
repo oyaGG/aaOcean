@@ -37,7 +37,8 @@ enum aaOceanArnoldParams
 	p_writeFile,
 	p_outputFolder,
 	p_postfix,
-	p_currentFrame
+	p_currentFrame,
+	p_rotateUV
 };
 
 #include "shader_funcs.h"
@@ -68,36 +69,50 @@ node_parameters
 	AiParameterStr ( "outputFolder"     , "");
 	AiParameterStr ( "postfix"			, "");
 	AiParameterINT ( "currentFrame"		, 1);
+	AiParameterBOOL( "rotateUV"			, 0);
 }
 
 node_update
 {
 	aaOcean *ocean = (aaOcean *)AiNodeGetLocalData(node);
-	if(!fetchInput(params, ocean))
-		return;
 
 	int renderRes = (int)pow(2.0f, params[p_resolution].INT + 4);
-	if(ocean->reInit(renderRes))
+
+	ocean->input(renderRes,
+		params[p_seed].INT,
+		params[p_oceanScale].FLT,
+		params[p_velocity].FLT,
+		params[p_cutoff].FLT,
+		params[p_windDir].FLT,
+		params[p_windAlign].INT,
+		params[p_damp].FLT,
+		params[p_waveSpeed].FLT,
+		params[p_waveHeight].FLT,
+		params[p_chopAmount].FLT,
+		params[p_time].FLT);
+
+	if(ocean->m_isValid)
 	{
-		ocean->prepareOcean(TRUE, TRUE, TRUE, FALSE, TRUE);
+		bool chop = false;
+		if((float)ocean->m_chopAmount > 0.0f)
+			chop = true;
 
-		if(ocean->m_chopAmount > 0.0f)
-		{
-			// get foam array bounds to generate normalization information
-			getArrayBounds(ocean->m_fft_jxz, 1, ocean->m_resolution, ocean->m_fmin, ocean->m_fmax);
+		ocean->prepareOcean(1,chop,chop,1,1);
 
-			float	fmin		= params[p_fMin].FLT;
-			float	fmax		= params[p_fMax].FLT;
-			float	rawOutput	= params[p_raw].BOOL;
+		// get foam array bounds to generate normalization information
+		getArrayBounds(ocean->m_fft_jxz, 1, ocean->m_resolution, ocean->m_fmin, ocean->m_fmax);
 
-			float epsilon = 1e-3f;
-			if(( !isfEqual(fmin, ocean->m_fmin, epsilon) || !isfEqual(fmax, ocean->m_fmax, epsilon) ) && !rawOutput)
-				AiMsgWarning("[aaOcean Shader] Foam Min/Max mismatch. Please set the Foam Min/Max values in foam shader to Min: %f, Max: %f", 
-							ocean->m_fmin, ocean->m_fmax);
-		}
+		float	fmin		= params[p_fMin].FLT;
+		float	fmax		= params[p_fMax].FLT;
+		float	rawOutput	= params[p_raw].BOOL;
+
+		float epsilon = 1e-3f;
+		if(( !isfEqual(fmin, ocean->m_fmin, epsilon) || !isfEqual(fmax, ocean->m_fmax, epsilon) ) && !rawOutput)
+			AiMsgWarning("[aaOcean Shader] Foam Min/Max mismatch. Please set the Foam Min/Max values in foam shader to Min: %f, Max: %f", 
+						ocean->m_fmin, ocean->m_fmax);
 	}
 	else // bad input to ocean class
-		AiMsgInfo("%s", ocean->m_state);	
+		AiMsgWarning("%s", ocean->m_state);	
 }
 
 shader_evaluate
@@ -107,25 +122,46 @@ shader_evaluate
 	if(ocean->m_isValid)
 	{
 		AtPoint uvPt;
+		bool rotate = AiShaderEvalParamBool(p_rotateUV);
+
 		if(AiShaderEvalParamBool(p_useUVInput))
 		{
 			uvPt = AiShaderEvalParamVec(p_uv_coords);
 			// Rotating UV space to be in line with deformer
-			uvPt.z = uvPt.y * -1.0f;
-			uvPt.y = uvPt.x;
-			uvPt.x = uvPt.z;
+			if(rotate)
+			{
+				uvPt.z = uvPt.y * -1.0f;
+				uvPt.y = uvPt.x;
+				uvPt.x = uvPt.z;
+			}
 		}
 		else
 		{
 			// Rotating UV space to be in line with deformer
-			uvPt.x = sg->v * -1.0f;
-			uvPt.y = sg->u;
+			if(rotate)
+			{
+				uvPt.x = sg->v * -1.0f;
+				uvPt.y = sg->u;
+			}
+			else
+			{
+				uvPt.x = sg->u;
+				uvPt.y = sg->v;
+			}
 		}
 
+#ifdef VECTORSHADER
+		sg->out.VEC.y = catromPrep( ocean,  ocean->m_fft_htField, uvPt);
+#else
 		sg->out.RGBA.g = catromPrep( ocean,  ocean->m_fft_htField, uvPt);
+#endif
 
 		if((float)ocean->m_chopAmount > 0.0f)
 		{
+			#ifdef VECTORSHADER
+			sg->out.VEC.x = -catromPrep( ocean, ocean->m_fft_chopX, uvPt);
+			sg->out.VEC.z = -catromPrep( ocean, ocean->m_fft_chopZ, uvPt);
+			#else
 			sg->out.RGBA.r = -catromPrep( ocean, ocean->m_fft_chopX, uvPt);
 			sg->out.RGBA.b = -catromPrep( ocean, ocean->m_fft_chopZ, uvPt);
 
@@ -146,9 +182,8 @@ shader_evaluate
 				foam *= (1.0f - AiShaderEvalParamFlt(p_fade));
 			}
 			sg->out.RGBA.a = foam;
+			#endif
 		}
-		else
-			sg->out.RGBA.a = 0.0f;
 	}
 }
 
@@ -196,7 +231,11 @@ node_loader
       return FALSE;
 
    node->methods      = aaOceanArnoldMethods;
+   #ifdef VECTORSHADER
+   node->output_type  = AI_TYPE_VECTOR;
+   #else
    node->output_type  = AI_TYPE_RGBA;
+   #endif
    node->name         = "aaOceanArnold";
    node->node_type    = AI_NODE_SHADER;
    strcpy(node->version, AI_VERSION);
