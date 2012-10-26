@@ -340,6 +340,19 @@ PropertySet "aaOceanArnold_params"
 		readable = on;
 		inspectable = on;
 	}
+	Parameter "rotateUV" input
+	{
+		GUID = "{BB9BB796-7C04-465e-B67E-F5B2438F288F}";
+		type = boolean;
+		flags = 0;
+		texturable = off;
+		value = 1;
+		writable = on;
+		animatable = off;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
 }
 
 phenomenon "aaOceanArnold_declare"
@@ -490,6 +503,10 @@ Defaults
 	currentFrame
 	{
 		Name = "Current Frame";
+	}
+	rotateUV
+	{
+		Name = "Rotate UVs by 90 deg.";
 	}
 }
 
