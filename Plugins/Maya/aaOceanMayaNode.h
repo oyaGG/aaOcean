@@ -35,7 +35,7 @@ public:
 	static  MObject  currTime;
 	static  MTypeId	 id;
 
-	static aaOcean* pOcean;
+	aaOcean* pOcean;
 
 	void fetchInput(MDataBlock& block);
 
@@ -54,9 +54,6 @@ MObject		aaOceanMaya::waveReflection;
 MObject		aaOceanMaya::waveAlign;
 MObject		aaOceanMaya::currTime;
 MTypeId     aaOceanMaya::id( 0x20B6EF34 ); //Maya Node ID 548859700
-
-aaOcean* aaOceanMaya::pOcean;
-
 
 MStatus aaOceanMaya::initialize()
 {
@@ -190,6 +187,7 @@ aaOceanMaya::~aaOceanMaya()
 	if(pOcean)
 	{
 		delete pOcean;
+		pOcean = NULL;
 		MGlobal::displayInfo( "[aaOcean Maya] Deleted ocean patch" );
 	}
 }
