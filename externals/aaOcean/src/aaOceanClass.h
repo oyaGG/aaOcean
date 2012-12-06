@@ -13,8 +13,34 @@
 class aaOcean
 { 
 public:
+	aaOcean();
+	aaOcean(const aaOcean &cpy);
+	~aaOcean();
+
+	void input(	int 	resolution,
+				ULONG 	seed, 
+				float 	oceanScale, 
+				float 	velocity, 
+				float 	cutoff, 
+				float 	windDir, 
+				int 	windAlign, 
+				float 	damp,  
+				float 	waveSpeed, 
+				float 	waveHeight,
+				float 	chopAmount,
+				float 	time,
+				bool	doFoam,
+				bool    powTwoConversion);
+
+	float getOceanData(float uCoord, float vCoord, int TYPE);
+
+	bool isValid();
+	bool isChoppy();
+	int getResolution();
+
+private:
 	int		m_resolution;
-	ULONG	m_seed;
+	int		m_seed;
 	int		m_windAlign;
 	float	m_velocity;
 	float	m_windDir;
@@ -25,9 +51,9 @@ public:
 	float	m_waveHeight;
 	float	m_waveSpeed;
 	float	m_time;
-	float	m_fmin, m_fmax; //for holding min/max foam
-	char	m_state[256];
-
+	float	m_fmin; //for holding min/max foam
+	float   m_fmax; //for holding min/max foam
+	
 	//ocean array pointers
 	int		*m_xCoord;
 	int		*m_zCoord;
@@ -50,7 +76,10 @@ public:
 	bool	m_isValid;
 	bool	m_isFoamAllocated;
 	bool	m_isSplashAllocated;
-	bool	m_redoHoK;
+	bool	m_doHoK;
+	bool	m_doSetup;
+	bool	m_doChop;
+	bool	m_doFoam;
 
 	fftwf_complex *m_fft_htField;
 	fftwf_complex *m_fft_chopX;
@@ -66,36 +95,32 @@ public:
 	fftwf_plan m_planJxz;
 	fftwf_plan m_planJzz;
 
-	aaOcean();
-	aaOcean(const aaOcean &cpy);
-	~aaOcean();
-
-	void input(	int 	resolution,
-				ULONG 	seed, 
-				float 	oceanScale, 
-				float 	velocity, 
-				float 	cutoff, 
-				float 	windDir, 
-				int 	windAlign, 
-				float 	damp,  
-				float 	waveSpeed, 
-				float 	waveHeight,
-				float 	chopAmount,
-				float 	time);
-
+	char	m_state[256]; // array for holding the current state of aaOcean object
+	
+	// memory management functions
 	void allocateBaseArrays();
 	void allocateFoamArrays();
 	void allocateSplashArrays();
 	void clearArrays();
 	void clearResidualArrays();
+	
+	// initialization functions
 	bool reInit(int data_size);
-	ULONG get_uID(float, float);
-	void setup_grid();
+	ULONG generateUID(float, float);
+	void prepareOcean();
+	void setupGrid();
+
+	// tessendorf ocean functions
 	void evaluateHokData();
 	void evaluateHieghtField();
 	void evaluateChopField();
 	void evaluateJacobians();
-	void prepareOcean(bool doHeightField, bool doChopField, bool doJacobians, bool copyTile, bool rotate);
+	
+	// interpolation functions
+	inline float catmullRom(float t, float a, float b, float c, float d);
+	inline int wrap(int x, int n);
+
+	// redundant
 	void makeTileable(fftwf_complex *&fft_array);
 	void rotateArray(fftwf_complex *&fft_array);
 };

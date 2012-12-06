@@ -8,11 +8,11 @@
 #ifndef AAOCEANCLASS_CPP
 #define AAOCEANCLASS_CPP
 
-
 #include <cmath>
 #include <omp.h>
 #include <climits>
 #include <float.h>
+#include <string.h>
 #include "constants.h"
 #include "functionLib.h"
 #include "agnerFog/sfmt.cpp" 
@@ -21,18 +21,64 @@
 #include "agnerFog/userintf.cpp"
 #include "aaOceanClass.h"
 
-aaOcean::aaOcean() :	
-	m_resolution(0),			m_windAlign(0),				m_seed(0),			
-	m_velocity(-1.0f),		m_windDir(-1.0f),
-	m_cutoff(-1.0f),			m_damp(-1.0f),				m_oceanScale(-1.0f),	m_waveHeight(-1.0f), 
-	m_isFoamAllocated(FALSE),	m_isSplashAllocated(FALSE),	m_redoHoK(FALSE),		m_fmin(FLT_MAX), 
-	m_fmax(-FLT_MAX),			m_zCoord(0),				m_xCoord(0),			m_hokReal(0),
-	m_hokImag(0),				m_hktReal(0),				m_hktImag(0),			m_kX(0),
-	m_kZ(0),					m_omega(0),					m_rand1(0),				m_rand2(0),
-	m_eigenPlusX(0),			m_eigenPlusZ(0),			m_eigenMinusX(0),		m_eigenMinusZ(0),
-	m_fft_htField(0),			m_fft_chopX(0),				m_fft_chopZ(0),			m_fft_jxx(0),
-	m_fft_jzz(0),				m_fft_jxz(0)
+#define HEIGHTFIELD 0
+#define CHOPX 1
+#define CHOPZ 2
+#define FOAM  3
+
+aaOcean::aaOcean() :
+	// input variables
+    m_resolution(0),
+	m_seed(0),
+	m_windAlign(0),			
+	m_velocity(-1.0f),
+	m_windDir(-1.0f),
+	m_cutoff(-1.0f),
+	m_damp(-1.0f),
+	m_oceanScale(-1.0f),
+	m_chopAmount(-1.0f),
+	m_waveHeight(-1.0f),
+	m_waveSpeed(-1.0f),
+	m_time(-1.0f),
+	m_fmin(FLT_MAX),
+	m_fmax(-FLT_MAX),
+
+	// working arrays
+	m_xCoord(0),
+	m_zCoord(0),
+	m_hokReal(0),
+	m_hokImag(0),
+	m_hktReal(0),
+	m_hktImag(0),
+	m_kX(0),
+	m_kZ(0),
+	m_omega(0),
+	m_rand1(0),
+	m_rand2(0),
+	m_eigenPlusX(0),
+	m_eigenPlusZ(0),
+	m_eigenMinusX(0),
+	m_eigenMinusZ(0),
+
+	// bools to check ocean state
+	m_isAllocated(0),
+	m_isValid(0),
+	m_isFoamAllocated(0),
+	m_isSplashAllocated(0),
+	m_doHoK(0),
+	m_doSetup(0),
+	m_doChop(0),
+	m_doFoam(0),
+	
+	// fftw arrays
+	m_fft_htField(0),
+	m_fft_chopX(0),
+	m_fft_chopZ(0),
+	m_fft_jxx(0),
+	m_fft_jzz(0),
+	m_fft_jxz(0)
 {
+	strcpy (m_state, "[aaOcean Core] Default initialized value");
 }
 
 aaOcean::aaOcean(const aaOcean &cpy)
@@ -46,24 +92,39 @@ aaOcean::~aaOcean()
 	
 }
 
-void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity, float cutoff, float windDir, 
-			int windAlign, float damp, float waveSpeed, float waveHeight, float chopAmount, float time)
+void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity, 
+					float cutoff, float windDir, int windAlign, float damp, float waveSpeed, 
+					float waveHeight, float chopAmount, float time, bool doFoam, bool powTwoConversion = 1)
 {
-	//resolution	= (int)pow(2.0f, (4 + resolution));
-	oceanScale	= maximum<float>(oceanScale, 0.00001f);
-	velocity	= maximum<float>(((velocity  * velocity) / aa_GRAVITY), 0.00001f);
-	cutoff		= fabs(cutoff * 0.01f);
-	windDir		= windDir * aa_PIBY180;
-	windAlign	= maximum<int>(((windAlign + 1) * 2), 2); 
-	damp		= minimum<float>(damp, 1.0f);
+	m_isValid = FALSE;
 
-	waveHeight *= 0.01f;
-	chopAmount *= 0.01f;
+	if(powTwoConversion)
+		resolution	= (int)pow(2.0f, (4 + resolution)); // forcing to be power of two
+	oceanScale	= maximum<float>(oceanScale, 0.00001f);	// clamping to minimum value
+	velocity	= maximum<float>(((velocity  * velocity) / aa_GRAVITY), 0.00001f); // clamping to minimum value
+	cutoff		= fabs(cutoff * 0.01f);
+	windDir		= windDir * aa_PIBY180; // to radians
+	windAlign	= maximum<int>(((windAlign + 1) * 2), 2); // forcing to even numbers
+	damp		= minimum<float>(damp, 1.0f); // clamping to a maximum value of 1
+
+	waveHeight *= 0.01f; // scaled for better UI control
+	chopAmount *= 0.01f; // scaled for better UI control
 
 	m_time			= time;
 	m_waveSpeed		= waveSpeed;
 	m_waveHeight	= waveHeight;
-	m_chopAmount	= chopAmount;
+	m_doFoam		= doFoam;
+
+	if(chopAmount > 0.000001f)
+	{
+		m_chopAmount = chopAmount;
+		m_doChop = TRUE;
+	}
+	else
+	{
+		m_doChop = FALSE;
+		m_chopAmount = 0.0f;
+	}
 
 	if( m_oceanScale	!= oceanScale	||
 		m_windDir		!= windDir		||
@@ -78,64 +139,80 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 		m_velocity		= velocity;
 		m_windAlign		= windAlign;
 		m_damp			= damp;
-		m_redoHoK		= TRUE;
+		m_doHoK		    = TRUE;
 	}
 
 	if(m_seed != seed)
 	{
-		m_seed		= seed;
-		m_redoHoK	= TRUE;
+		m_seed	= seed;
+		m_doHoK	= TRUE;
 		if(m_resolution == resolution)
-			setup_grid(); 
+			m_doSetup = TRUE; 
 	}
-	reInit(resolution);
+
+	if(reInit(resolution))
+		prepareOcean();
 }
 
-bool aaOcean::reInit(int data_size)
+bool aaOcean::isValid()
 {
-	if(((data_size & (data_size - 1)) != 0) || data_size == 0) //	not power of 2
+	return m_isValid;
+}
+
+bool aaOcean::isChoppy()
+{
+	return m_doChop;
+}
+
+int aaOcean::getResolution()
+{
+	return m_resolution;
+}
+
+bool aaOcean::reInit(int resolution)
+{
+	if(((resolution & (resolution - 1)) != 0) || resolution <= 0) // bad input -- not power of 2
 	{	
-		sprintf(m_state,"[aaOcean Core] Invalid point resolution of %d. Please select a power-of-2 subdivision value", data_size);
+		sprintf(m_state,"[aaOcean Core] Invalid point resolution of %d. Please select a power-of-2 subdivision value", resolution);
 		m_isValid = FALSE;
 	}
 	else
 	{
-		if(m_resolution != data_size || !m_isAllocated )
+		// If ocean resolution has changed, or if we are creating an ocean from scratch
+		// Flush any existing arrays and allocate them with the new array size (resolution)
+		if(m_resolution != resolution || !m_isAllocated )
 		{
-			m_resolution = data_size;
+			m_resolution = resolution;
 			allocateBaseArrays();				
-			m_redoHoK  = TRUE;
-			setup_grid();
-			sprintf(m_state,"[aaOcean Core] Building ocean shader with resolution %dx%d", data_size, data_size);
+			m_doHoK  = TRUE;
+			setupGrid();
+			sprintf(m_state,"[aaOcean Core] Building ocean shader with resolution %dx%d", resolution, resolution);
 		}
+		// if doSetup has been set to True because of a change in Seed
+		if(m_doSetup)
+			setupGrid();
+
 		m_isValid = TRUE;
 	}
 	return m_isValid;
 }
 
-void aaOcean::prepareOcean(bool doHeightField, bool doChopField, bool doJacobians, bool copyTile = 0, bool rotate = 0)
+void aaOcean::prepareOcean()
 {
-	if( m_redoHoK )
-	{
+	if( m_doHoK )
 		evaluateHokData();
-		m_redoHoK = FALSE;
-	}
 
-	if(doHeightField)
-	{
-		evaluateHieghtField();
-		if(copyTile) { makeTileable(m_fft_htField);  }
-		if(rotate)	 { rotateArray(m_fft_htField);   }
-	}
+	evaluateHieghtField();
+	makeTileable(m_fft_htField);
 
-	if(doChopField && m_chopAmount > 0.0f)// chopAmount comparison most likely redundant
+	if(m_doChop)
 	{
 		evaluateChopField();
-		if(copyTile) { makeTileable(m_fft_chopX); makeTileable(m_fft_chopZ); }
-		if(rotate)	 { rotateArray(m_fft_chopX); rotateArray(m_fft_chopZ); }
+		makeTileable(m_fft_chopX);
+		makeTileable(m_fft_chopZ);
 	}
 
-	if(doJacobians && m_isAllocated)
+	if(m_doFoam)
 	{
 		if(!m_isFoamAllocated)
 			allocateFoamArrays();
@@ -143,8 +220,6 @@ void aaOcean::prepareOcean(bool doHeightField, bool doChopField, bool doJacobian
 			allocateSplashArrays();
 
 		evaluateJacobians();
-		if(copyTile) { makeTileable(m_fft_jxz);  }
-		if(rotate)	 { rotateArray(m_fft_jxz);   }
 	}
 }
 
@@ -338,7 +413,7 @@ void aaOcean::clearArrays()
 	
 }
 
-ULONG aaOcean::get_uID(float xCoord, float zCoord)
+ULONG aaOcean::generateUID(float xCoord, float zCoord)
 {
 	// a very simple hash function. should probably do a better one at some point
 	register float angle  = 0.0f;
@@ -368,7 +443,7 @@ ULONG aaOcean::get_uID(float xCoord, float zCoord)
 	return returnVal;
 }
 
-void aaOcean::setup_grid()
+void aaOcean::setupGrid()
 {
 	if(!m_isAllocated)
 		return;
@@ -386,13 +461,14 @@ void aaOcean::setup_grid()
 			m_xCoord[index] = half_n + i * 2 ;
 			m_zCoord[index] = half_n + j * 2 ;
 
-			uID = (ULONG)get_uID((float)m_xCoord[index], (float)m_zCoord[index]);
+			uID = (ULONG)generateUID((float)m_xCoord[index], (float)m_zCoord[index]);
 
-			StochasticLib1 sto(uID + m_seed);
+			StochasticLib1 sto(uID + (unsigned int)m_seed);
 			m_rand1[index] = (float)sto.Normal(0.0f, 1.0f);
 			m_rand2[index] = (float)sto.Normal(0.0f, 1.0f);
 		}
 	}
+	m_doSetup = FALSE;
 }
 
  void aaOcean::evaluateHokData()
@@ -433,6 +509,7 @@ void aaOcean::setup_grid()
 		m_hokReal[index] = (aa_INV_SQRTTWO) * (m_rand1[index]) * philips;
 		m_hokImag[index] = (aa_INV_SQRTTWO) * (m_rand2[index]) * philips;
 	}
+	m_doHoK = FALSE;
 }
 
  void aaOcean::evaluateHieghtField()
@@ -577,6 +654,98 @@ void aaOcean::evaluateJacobians()
 		//fft_jxz[index][0] =   (Jxx * Jzz) - (Jxz * Jxz); //original jacobian.
 		m_fft_jxz[index][0] =   (Jxz * Jxz) - (Jxx * Jzz) + 1.0f; // invert hack
 	}
+}
+
+float aaOcean::getOceanData(float uCoord, float vCoord, int TYPE)
+{
+	// set pointer to the array that we need to interpolate data from
+	fftwf_complex *arrayPointer = 0;
+	if(TYPE == HEIGHTFIELD)
+		arrayPointer = m_fft_htField;
+	else if(TYPE == CHOPX)
+		arrayPointer = m_fft_chopX;
+	else if(TYPE == CHOPZ)
+		arrayPointer = m_fft_chopZ;
+	else if(TYPE == FOAM)
+		arrayPointer = m_fft_jxz;
+
+	float u, v, du, dv = 0;
+	int xMinus1, yMinus1, x, y, xPlus1, yPlus1, xPlus2, yPlus2;
+	int n = m_resolution;	
+
+	if(vCoord > 1.0f)
+		vCoord = vCoord - floor(vCoord);
+	if(uCoord > 1.0f)
+		uCoord = uCoord - floor(uCoord);
+	if(vCoord < 0.0f)
+		vCoord = vCoord - floor(vCoord);
+	if(uCoord < 0.0f)
+		uCoord = uCoord- floor(uCoord);
+
+	u = vCoord * float(m_resolution);
+	v = uCoord * float(m_resolution);
+	x = (int)floor(u);
+	y = (int)floor(v);
+
+	xMinus1 = wrap((x-1), m_resolution);
+	yMinus1 = wrap((y-1), m_resolution);	
+	x = wrap(x, m_resolution);
+	y = wrap(y, m_resolution);		
+	xPlus1 = wrap((x+1), m_resolution);	
+	yPlus1 = wrap((y+1), m_resolution);	
+	xPlus2 = wrap((x+2), m_resolution);	
+	yPlus2 = wrap((y+2), m_resolution);	
+
+	du = u - x; 
+	dv = v - y;	
+
+	const int index = 1;
+
+	float a1 = catmullRom(	du, 
+							arrayPointer[xMinus1 * (m_resolution+1)  + yMinus1][index],
+							arrayPointer[x*(m_resolution+1)			 + yMinus1][index],
+							arrayPointer[xPlus1*(m_resolution+1)	 + yMinus1][index],
+							arrayPointer[xPlus2*(m_resolution+1)	 + yMinus1][index] 
+							);
+
+	float b1 = catmullRom(	du, 
+							arrayPointer[xMinus1*(m_resolution+1)    +	y][index],
+							arrayPointer[x*(m_resolution+1)			 +	y][index],
+							arrayPointer[xPlus1*(m_resolution+1)	 +	y][index],
+							arrayPointer[xPlus2*(m_resolution+1)	 +	y][index]
+							);
+
+	float c1 = catmullRom(	du, 
+							arrayPointer[xMinus1*(m_resolution+1)    + yPlus1][index],
+							arrayPointer[x*(m_resolution+1)			 + yPlus1][index],
+							arrayPointer[xPlus1*(m_resolution+1)	 + yPlus1][index],
+							arrayPointer[xPlus2*(m_resolution+1)	 + yPlus1][index] 
+							);
+
+	float d1 = catmullRom(	du, 
+							arrayPointer[xMinus1*(m_resolution+1)    + yPlus2][index],
+							arrayPointer[x*(m_resolution+1)			 + yPlus2][index],
+							arrayPointer[xPlus1*(m_resolution+1)	 + yPlus2][index],
+							arrayPointer[xPlus2*(m_resolution+1)	 + yPlus2][index]
+							);
+
+	return catmullRom(dv,a1,b1,c1,d1);
+}
+inline float aaOcean::catmullRom(float t, float a, float b, float c, float d)
+{
+	return  0.5f * ( ( 2.0f * b ) + ( -a + c ) * t + 
+			( 2.0f * a - 5.0f * b + 4 * c - d ) * t*t + 
+			( -a + 3.0f * b - 3.0f * c + d )* t*t*t );
+}
+
+inline int aaOcean::wrap(int x, int n)
+{
+	if(x > n)
+		x = x % (n+1);
+	else if(x < 0)
+		x = (n+1) + x % (n+1);
+	
+	return x;
 }
 
 void aaOcean::rotateArray(fftwf_complex *&fft_array)
