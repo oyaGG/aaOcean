@@ -95,7 +95,7 @@ private:
 	fftwf_plan m_planJxz;
 	fftwf_plan m_planJzz;
 
-	char	m_state[256]; // array for holding the current state of aaOcean object
+	char m_state[256]; // array for holding the current state of aaOcean object
 	
 	// memory management functions
 	void allocateBaseArrays();
@@ -119,10 +119,6 @@ private:
 	// interpolation functions
 	inline float catmullRom(float t, float a, float b, float c, float d);
 	inline int wrap(int x, int n);
-
-	// redundant
-	void makeTileable(fftwf_complex *&fft_array);
-	void rotateArray(fftwf_complex *&fft_array);
 };
 
 #endif  /* AAOCEANCLASS_H */

@@ -203,13 +203,13 @@ void aaOcean::prepareOcean()
 		evaluateHokData();
 
 	evaluateHieghtField();
-	makeTileable(m_fft_htField);
+	//makeTileable(m_fft_htField);
 
 	if(m_doChop)
 	{
 		evaluateChopField();
-		makeTileable(m_fft_chopX);
-		makeTileable(m_fft_chopZ);
+		//makeTileable(m_fft_chopX);
+		//makeTileable(m_fft_chopZ);
 	}
 
 	if(m_doFoam)
@@ -248,9 +248,9 @@ void aaOcean::allocateBaseArrays()
 	else
 		fftwf_plan_with_nthreads(1);
 
-	m_fft_htField	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));  
-	m_fft_chopX		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1)));  
-	m_fft_chopZ		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1))); 
+	m_fft_htField	= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (m_resolution * m_resolution));  
+	m_fft_chopX		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (m_resolution * m_resolution));  
+	m_fft_chopZ		= (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (m_resolution * m_resolution)); 
 
 	m_planHeightField	= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_htField,m_fft_htField,1, FFTW_ESTIMATE);
 	m_planChopX			= fftwf_plan_dft_2d(m_resolution,m_resolution,m_fft_chopX ,m_fft_chopX	 ,1, FFTW_ESTIMATE);
@@ -260,9 +260,9 @@ void aaOcean::allocateBaseArrays()
 
  void aaOcean::allocateFoamArrays()
 {
-	m_fft_jxx = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1))); 
-	m_fft_jxz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1))); 
-	m_fft_jzz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * ((m_resolution+1) * (m_resolution+1))); 
+	m_fft_jxx = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (m_resolution * m_resolution)); 
+	m_fft_jxz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (m_resolution * m_resolution)); 
+	m_fft_jzz = (fftwf_complex*) fftwf_malloc(sizeof(fftwf_complex) * (m_resolution * m_resolution)); 
 
 	m_planJxx = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jxx, m_fft_jxx, 1, FFTW_ESTIMATE);
 	m_planJxz = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jxz, m_fft_jxz, 1, FFTW_ESTIMATE);
@@ -272,10 +272,10 @@ void aaOcean::allocateBaseArrays()
 
 void aaOcean::allocateSplashArrays()
 {
-	m_eigenPlusX	= (float*) malloc((m_resolution+1) * (m_resolution+1) * sizeof(float)); 
-	m_eigenPlusZ	= (float*) malloc((m_resolution+1) * (m_resolution+1) * sizeof(float)); 
-	m_eigenMinusX	= (float*) malloc((m_resolution+1) * (m_resolution+1) * sizeof(float)); 
-	m_eigenMinusZ	= (float*) malloc((m_resolution+1) * (m_resolution+1) * sizeof(float)); 
+	m_eigenPlusX	= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
+	m_eigenPlusZ	= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
+	m_eigenMinusX	= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
+	m_eigenMinusZ	= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
 	m_isSplashAllocated = TRUE;
 }
 
@@ -671,7 +671,6 @@ float aaOcean::getOceanData(float uCoord, float vCoord, int TYPE)
 
 	float u, v, du, dv = 0;
 	int xMinus1, yMinus1, x, y, xPlus1, yPlus1, xPlus2, yPlus2;
-	int n = m_resolution;	
 
 	if(vCoord > 1.0f)
 		vCoord = vCoord - floor(vCoord);
@@ -682,51 +681,50 @@ float aaOcean::getOceanData(float uCoord, float vCoord, int TYPE)
 	if(uCoord < 0.0f)
 		uCoord = uCoord- floor(uCoord);
 
-	u = vCoord * float(m_resolution);
-	v = uCoord * float(m_resolution);
+	u = vCoord * float(m_resolution-1);
+	v = uCoord * float(m_resolution-1);
 	x = (int)floor(u);
 	y = (int)floor(v);
 
-	xMinus1 = wrap((x-1), m_resolution);
-	yMinus1 = wrap((y-1), m_resolution);	
-	x = wrap(x, m_resolution);
-	y = wrap(y, m_resolution);		
-	xPlus1 = wrap((x+1), m_resolution);	
-	yPlus1 = wrap((y+1), m_resolution);	
-	xPlus2 = wrap((x+2), m_resolution);	
-	yPlus2 = wrap((y+2), m_resolution);	
+	xMinus1 = wrap((x-1), m_resolution-1);
+	yMinus1 = wrap((y-1), m_resolution-1);	
+	x = wrap(x, m_resolution-1);
+	y = wrap(y, m_resolution-1);		
+	xPlus1 = wrap((x+1), m_resolution-1);	
+	yPlus1 = wrap((y+1), m_resolution-1);	
+	xPlus2 = wrap((x+2), m_resolution-1);	
+	yPlus2 = wrap((y+2), m_resolution-1);	
 
 	du = u - x; 
 	dv = v - y;	
 
-	const int index = 1;
-
+	const int index = 0;
 	float a1 = catmullRom(	du, 
-							arrayPointer[xMinus1 * (m_resolution+1)  + yMinus1][index],
-							arrayPointer[x*(m_resolution+1)			 + yMinus1][index],
-							arrayPointer[xPlus1*(m_resolution+1)	 + yMinus1][index],
-							arrayPointer[xPlus2*(m_resolution+1)	 + yMinus1][index] 
+							arrayPointer[xMinus1 * m_resolution  + yMinus1][index],
+							arrayPointer[x*m_resolution			 + yMinus1][index],
+							arrayPointer[xPlus1*m_resolution	 + yMinus1][index],
+							arrayPointer[xPlus2*m_resolution	 + yMinus1][index] 
 							);
 
 	float b1 = catmullRom(	du, 
-							arrayPointer[xMinus1*(m_resolution+1)    +	y][index],
-							arrayPointer[x*(m_resolution+1)			 +	y][index],
-							arrayPointer[xPlus1*(m_resolution+1)	 +	y][index],
-							arrayPointer[xPlus2*(m_resolution+1)	 +	y][index]
+							arrayPointer[xMinus1*m_resolution    +	y][index],
+							arrayPointer[x*m_resolution			 +	y][index],
+							arrayPointer[xPlus1*m_resolution	 +	y][index],
+							arrayPointer[xPlus2*m_resolution	 +	y][index]
 							);
 
 	float c1 = catmullRom(	du, 
-							arrayPointer[xMinus1*(m_resolution+1)    + yPlus1][index],
-							arrayPointer[x*(m_resolution+1)			 + yPlus1][index],
-							arrayPointer[xPlus1*(m_resolution+1)	 + yPlus1][index],
-							arrayPointer[xPlus2*(m_resolution+1)	 + yPlus1][index] 
+							arrayPointer[xMinus1*m_resolution    + yPlus1][index],
+							arrayPointer[x*m_resolution			 + yPlus1][index],
+							arrayPointer[xPlus1*m_resolution	 + yPlus1][index],
+							arrayPointer[xPlus2*m_resolution	 + yPlus1][index] 
 							);
 
 	float d1 = catmullRom(	du, 
-							arrayPointer[xMinus1*(m_resolution+1)    + yPlus2][index],
-							arrayPointer[x*(m_resolution+1)			 + yPlus2][index],
-							arrayPointer[xPlus1*(m_resolution+1)	 + yPlus2][index],
-							arrayPointer[xPlus2*(m_resolution+1)	 + yPlus2][index]
+							arrayPointer[xMinus1*m_resolution    + yPlus2][index],
+							arrayPointer[x*m_resolution			 + yPlus2][index],
+							arrayPointer[xPlus1*m_resolution	 + yPlus2][index],
+							arrayPointer[xPlus2*m_resolution	 + yPlus2][index]
 							);
 
 	return catmullRom(dv,a1,b1,c1,d1);
@@ -748,64 +746,4 @@ inline int aaOcean::wrap(int x, int n)
 	return x;
 }
 
-void aaOcean::rotateArray(fftwf_complex *&fft_array)
-{
-	// this function is used sometimes because in some cases
-	// there is a 90 degree rotation difference between deformer and ocean
-	// which is often fixable by a simple vec(x,y)->vec(-y,x), but if not
-	// then this function is used
-
-	int n = m_resolution + 1;
-	float tmp;
-	for (int i=0; i<n/2; i++)
-	{
-        for (int j=i; j<n-i-1; j++)
-		{
-            tmp								 = fft_array[i*n+j][1];
-            fft_array[i*n+j][1]				 = fft_array[j*n +(n-i-1)][1];
-            fft_array[j*n +(n-i-1)][1]		 = fft_array[(n-i-1)*n +(n-j-1)][1];
-            fft_array[(n-i-1)*n +(n-j-1)][1] = fft_array[(n-j-1)*n + i][1];
-            fft_array[(n-j-1)*n + i][1]		 = tmp;
-        }
-	}
-}
-void aaOcean::makeTileable(fftwf_complex *&fft_array)
-{
-	// This function is admittedly crap
-	// It makes the ocean grid tileable (when it should already be tileable!!)
-	// Needlessly inefficient. I should fix this.
-	// Also, optimze this from O(N^2) to O(2N) later
-
-	int n = m_resolution;
-	int n1 = n + 1;
-	int index, i, j;
-	
-	#pragma omp parallel for private(index,i,j)
-	for(i = 0; i< n1; i++)
-	{					
-		for(j = 0; j< n1; j++)
-		{
-			index = i*n1 + j;
-			if( i<n && j<n) // regular array copy -- what a waste of resources
-			{
-				fft_array[index][1] = fft_array[i*n+j][0];
-			}
-			else
-			{
-				if(i==n)  //copy left-most col to right-most col
-				{
-					fft_array[index][1] = fft_array[j][0];
-				}
-				if(j==n) // copy top row to bottom row
-				{
-					fft_array[index][1] = fft_array[i*n][0];
-				}
-				if(i==n && j==n) // copy top-left corner to bottom-left
-				{
-					fft_array[index][1] = fft_array[0][0];
-				}
-			}
-		}
-	}
-}
 #endif  /* AAOCEANCLASS_CPP */
