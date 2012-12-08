@@ -21,10 +21,14 @@
 #include "agnerFog/userintf.cpp"
 #include "aaOceanClass.h"
 
-#define HEIGHTFIELD 0
-#define CHOPX 1
-#define CHOPZ 2
-#define FOAM  3
+#define HEIGHTFIELD		0
+#define CHOPX			1
+#define CHOPZ			2
+#define FOAM			3
+#define EIGENPLUSX		4
+#define EIGENPLUSZ		5
+#define EIGENMINUSX		6
+#define EIGENMINUSZ		7
 
 aaOcean::aaOcean() :
 	// input variables
@@ -55,16 +59,11 @@ aaOcean::aaOcean() :
 	m_omega(0),
 	m_rand1(0),
 	m_rand2(0),
-	m_eigenPlusX(0),
-	m_eigenPlusZ(0),
-	m_eigenMinusX(0),
-	m_eigenMinusZ(0),
 
 	// bools to check ocean state
 	m_isAllocated(0),
 	m_isValid(0),
 	m_isFoamAllocated(0),
-	m_isSplashAllocated(0),
 	m_doHoK(0),
 	m_doSetup(0),
 	m_doChop(0),
@@ -216,9 +215,6 @@ void aaOcean::prepareOcean()
 	{
 		if(!m_isFoamAllocated)
 			allocateFoamArrays();
-		if(!m_isSplashAllocated)
-			allocateSplashArrays();
-
 		evaluateJacobians();
 	}
 }
@@ -268,15 +264,6 @@ void aaOcean::allocateBaseArrays()
 	m_planJxz = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jxz, m_fft_jxz, 1, FFTW_ESTIMATE);
 	m_planJzz = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jzz, m_fft_jzz, 1, FFTW_ESTIMATE);
 	m_isFoamAllocated = TRUE;
-}
-
-void aaOcean::allocateSplashArrays()
-{
-	m_eigenPlusX	= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
-	m_eigenPlusZ	= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
-	m_eigenMinusX	= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
-	m_eigenMinusZ	= (float*) malloc(m_resolution * m_resolution * sizeof(float)); 
-	m_isSplashAllocated = TRUE;
 }
 
 void aaOcean::clearResidualArrays()
@@ -385,32 +372,7 @@ void aaOcean::clearArrays()
 		m_isAllocated = FALSE;
 	}
 	
-	if(m_isSplashAllocated)
-	{
-		if(m_eigenMinusZ)
-		{
-			free(m_eigenMinusZ); 
-			m_eigenMinusZ = FALSE;
-		}
-		if(m_eigenMinusX)
-		{
-			free(m_eigenMinusX); 
-			m_eigenMinusX = FALSE;
-		}
-		if(m_eigenPlusZ)
-		{
-			free(m_eigenPlusZ); 
-			m_eigenPlusZ = FALSE;
-		}
-		if(m_eigenPlusX)
-		{
-			free(m_eigenPlusX); 
-			m_eigenPlusX = FALSE;
-		}
-		m_isSplashAllocated = FALSE;
-	}
 	clearResidualArrays();
-	
 }
 
 ULONG aaOcean::generateUID(float xCoord, float zCoord)
@@ -644,11 +606,11 @@ void aaOcean::evaluateJacobians()
 		qPlus	= (jPlus  - Jxx) / Jxz;
 		qMinus	= (jMinus - Jxx) / Jxz;
 
-		m_eigenPlusX[index] = 1.0f	    /  sqrt( 1.0f + qPlus * qPlus);
-		m_eigenPlusZ[index] = qPlus		/  sqrt( 1.0f + qPlus * qPlus);
+		m_fft_jxx[index][0] = 1.0f  /  sqrt( 1.0f + qPlus * qPlus);
+		m_fft_jxx[index][1] = qPlus /  sqrt( 1.0f + qPlus * qPlus);
 
-		m_eigenMinusX[index] = 1.0f		/  sqrt( 1.0f + qMinus * qMinus);
-		m_eigenMinusZ[index] = qMinus	/  sqrt( 1.0f + qMinus * qMinus);
+		m_fft_jzz[index][0] = 1.0f   /  sqrt( 1.0f + qMinus * qMinus);
+		m_fft_jzz[index][1] = qMinus /  sqrt( 1.0f + qMinus * qMinus);
 
 		//store foam back in this array for convenience
 		//fft_jxz[index][0] =   (Jxx * Jzz) - (Jxz * Jxz); //original jacobian.
@@ -666,8 +628,12 @@ float aaOcean::getOceanData(float uCoord, float vCoord, int TYPE, bool rotateUV 
 		uCoord = -vCoord;
 		vCoord = originalU;
 	}
+
+	// declare pointer to array we want to fetch data from, and the indexer into the array
+	fftwf_complex *arrayPointer;
+	int index = 0;
+
 	// set pointer to the array that we need to interpolate data from
-	fftwf_complex *arrayPointer = 0;
 	if(TYPE == HEIGHTFIELD)
 		arrayPointer = m_fft_htField;
 	else if(TYPE == CHOPX)
@@ -676,7 +642,20 @@ float aaOcean::getOceanData(float uCoord, float vCoord, int TYPE, bool rotateUV 
 		arrayPointer = m_fft_chopZ;
 	else if(TYPE == FOAM)
 		arrayPointer = m_fft_jxz;
-
+	else if(TYPE == EIGENPLUSX)
+		arrayPointer = m_fft_jxx;
+	else if(TYPE == EIGENPLUSZ)	{
+		arrayPointer = m_fft_jxx;
+		index = 1;
+	}
+	else if(TYPE == EIGENMINUSX)
+		arrayPointer = m_fft_jzz;
+	else if(TYPE == EIGENMINUSZ)	{
+		arrayPointer = m_fft_jzz;
+		index = 1;
+	}
+	
+	// prepare for indexing into the array and wrapping
 	float u, v, du, dv = 0;
 	int xMinus1, yMinus1, x, y, xPlus1, yPlus1, xPlus2, yPlus2;
 
@@ -707,7 +686,6 @@ float aaOcean::getOceanData(float uCoord, float vCoord, int TYPE, bool rotateUV 
 	du = u - x; 
 	dv = v - y;	
 
-	const int index = 0;
 	float a1 = catmullRom(	du, 
 							arrayPointer[xMinus1 * m_resolution  + yMinus1][index],
 							arrayPointer[x*m_resolution			 + yMinus1][index],

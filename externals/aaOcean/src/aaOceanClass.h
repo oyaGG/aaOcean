@@ -66,16 +66,11 @@ private:
 	float	*m_omega;
 	float	*m_rand1;
 	float	*m_rand2;
-	float	*m_eigenPlusX;
-	float	*m_eigenPlusZ;
-	float	*m_eigenMinusX;
-	float	*m_eigenMinusZ;
 
 	//bool types for various checks during run-time
 	bool	m_isAllocated;
 	bool	m_isValid;
 	bool	m_isFoamAllocated;
-	bool	m_isSplashAllocated;
 	bool	m_doHoK;
 	bool	m_doSetup;
 	bool	m_doChop;
@@ -100,7 +95,6 @@ private:
 	// memory management functions
 	void allocateBaseArrays();
 	void allocateFoamArrays();
-	void allocateSplashArrays();
 	void clearArrays();
 	void clearResidualArrays();
 	
