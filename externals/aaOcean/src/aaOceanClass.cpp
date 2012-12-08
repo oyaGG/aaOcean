@@ -656,8 +656,16 @@ void aaOcean::evaluateJacobians()
 	}
 }
 
-float aaOcean::getOceanData(float uCoord, float vCoord, int TYPE)
+float aaOcean::getOceanData(float uCoord, float vCoord, int TYPE, bool rotateUV = 1)
 {
+	// rotate UVs by 90 degrees if requested
+	float originalU;
+	if(rotateUV)
+	{
+		originalU = uCoord;
+		uCoord = -vCoord;
+		vCoord = originalU;
+	}
 	// set pointer to the array that we need to interpolate data from
 	fftwf_complex *arrayPointer = 0;
 	if(TYPE == HEIGHTFIELD)
@@ -686,6 +694,7 @@ float aaOcean::getOceanData(float uCoord, float vCoord, int TYPE)
 	x = (int)floor(u);
 	y = (int)floor(v);
 
+	// prepare catmul-rom end points for interpolation
 	xMinus1 = wrap((x-1), m_resolution-1);
 	yMinus1 = wrap((y-1), m_resolution-1);	
 	x = wrap(x, m_resolution-1);

@@ -32,7 +32,7 @@ public:
 				bool	doFoam,
 				bool    powTwoConversion);
 
-	float getOceanData(float uCoord, float vCoord, int TYPE);
+	float getOceanData(float uCoord, float vCoord, int TYPE, bool rotateUV);
 
 	bool isValid();
 	bool isChoppy();
