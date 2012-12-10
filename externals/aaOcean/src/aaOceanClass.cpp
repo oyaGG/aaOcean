@@ -44,8 +44,8 @@ aaOcean::aaOcean() :
 	m_waveHeight(-1.0f),
 	m_waveSpeed(-1.0f),
 	m_time(-1.0f),
-	m_fmin(FLT_MAX),
-	m_fmax(-FLT_MAX),
+	m_foamBoundmin(FLT_MAX),
+	m_foamBoundmax(-FLT_MAX),
 
 	// working arrays
 	m_xCoord(0),
@@ -82,13 +82,12 @@ aaOcean::aaOcean() :
 
 aaOcean::aaOcean(const aaOcean &cpy)
 {
-
+	// empty copy constructor
 }
 
 aaOcean::~aaOcean()
 {
 	clearArrays();
-	
 }
 
 void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity, 
@@ -163,6 +162,11 @@ bool aaOcean::isChoppy()
 	return m_doChop;
 }
 
+char* aaOcean::getState()
+{
+	return &m_state[0];
+}
+
 int aaOcean::getResolution()
 {
 	return m_resolution;
@@ -202,14 +206,9 @@ void aaOcean::prepareOcean()
 		evaluateHokData();
 
 	evaluateHieghtField();
-	//makeTileable(m_fft_htField);
 
 	if(m_doChop)
-	{
 		evaluateChopField();
-		//makeTileable(m_fft_chopX);
-		//makeTileable(m_fft_chopZ);
-	}
 
 	if(m_doFoam)
 	{
@@ -615,6 +614,29 @@ void aaOcean::evaluateJacobians()
 		//store foam back in this array for convenience
 		//fft_jxz[index][0] =   (Jxx * Jzz) - (Jxz * Jxz); //original jacobian.
 		m_fft_jxz[index][0] =   (Jxz * Jxz) - (Jxx * Jzz) + 1.0f; // invert hack
+	}
+}
+
+void aaOcean::getFoamBounds(float inBoundsMin, float inBoundsMax, float& outBoundsMin, float& outBoundsMax)
+{
+	outBoundsMax = -FLT_MAX;
+	outBoundsMin =  FLT_MAX;
+
+	int i, j, n, index, idx;
+	n = m_resolution;
+	idx = 0;
+	//if fft_array has been copied and tiled, set idx = 1, else 0
+	for(i = 0; i< n; i++)
+	{
+		for(j = 0; j< n; j++)
+		{
+			index = i*n + j;
+			if(outBoundsMax < m_fft_jxz[index][idx])
+				outBoundsMax = m_fft_jxz[index][idx];
+
+			if(outBoundsMin > m_fft_jxz[index][idx]) 
+				outBoundsMin = m_fft_jxz[index][idx];
+		}
 	}
 }
 

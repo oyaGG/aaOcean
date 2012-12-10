@@ -33,10 +33,13 @@ public:
 				bool    powTwoConversion);
 
 	float getOceanData(float uCoord, float vCoord, int TYPE, bool rotateUV);
+	void clearResidualArrays();
 
 	bool isValid();
 	bool isChoppy();
 	int getResolution();
+	char* getState();
+	void getFoamBounds(float inBoundsMin, float inBoundsMax, float& outBoundsMin, float& outBoundsMax);
 
 private:
 	int		m_resolution;
@@ -51,8 +54,8 @@ private:
 	float	m_waveHeight;
 	float	m_waveSpeed;
 	float	m_time;
-	float	m_fmin; //for holding min/max foam
-	float   m_fmax; //for holding min/max foam
+	float	m_foamBoundmin; //for holding min/max foam
+	float   m_foamBoundmax; //for holding min/max foam
 	
 	//ocean array pointers
 	int		*m_xCoord;
@@ -96,7 +99,6 @@ private:
 	void allocateBaseArrays();
 	void allocateFoamArrays();
 	void clearArrays();
-	void clearResidualArrays();
 	
 	// initialization functions
 	bool reInit(int data_size);
