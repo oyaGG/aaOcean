@@ -9,8 +9,11 @@
 #ifndef aaOceanDataShader_CPP
 #define aaOceanDataShader_CPP
 
-#include "aaOceanData.h"
 #include <string>
+#include <shader.h>
+#include "aaOceanClass.cpp"
+#include "oceanStore.h"
+#include "aaOceanData.h"
 
 extern "C" DLLEXPORT 
 miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t *params)
@@ -20,29 +23,21 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
 	aaOcean *ocean = (*os)->ocean;
 	
 	miScalar	layerOcean	= *mi_eval_scalar(&params->layerOcean);
-	miVector	*coord = mi_eval_vector(&params->uv_coords);
+	miVector	*coord		=  mi_eval_vector(&params->uv_coords);
 	miScalar	fade		= *mi_eval_scalar(&params->fade);
 	
-	if(*mi_eval_boolean(&params->use_uv_input))
+	if(*mi_eval_boolean(&params->use_uv_input) == FALSE)
 	{
-		// rotating UV space by 90 degrees to align with ICE representation
-		coord->z = coord->x;
-		coord->x = coord->y * -1.0f;
-		coord->y = coord->z;
-	}
-	else
-	{
-		coord->x = state->tex_list[0].y * -1.0f;
-		coord->y = state->tex_list[0].x;
-		coord->z = 0.0f;
+		coord->x = state->tex_list[0].x;
+		coord->y = state->tex_list[0].y;
 	}
 
-	result->g = catromPrep(ocean, ocean->m_fft_htField,  state,  coord) * (1.0f - fade);
+	result->g = ocean->getOceanData(coord->x, coord->y, HEIGHTFIELD) * (1.0f - fade);
 	
-	if(ocean->m_chopAmount > 0.0f)
+	if(ocean->isChoppy())
 	{
-		result->r = -catromPrep( ocean, ocean->m_fft_chopX,  state,  coord)  *  (1.0f - fade);
-		result->b = -catromPrep( ocean, ocean->m_fft_chopZ,  state,  coord)  *  (1.0f - fade);
+		result->r = ocean->getOceanData(coord->x, coord->y, CHOPX)  *  (1.0f - fade);
+		result->b = ocean->getOceanData(coord->x, coord->y, CHOPZ)  *  (1.0f - fade);
 
 		miScalar	gamma		= *mi_eval_scalar(&params->gamma);
 		miScalar	brightness  = *mi_eval_scalar(&params->brightness);
@@ -50,7 +45,7 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
 		miScalar	fmin		= *mi_eval_scalar(&params->fmin);
 		miScalar	fmax		= *mi_eval_scalar(&params->fmax);
 
-		miScalar	foam		= catromPrep(ocean, ocean->m_fft_jxz,state,coord);
+		miScalar	foam		= ocean->getOceanData(coord->x, coord->y, FOAM);
 
 		if(!rawOutput)
 		{
@@ -78,66 +73,62 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 	}
 	else
 	{
-		Timer timer;
-		timer.start();
-
+		// evaluated any previously connected ocean shaders
 		miScalar layerOcean	= *mi_eval_scalar(&params->layerOcean);
 
+		// allocate memory for our ocean object
 		oceanStore** os = NULL;
 		mi_query( miQ_FUNC_USERPTR, state, 0, (void *)&os);
 		*os = (oceanStore *)mi_mem_allocate( sizeof(oceanStore));	
 		(*os)->ocean = new aaOcean;
 		aaOcean *ocean = (*os)->ocean;
 	
-		int resolution			= (int)pow(2.0f,(4 + (*mi_eval_integer(&params->resolution))));
-		ocean->m_oceanScale		= maximum<float>(*mi_eval_scalar(&params->oceanScale),0.00001f);
-		ocean->m_seed			= *mi_eval_integer(&params->seed);
-		ocean->m_waveHeight		= *mi_eval_scalar(&params->waveHeight) * .01f;
-		ocean->m_velocity		= maximum<float>((((*mi_eval_scalar(&params->velocity)) * (*mi_eval_scalar(&params->velocity))) / (aa_GRAVITY)),0.00001f);
-		ocean->m_waveSpeed		= *mi_eval_scalar(&params->waveSpeed);
-		ocean->m_chopAmount		= *mi_eval_scalar(&params->chopAmount) * 0.01f;
-		ocean->m_cutoff			= fabs(*mi_eval_scalar(&params->cutoff) * 0.01f);
-		ocean->m_windDir		= DegsToRads(*mi_eval_scalar(&params->windDir));
-		ocean->m_windAlign		= maximum<int>(((*mi_eval_integer(&params->windAlign) + 1) * 2), 2); 
-		ocean->m_damp			= minimum<float>(*mi_eval_scalar(&params->damp),1);
-		ocean->m_time			= *mi_eval_scalar(&params->time);
+		// retrieve user input
+		ocean->input(*mi_eval_integer(&params->resolution), 
+		*mi_eval_integer(&params->seed),
+		*mi_eval_scalar(&params->oceanScale), 
+		*mi_eval_scalar(&params->velocity), 
+		*mi_eval_scalar(&params->cutoff), 
+		*mi_eval_scalar(&params->windDir), 
+		*mi_eval_integer(&params->windAlign), 
+		*mi_eval_scalar(&params->damp), 
+		*mi_eval_scalar(&params->waveSpeed), 
+		*mi_eval_scalar(&params->waveHeight),
+		*mi_eval_scalar(&params->chopAmount), 
+		*mi_eval_scalar(&params->time),
+		miTRUE);
 
-		miTag shaderInst; // tag of the currently running shader
+		// get the tag of the currently running shader so that we can call its name
+		miTag shaderInst; 
 		mi_query(miQ_FUNC_TAG, state, 0, &shaderInst);
 
-		if(!ocean->reInit(resolution))
+		if(!ocean->isValid())
 		{
-			mi_error("%s. Shader ID: %d", ocean->m_state, shaderInst);	
+			mi_error("%s. Shader ID: %d", ocean->getState(), shaderInst);	
 			return;
 		}
-		mi_info("%s. Shader ID: %d", ocean->m_state, shaderInst);	
+		mi_info("%s. Shader ID: %d", ocean->getState(), shaderInst);	
 
-		ocean->prepareOcean(TRUE, TRUE, TRUE, FALSE, TRUE);
-
-		bool doChop = FALSE;
-		if(ocean->m_chopAmount > 0.0f)
-			doChop = TRUE;
-		
-		if(doChop)
+		if(ocean->isChoppy())
 		{
-			getArrayBounds(ocean->m_fft_jxz, 1, ocean->m_resolution, ocean->m_fmin, ocean->m_fmax);
+			float outMin, outMax;
 
 			miScalar	fmin		= *mi_eval_scalar(&params->fmin);
 			miScalar	fmax		= *mi_eval_scalar(&params->fmax);
 			miBoolean	rawOutput	= *mi_eval_boolean(&params->rawOutput);
 
+			ocean->getFoamBounds(*mi_eval_scalar(&params->fmin), *mi_eval_scalar(&params->fmax), outMin, outMax);
+
 			float epsilon = 1e-3f;
-			if(( !isfEqual(fmin, ocean->m_fmin, epsilon) || !isfEqual(fmax, ocean->m_fmax, epsilon) ) && !rawOutput)
+			if(!rawOutput && ( !isfEqual(fmin, outMin, epsilon) || !isfEqual(fmax, outMax, epsilon) ))
 				mi_warning("[aaOcean Shader] Foam Min/Max mismatch. Please set the Foam Min/Max values in foam shader to Min: %f, Max: %f", 
-							ocean->m_fmin, ocean->m_fmax);
+							outMin, outMax);
 		}
 
 		//clear arrays that are not required
 		ocean->clearResidualArrays();
-		timer.stop();
 
-		mi_info("[aaOcean Shader] Data shader initiated in %f seconds. Shader ID: %d, location: %p", 
-				timer.getElapsedTimeInSec(), shaderInst, ocean);	
+		mi_info("[aaOcean Shader] Data shader initiated. Shader ID: %d, location: %p", shaderInst, ocean);	
 	}
 }
 
@@ -152,23 +143,6 @@ void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
 		{
 			aaOcean *ocean = (*os)->ocean;
 
-			if(params->writeFile)
-			{
-				char* outputFolder	= miaux_tag_to_string(params->outputFolder,"");
-
-				if(!dirExists(outputFolder))
-					mi_error("[aaOcean Shader] Invalid folder path: %s", outputFolder);
-				else
-				{
-					char* postfix = miaux_tag_to_string(params->postfix,"");
-					int frame = *mi_eval_integer(&params->currentFrame);
-					char outputFileName[255];
-					genFullFilePath(&outputFileName[0], &outputFolder[0], &postfix[0], frame);
-					writeExr(&outputFileName[0], ocean);
-					mi_warning("[aaOcean Shader] Image written to %s", outputFileName);
-				}
-			}
-
 			if(ocean)
 				delete ocean;
 			mi_mem_release( (void *)(*os) );
@@ -180,9 +154,8 @@ void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
 	}
 	else
 	{
-		// commented out because of possible conflict between openmp and fftw
-		//fftwf_cleanup_threads();
-		//fftwf_cleanup();
+		fftwf_cleanup_threads();
+		fftwf_cleanup();
 	}
 
 }
