@@ -545,8 +545,8 @@ void aaOcean::setupGrid()
 		for(j = 0; j < n; ++j)
 		{
 			index = (i*n) + j;
-			m_fft_chopX[index][0] *= m_chopAmount * isEven(i+j);
-			m_fft_chopZ[index][0] *= m_chopAmount * isEven(i+j);
+			m_fft_chopX[index][0] *= m_chopAmount * isEven(i+j) * -1.0f;
+			m_fft_chopZ[index][0] *= m_chopAmount * isEven(i+j) * -1.0f;
 		}
 	}
 }
