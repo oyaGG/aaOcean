@@ -353,7 +353,15 @@ PropertySet "aaOceanArnold_params"
 		readable = on;
 		inspectable = on;
 	}
+	Parameter "transform" input
+	{
+		GUID = "{96DA2DC5-41DA-4ABB-97B4-F3E88EE0858E}";
+		Type = Matrix;
+		Texturable = On;
+		Value = 1.0 0.0 0.0 0.0  0.0 1.0 0.0 0.0  0.0 0.0 1.0 0.0  0.0 0.0 0.0 1.0;
+	}
 }
+
 
 phenomenon "aaOceanArnold_declare"
 {
