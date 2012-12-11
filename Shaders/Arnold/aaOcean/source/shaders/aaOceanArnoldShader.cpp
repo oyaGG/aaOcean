@@ -38,13 +38,17 @@ enum aaOceanArnoldParams
 	p_outputFolder,
 	p_postfix,
 	p_currentFrame,
-	p_rotateUV
+	p_rotateUV,
+	p_transform
 };
 
-#include "shader_funcs.h"
+//#include "shader_funcs.h"
+
 
 node_parameters
 {
+	AtMatrix matrix44;
+	AiM4Identity(matrix44);
 	AiParameterVEC ( "uv_coords"		, 1.0f, 1.0f, 1.0f);
 	AiParameterBOOL( "use_uv_input"		, 0);
 	AiParameterFLT ( "fade"				, 0.0f);
@@ -70,15 +74,15 @@ node_parameters
 	AiParameterStr ( "postfix"			, "");
 	AiParameterINT ( "currentFrame"		, 1);
 	AiParameterBOOL( "rotateUV"			, 0);
+	AiParameterMTX ( "transform"		, matrix44);
 }
 
 node_update
 {
 	aaOcean *ocean = (aaOcean *)AiNodeGetLocalData(node);
 
-	int renderRes = (int)pow(2.0f, params[p_resolution].INT + 4);
-
-	ocean->input(renderRes,
+	// main input function
+	ocean->input(params[p_resolution].INT,
 		params[p_seed].INT,
 		params[p_oceanScale].FLT,
 		params[p_velocity].FLT,
@@ -89,102 +93,101 @@ node_update
 		params[p_waveSpeed].FLT,
 		params[p_waveHeight].FLT,
 		params[p_chopAmount].FLT,
-		params[p_time].FLT);
+		params[p_time].FLT,
+		TRUE);
 
-	if(ocean->m_isValid)
+	if(!ocean->isValid())
 	{
-		bool chop = false;
-		if((float)ocean->m_chopAmount > 0.0f)
-			chop = true;
-
-		ocean->prepareOcean(1,chop,chop,1,1);
-
-		// get foam array bounds to generate normalization information
-		getArrayBounds(ocean->m_fft_jxz, 1, ocean->m_resolution, ocean->m_fmin, ocean->m_fmax);
-
+		AiMsgWarning("%s", ocean->getState());	
+		return;
+	}
+	
+	// see if user has requested normalized or raw foam values
+	float rawOutput	= params[p_raw].BOOL;
+	if(ocean->isChoppy() && !rawOutput)
+	{
+		float outMin, outMax;
 		float	fmin		= params[p_fMin].FLT;
 		float	fmax		= params[p_fMax].FLT;
-		float	rawOutput	= params[p_raw].BOOL;
+		ocean->getFoamBounds(fmin, fmax, outMin, outMax);
 
 		float epsilon = 1e-3f;
-		if(( !isfEqual(fmin, ocean->m_fmin, epsilon) || !isfEqual(fmax, ocean->m_fmax, epsilon) ) && !rawOutput)
+		if(!isfEqual(fmin, outMin, epsilon) || !isfEqual(fmax, outMax, epsilon) )
 			AiMsgWarning("[aaOcean Shader] Foam Min/Max mismatch. Please set the Foam Min/Max values in foam shader to Min: %f, Max: %f", 
-						ocean->m_fmin, ocean->m_fmax);
+						outMin, outMax);
 	}
-	else // bad input to ocean class
-		AiMsgWarning("%s", ocean->m_state);	
+	//clear arrays that are not required
+	ocean->clearResidualArrays();
 }
 
 shader_evaluate
 {
 	aaOcean *ocean = (aaOcean*)AiNodeGetLocalData(node);
 
-	if(ocean->m_isValid)
-	{
-		AtPoint uvPt;
-		bool rotate = AiShaderEvalParamBool(p_rotateUV);
+	if(!ocean->isValid())
+		return;
 
-		if(AiShaderEvalParamBool(p_useUVInput))
-		{
-			uvPt = AiShaderEvalParamVec(p_uv_coords);
-			// Rotating UV space to be in line with deformer
-			if(rotate)
-			{
-				uvPt.z = uvPt.y * -1.0f;
-				uvPt.y = uvPt.x;
-				uvPt.x = uvPt.z;
-			}
-		}
+	// get our UV's
+	AtPoint uvPt;
+	if(AiShaderEvalParamBool(p_useUVInput))
+		uvPt = AiShaderEvalParamVec(p_uv_coords);
+	else
+	{
+		uvPt.x = sg->u;
+		uvPt.y = sg->v;
+	}
+
+	// retrieve heightfield in world space
+	AtPoint oceanWorldSpace;
+	oceanWorldSpace.y = ocean->getOceanData(uvPt.x, uvPt.y, HEIGHTFIELD);
+	oceanWorldSpace.x = oceanWorldSpace.z = 0.0f;
+
+	if(ocean->isChoppy())
+	{
+		// retrieve chop displacement
+		oceanWorldSpace.x = ocean->getOceanData(uvPt.x, uvPt.y, CHOPX);
+		oceanWorldSpace.z = ocean->getOceanData(uvPt.x, uvPt.y, CHOPZ);
+
+		// retrieve foam
+		float foam = ocean->getOceanData(uvPt.x, uvPt.y, FOAM);
+
+		// see if user has requested normalized or raw foam values
+		if(AiShaderEvalParamBool(p_raw))
+			sg->out.RGBA.a = foam;
 		else
 		{
-			// Rotating UV space to be in line with deformer
-			if(rotate)
-			{
-				uvPt.x = sg->v * -1.0f;
-				uvPt.y = sg->u;
-			}
-			else
-			{
-				uvPt.x = sg->u;
-				uvPt.y = sg->v;
-			}
-		}
-
-#ifdef VECTORSHADER
-		sg->out.VEC.y = catromPrep( ocean,  ocean->m_fft_htField, uvPt);
-#else
-		sg->out.RGBA.g = catromPrep( ocean,  ocean->m_fft_htField, uvPt);
-#endif
-
-		if((float)ocean->m_chopAmount > 0.0f)
-		{
-			#ifdef VECTORSHADER
-			sg->out.VEC.x = -catromPrep( ocean, ocean->m_fft_chopX, uvPt);
-			sg->out.VEC.z = -catromPrep( ocean, ocean->m_fft_chopZ, uvPt);
-			#else
-			sg->out.RGBA.r = -catromPrep( ocean, ocean->m_fft_chopX, uvPt);
-			sg->out.RGBA.b = -catromPrep( ocean, ocean->m_fft_chopZ, uvPt);
-
-			float	gamma		= AiShaderEvalParamFlt(p_gamma);
-			float	brightness  = AiShaderEvalParamFlt(p_brightness);
-			bool	rawOutput	= AiShaderEvalParamBool(p_raw);
-			float	fmin		= AiShaderEvalParamFlt(p_fMin);
-			float	fmax		= AiShaderEvalParamFlt(p_fMax);
-
-			float foam = catromPrep(ocean, ocean->m_fft_jxz, uvPt);
-
-			if(!rawOutput)
-			{
-				foam  = rescale(foam, fmin, fmax, 0.0f, 1.0f);
-				foam  = maximum<float>(foam, FLT_MIN);
-				foam  = pow(foam, gamma);
-				foam *= brightness;
-				foam *= (1.0f - AiShaderEvalParamFlt(p_fade));
-			}
-			sg->out.RGBA.a = foam;
-			#endif
+			// get normalization weights
+			float	fmin = AiShaderEvalParamFlt(p_fMin);
+			float	fmax = AiShaderEvalParamFlt(p_fMax);
+			
+			// fitting to 0 - 1 range using rescale
+			foam  = rescale(foam, fmin, fmax, 0.0f, 1.0f);
+			// removing negative leftovers
+			foam  = maximum<float>(foam, 0.0f);
+			// gamma
+			foam  = pow(foam, AiShaderEvalParamFlt(p_gamma));
+			foam *= AiShaderEvalParamFlt(p_brightness);
 		}
 	}
+	else
+		sg->out.RGBA.a = 0.f;
+
+	// get space-transform matrix
+	AtMatrix matrix;
+	AiM4Identity(matrix);
+	AiM4Copy(matrix, *AiShaderEvalParamMtx(p_transform));
+
+	// local space point
+	AtPoint oceanLocalSpace;
+	oceanLocalSpace.x = oceanLocalSpace.z = 0.f;
+
+	// convert to local space
+	AiM4PointByMatrixMult(&oceanLocalSpace, matrix, &oceanWorldSpace);
+
+	// store result in output
+	sg->out.RGBA.r = oceanLocalSpace.x;
+	sg->out.RGBA.g = oceanLocalSpace.y;
+	sg->out.RGBA.b = oceanLocalSpace.z;
 }
 
 node_initialize
@@ -201,22 +204,6 @@ node_finish
 {
 	aaOcean *ocean = (aaOcean *)AiNodeGetLocalData(node);
 
-	if(AiNodeGetBool(node, "writeFile"))
-	{
-		const char *outputFolder = AiNodeGetStr(node, "outputFolder");
-		if(!dirExists(outputFolder))
-			AiMsgWarning("[aaOcean Arnold] Invalid folder path: %s", outputFolder);
-		else
-		{
-			const char* postfix = AiNodeGetStr(node, "postfix");
-			int frame = AiNodeGetInt(node, "currentFrame");
-			char outputFileName[255];
-			genFullFilePath(&outputFileName[0], &outputFolder[0], &postfix[0], frame);
-			writeExr(&outputFileName[0], ocean);
-			AiMsgInfo("[aaOcean Arnold] Image written to %s", outputFileName);
-		}
-	}
-
 	// cleanup
 	delete ocean;
 	AiMsgInfo("[aaOcean Arnold] Deleted aaOcean data");
@@ -231,11 +218,7 @@ node_loader
       return FALSE;
 
    node->methods      = aaOceanArnoldMethods;
-   #ifdef VECTORSHADER
-   node->output_type  = AI_TYPE_VECTOR;
-   #else
    node->output_type  = AI_TYPE_RGBA;
-   #endif
    node->name         = "aaOceanArnold";
    node->node_type    = AI_NODE_SHADER;
    strcpy(node->version, AI_VERSION);
