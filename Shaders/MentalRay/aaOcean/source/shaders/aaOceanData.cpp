@@ -18,9 +18,13 @@
 extern "C" DLLEXPORT 
 miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t *params)
 {
+	// retrieve ocean pointer from user-data
 	oceanStore** os;
 	mi_query( miQ_FUNC_USERPTR, state, 0, (void *)&os);
-	aaOcean *ocean = (*os)->ocean;
+	aaOcean *pOcean = (*os)->ocean;
+
+	if(!pOcean->isValid())
+		return miFALSE;
 	
 	miScalar	layerOcean	= *mi_eval_scalar(&params->layerOcean);
 	miVector	*coord		=  mi_eval_vector(&params->uv_coords);
@@ -32,35 +36,47 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
 		coord->y = state->tex_list[0].y;
 	}
 
-	result->g = ocean->getOceanData(coord->x, coord->y, HEIGHTFIELD) * (1.0f - fade);
+	// retrieve heightfield
+	miVector oceanWorldSpace;
+	oceanWorldSpace.y = pOcean->getOceanData(coord->x, coord->y, HEIGHTFIELD) * (1.0f - fade);
+	oceanWorldSpace.x = oceanWorldSpace.z = 0.0f;
 	
-	if(ocean->isChoppy())
+	if(pOcean->isChoppy())
 	{
-		result->r = ocean->getOceanData(coord->x, coord->y, CHOPX)  *  (1.0f - fade);
-		result->b = ocean->getOceanData(coord->x, coord->y, CHOPZ)  *  (1.0f - fade);
+		// retrieve chop displacement
+		oceanWorldSpace.x = pOcean->getOceanData(coord->x, coord->y, CHOPX)  *  (1.0f - fade);
+		oceanWorldSpace.z = pOcean->getOceanData(coord->x, coord->y, CHOPZ)  *  (1.0f - fade);
 
-		miScalar	gamma		= *mi_eval_scalar(&params->gamma);
-		miScalar	brightness  = *mi_eval_scalar(&params->brightness);
-		miBoolean	rawOutput	= *mi_eval_boolean(&params->rawOutput);
-		miScalar	fmin		= *mi_eval_scalar(&params->fmin);
-		miScalar	fmax		= *mi_eval_scalar(&params->fmax);
+		// retrieve foam and store it in our alpha channel
+		result->a = pOcean->getOceanData(coord->x, coord->y, FOAM);
 
-		miScalar	foam		= ocean->getOceanData(coord->x, coord->y, FOAM);
-
-		if(!rawOutput)
+		// see if user has requested normalized or raw foam values
+		if(!*mi_eval_boolean(&params->rawOutput))
 		{
-			foam  = rescale(foam, fmin, fmax, 0.0f, 1.0f);
-			foam  = maximum<float>(foam, 0.0f);
-			foam  = pow(foam, gamma);
-			foam *= brightness;
-			foam *= (1.0f - fade);
+			miScalar	gamma		= *mi_eval_scalar(&params->gamma);
+			miScalar	brightness  = *mi_eval_scalar(&params->brightness);
+			miScalar	fmin		= *mi_eval_scalar(&params->fmin);
+			miScalar	fmax		= *mi_eval_scalar(&params->fmax);
+			result->a  = rescale(result->a, fmin, fmax, 0.0f, 1.0f);
+			result->a  = maximum<float>(result->a, 0.0f);
+			result->a  = pow(result->a, gamma);
+			result->a *= brightness;
+			result->a *= (1.0f - fade);
 		}
-		result->a = foam;
 	}
 	else
 		result->a = 0.0f;
 
-	return( miTRUE );
+	// convert to the local space of the user-specified transform matrix
+	miVector oceanLocalSpace;
+	mi_vector_transform(&oceanLocalSpace, &oceanWorldSpace, mi_eval_transform(&params->transform));
+
+	// return the result
+	result->r = oceanLocalSpace.x;
+	result->g = oceanLocalSpace.y;
+	result->b = oceanLocalSpace.z;
+
+	return miTRUE;
 }
 
 extern "C" DLLEXPORT 
@@ -68,67 +84,79 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 {
 	if( !params )
 	{
+		// shader global initialization block
+
+		// request per-shader-instance initialization
 		*inst_init_req = miTRUE;
+
+		// initialize fftw threads routines
 		fftwf_init_threads();
 	}
 	else
 	{
+		// shader per-instance initialization block
+
 		// evaluated any previously connected ocean shaders
 		miScalar layerOcean	= *mi_eval_scalar(&params->layerOcean);
 
-		// allocate memory for our ocean object
+		// allocate memory for our ocean object and store its pointer 
+		// in shader's user-data construct
 		oceanStore** os = NULL;
 		mi_query( miQ_FUNC_USERPTR, state, 0, (void *)&os);
-		*os = (oceanStore *)mi_mem_allocate( sizeof(oceanStore));	
+		*os = (oceanStore *)mi_mem_allocate( sizeof(oceanStore));
+
+		// create a new instance of our ocean object
+		// and create a new ocean pointer for convenient syntax
 		(*os)->ocean = new aaOcean;
-		aaOcean *ocean = (*os)->ocean;
+		aaOcean *pOcean = (*os)->ocean;
 	
-		// retrieve user input
-		ocean->input(*mi_eval_integer(&params->resolution), 
+		// retrieve user input for shader
+		pOcean->input(
+		*mi_eval_integer(&params->resolution), 
 		*mi_eval_integer(&params->seed),
-		*mi_eval_scalar(&params->oceanScale), 
-		*mi_eval_scalar(&params->velocity), 
-		*mi_eval_scalar(&params->cutoff), 
-		*mi_eval_scalar(&params->windDir), 
+		*mi_eval_scalar (&params->oceanScale), 
+		*mi_eval_scalar (&params->velocity), 
+		*mi_eval_scalar (&params->cutoff), 
+		*mi_eval_scalar (&params->windDir), 
 		*mi_eval_integer(&params->windAlign), 
-		*mi_eval_scalar(&params->damp), 
-		*mi_eval_scalar(&params->waveSpeed), 
-		*mi_eval_scalar(&params->waveHeight),
-		*mi_eval_scalar(&params->chopAmount), 
-		*mi_eval_scalar(&params->time),
+		*mi_eval_scalar (&params->damp), 
+		*mi_eval_scalar (&params->waveSpeed), 
+		*mi_eval_scalar (&params->waveHeight),
+		*mi_eval_scalar (&params->chopAmount), 
+		*mi_eval_scalar (&params->time),
 		miTRUE);
 
 		// get the tag of the currently running shader so that we can call its name
 		miTag shaderInst; 
 		mi_query(miQ_FUNC_TAG, state, 0, &shaderInst);
 
-		if(!ocean->isValid())
+		if(!pOcean->isValid())
 		{
-			mi_error("%s. Shader ID: %d", ocean->getState(), shaderInst);	
+			mi_error("%s. Shader ID: %d", pOcean->getState(), shaderInst);	
 			return;
 		}
-		mi_info("%s. Shader ID: %d", ocean->getState(), shaderInst);	
 
-		if(ocean->isChoppy())
+		// input validated. proceeding...
+		mi_info("%s. Shader ID: %d", pOcean->getState(), shaderInst);	
+
+		miBoolean rawOutput	= *mi_eval_boolean(&params->rawOutput);
+		if(pOcean->isChoppy() && !rawOutput)
 		{
 			float outMin, outMax;
-
-			miScalar	fmin		= *mi_eval_scalar(&params->fmin);
-			miScalar	fmax		= *mi_eval_scalar(&params->fmax);
-			miBoolean	rawOutput	= *mi_eval_boolean(&params->rawOutput);
-
-			ocean->getFoamBounds(*mi_eval_scalar(&params->fmin), *mi_eval_scalar(&params->fmax), outMin, outMax);
+			miScalar fmin = *mi_eval_scalar(&params->fmin);
+			miScalar fmax = *mi_eval_scalar(&params->fmax);
+			pOcean->getFoamBounds(fmin, fmax, outMin, outMax);
 
 			float epsilon = 1e-3f;
-			if(!rawOutput && ( !isfEqual(fmin, outMin, epsilon) || !isfEqual(fmax, outMax, epsilon) ))
+			if( ( !isfEqual(fmin, outMin, epsilon) || !isfEqual(fmax, outMax, epsilon) ))
 				mi_warning("[aaOcean Shader] Foam Min/Max mismatch. Please set the Foam Min/Max values in foam shader to Min: %f, Max: %f", 
 							outMin, outMax);
 		}
 
-		//clear arrays that are not required
-		ocean->clearResidualArrays();
+		// clear arrays that are not required during shader evaluation
+		pOcean->clearResidualArrays();
 
-		mi_info("[aaOcean Shader] Data shader initiated. Shader ID: %d, location: %p", shaderInst, ocean);	
+		mi_info("[aaOcean Shader] Data shader initiated. Shader ID: %d, location: %p", shaderInst, pOcean);	
 	}
 }
 
@@ -141,19 +169,20 @@ void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
 		oceanStore** os = NULL;
 		if(mi_query( miQ_FUNC_USERPTR, state, 0, (void *)&os))
 		{
-			aaOcean *ocean = (*os)->ocean;
+			aaOcean *pOcean = (*os)->ocean;
 
-			if(ocean)
-				delete ocean;
+			if(pOcean)
+				delete pOcean;
 			mi_mem_release( (void *)(*os) );
 
 			miTag shaderInst; // tag of the currently running shader
 			mi_query(miQ_FUNC_TAG, state, 0, &shaderInst);
-			mi_info("[aaOcean Shader] Data Shader ID %d, terminated at location: %p", shaderInst, ocean);
+			mi_info("[aaOcean Shader] Data Shader ID %d, terminated at location: %p", shaderInst, pOcean);
 		}
 	}
 	else
 	{
+		// call fftw cleanup routines
 		fftwf_cleanup_threads();
 		fftwf_cleanup();
 	}

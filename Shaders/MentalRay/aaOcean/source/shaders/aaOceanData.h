@@ -36,6 +36,7 @@ typedef struct
 	miScalar	fmax;
 
 	miScalar	layerOcean;
+	miMatrix	transform;
 
 	miBoolean	writeFile;
 	miTag		outputFolder;
