@@ -42,9 +42,6 @@ enum aaOceanArnoldParams
 	p_transform
 };
 
-//#include "shader_funcs.h"
-
-
 node_parameters
 {
 	AtMatrix matrix44;
@@ -79,10 +76,12 @@ node_parameters
 
 node_update
 {
-	aaOcean *ocean = (aaOcean *)AiNodeGetLocalData(node);
+	// retrieve ocean pointer from user-data
+	aaOcean *pOcean = (aaOcean *)AiNodeGetLocalData(node);
 
 	// main input function
-	ocean->input(params[p_resolution].INT,
+	pOcean->input(
+		params[p_resolution].INT,
 		params[p_seed].INT,
 		params[p_oceanScale].FLT,
 		params[p_velocity].FLT,
@@ -96,35 +95,35 @@ node_update
 		params[p_time].FLT,
 		TRUE);
 
-	if(!ocean->isValid())
+	if(!pOcean->isValid())
 	{
-		AiMsgWarning("%s", ocean->getState());	
+		// invalid ocean input
+		AiMsgWarning("%s", pOcean->getState());	
 		return;
 	}
 	
 	// see if user has requested normalized or raw foam values
 	float rawOutput	= params[p_raw].BOOL;
-	if(ocean->isChoppy() && !rawOutput)
+	if(pOcean->isChoppy() && !rawOutput)
 	{
 		float outMin, outMax;
 		float	fmin		= params[p_fMin].FLT;
 		float	fmax		= params[p_fMax].FLT;
-		ocean->getFoamBounds(fmin, fmax, outMin, outMax);
+		pOcean->getFoamBounds(fmin, fmax, outMin, outMax);
 
 		float epsilon = 1e-3f;
 		if(!isfEqual(fmin, outMin, epsilon) || !isfEqual(fmax, outMax, epsilon) )
 			AiMsgWarning("[aaOcean Shader] Foam Min/Max mismatch. Please set the Foam Min/Max values in foam shader to Min: %f, Max: %f", 
 						outMin, outMax);
 	}
-	//clear arrays that are not required
-	ocean->clearResidualArrays();
 }
 
 shader_evaluate
 {
-	aaOcean *ocean = (aaOcean*)AiNodeGetLocalData(node);
+	// retrieve ocean pointer from user-data
+	aaOcean *pOcean = (aaOcean*)AiNodeGetLocalData(node);
 
-	if(!ocean->isValid())
+	if(!pOcean->isValid())
 		return;
 
 	// get our UV's
@@ -138,51 +137,51 @@ shader_evaluate
 	}
 
 	// retrieve heightfield in world space
-	AtPoint oceanWorldSpace;
-	oceanWorldSpace.y = ocean->getOceanData(uvPt.x, uvPt.y, HEIGHTFIELD);
-	oceanWorldSpace.x = oceanWorldSpace.z = 0.0f;
+	AtPoint worldSpaceDisplacementVec;
+	worldSpaceDisplacementVec.y = pOcean->getOceanData(uvPt.x, uvPt.y, HEIGHTFIELD);
 
-	if(ocean->isChoppy())
+	if(pOcean->isChoppy())
 	{
 		// retrieve chop displacement
-		oceanWorldSpace.x = ocean->getOceanData(uvPt.x, uvPt.y, CHOPX);
-		oceanWorldSpace.z = ocean->getOceanData(uvPt.x, uvPt.y, CHOPZ);
+		worldSpaceDisplacementVec.x = pOcean->getOceanData(uvPt.x, uvPt.y, CHOPX);
+		worldSpaceDisplacementVec.z = pOcean->getOceanData(uvPt.x, uvPt.y, CHOPZ);
 
-		// retrieve foam
-		float foam = ocean->getOceanData(uvPt.x, uvPt.y, FOAM);
+		// retrieve foam and store it in our alpha channel
+		sg->out.RGBA.a = pOcean->getOceanData(uvPt.x, uvPt.y, FOAM);
 
 		// see if user has requested normalized or raw foam values
-		if(AiShaderEvalParamBool(p_raw))
-			sg->out.RGBA.a = foam;
-		else
+		if(!AiShaderEvalParamBool(p_raw))
 		{
 			// get normalization weights
 			float	fmin = AiShaderEvalParamFlt(p_fMin);
 			float	fmax = AiShaderEvalParamFlt(p_fMax);
 			
-			// fitting to 0 - 1 range using rescale
-			foam  = rescale(foam, fmin, fmax, 0.0f, 1.0f);
+			// fitting to 0 - 1 range using rescale(...)
+			sg->out.RGBA.a  = rescale(sg->out.RGBA.a, fmin, fmax, 0.0f, 1.0f);
 			// removing negative leftovers
-			foam  = maximum<float>(foam, 0.0f);
-			// gamma
-			foam  = pow(foam, AiShaderEvalParamFlt(p_gamma));
-			foam *= AiShaderEvalParamFlt(p_brightness);
+			sg->out.RGBA.a  = maximum<float>(sg->out.RGBA.a, 0.0f);
+			// apply gamma
+			sg->out.RGBA.a  = pow(sg->out.RGBA.a, AiShaderEvalParamFlt(p_gamma));
+			sg->out.RGBA.a *= AiShaderEvalParamFlt(p_brightness);
 		}
 	}
 	else
+	{
+		// return only heightfield, since ocean isn't choppy, 
+		// and set foam to 0.0 since it is derived from choppy oceans
+		worldSpaceDisplacementVec.x = worldSpaceDisplacementVec.z = 0.0f;
 		sg->out.RGBA.a = 0.f;
+	}
 
 	// get space-transform matrix
 	AtMatrix matrix;
 	AiM4Identity(matrix);
 	AiM4Copy(matrix, *AiShaderEvalParamMtx(p_transform));
 
-	// local space point
+	// convert to the local space of the user-specified transform matrix
 	AtPoint oceanLocalSpace;
 	oceanLocalSpace.x = oceanLocalSpace.z = 0.f;
-
-	// convert to local space
-	AiM4PointByMatrixMult(&oceanLocalSpace, matrix, &oceanWorldSpace);
+	AiM4PointByMatrixMult(&oceanLocalSpace, matrix, &worldSpaceDisplacementVec);
 
 	// store result in output
 	sg->out.RGBA.r = oceanLocalSpace.x;
@@ -192,22 +191,26 @@ shader_evaluate
 
 node_initialize
 {
+	// initialize fftw threads routines
 	fftwf_init_threads();
 
-	aaOcean *ocean;
-	ocean = new aaOcean;
+	// store a new ocean pointer in user-data
+	aaOcean *pOcean;
+	pOcean = new aaOcean;
+	AiNodeSetLocalData(node, pOcean);
 	AiMsgInfo("[aaOcean Arnold] Created new aaOcean data");
-	AiNodeSetLocalData(node, ocean);
 }
 
 node_finish
 {
-	aaOcean *ocean = (aaOcean *)AiNodeGetLocalData(node);
+	// retrieve ocean pointer from user-data
+	aaOcean *pOcean = (aaOcean *)AiNodeGetLocalData(node);
 
-	// cleanup
-	delete ocean;
+	// cleanup ocean
+	delete pOcean;
 	AiMsgInfo("[aaOcean Arnold] Deleted aaOcean data");
 
+	// call fftw cleanup routines
 	fftwf_cleanup_threads();
 	fftwf_cleanup();
 }
