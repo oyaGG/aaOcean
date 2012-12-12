@@ -42,11 +42,12 @@
 
 MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix& mat, unsigned int multiIndex)
 {
+	// get maya points array
 	MPointArray verts;
 	iter.allPositions(verts);
 
-	int gridRes = int_sqrt(verts.length()) - 1;	
-	pOcean->input(	gridRes,
+	// main input function
+	pOcean->input(	block.inputValue(resolution).asInt(),
 					block.inputValue(seed).asInt(),
 					block.inputValue(oceanSize).asFloat(),
 					block.inputValue(waveSize).asFloat(),
@@ -57,24 +58,25 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 					block.inputValue(waveSpeed).asFloat(),
 					block.inputValue(waveHeight).asFloat(),
 					block.inputValue(waveChop).asFloat(),
-					block.inputValue(currTime).asFloat());
-					
-	if(pOcean->m_isValid)
+					block.inputValue(currTime).asFloat(),
+					block.inputValue(doFoam).asInt(),
+					1);
+
+	if(pOcean->isValid())
 	{
-		bool chop = false;
-		if((float)pOcean->m_chopAmount > 0.0001f)
-			chop = true;
+		float worldSpaceDisplacementVec[3] = {0.0f, 0.0f, 0.0f};
+		float transformedVector[3];
 
-		pOcean->prepareOcean(1,chop,chop,1,1);
-
-		#pragma omp parallel for
-		for(int i = 0; i<verts.length(); i++)
+		#pragma omp parallel for private(worldSpaceDisplacementVec, transformedVector)
+		for(int i = 0; i < verts.length(); i++)
 		{
-			verts[i].y += pOcean->m_fft_htField[i][1];
-			if(chop)
+			// get height field
+			worldSpaceDisplacementVec[1] = pOcean->getOceanData(uCoord[i], vCoord[i], HEIGHTFIELD);
+			if(pOcean->isChoppy())
 			{
-				verts[i].x -= pOcean->m_fft_chopX[i][1];
-				verts[i].z -= pOcean->m_fft_chopZ[i][1];
+				// get x and z displacement
+				worldSpaceDisplacementVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPX);
+				worldSpaceDisplacementVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPZ);
 			}
 		}
 		iter.setAllPositions(verts);
@@ -82,8 +84,6 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 	}
 	else
 		return MS::kFailure;
-
-	
 }
 
 

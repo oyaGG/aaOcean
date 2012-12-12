@@ -19,7 +19,7 @@ public:
 
     virtual MStatus  deform(MDataBlock& block, MItGeometry& iter, const MMatrix& mat, unsigned int multiIndex);
 
-	static  MObject  viewRes;	
+	static  MObject  resolution;	
 	static  MObject  oceanSize;	
 	static  MObject  seed;	
 
@@ -33,15 +33,17 @@ public:
 	static  MObject  waveReflection;
 	static  MObject  waveAlign;
 	static  MObject  currTime;
+	static  MObject  doFoam;
+
+	static  MObject  uCoord;
+	static  MObject  vCoord;
+
 	static  MTypeId	 id;
 
 	aaOcean* pOcean;
-
-	void fetchInput(MDataBlock& block);
-
 };
 
-MObject		aaOceanMaya::viewRes;	
+MObject		aaOceanMaya::resolution;	
 MObject		aaOceanMaya::oceanSize;	
 MObject		aaOceanMaya::seed;	
 MObject		aaOceanMaya::waveHeight;
@@ -53,20 +55,23 @@ MObject		aaOceanMaya::waveDirection;
 MObject		aaOceanMaya::waveReflection;
 MObject		aaOceanMaya::waveAlign;
 MObject		aaOceanMaya::currTime;
+MObject		aaOceanMaya::doFoam;
+MObject		aaOceanMaya::uCoord;
+MObject		aaOceanMaya::vCoord;
 MTypeId     aaOceanMaya::id( 0x20B6EF34 ); //Maya Node ID 548859700
 
 MStatus aaOceanMaya::initialize()
 {
-	MFnNumericAttribute nAttrViewRes;
-	viewRes = nAttrViewRes.create( "Resolution", "viewRes", MFnNumericData::kInt, 2 );
-    nAttrViewRes.setKeyable (true);	
-	nAttrViewRes.setWritable(true);
-	nAttrViewRes.setSoftMin(1);	
-	nAttrViewRes.setSoftMax(6);	
-	nAttrViewRes.setMin(1);	
-	nAttrViewRes.setMax(6);	
-    addAttribute( viewRes );
-    attributeAffects( aaOceanMaya::viewRes, aaOceanMaya::outputGeom);
+	MFnNumericAttribute nAttrResolution;
+	resolution = nAttrResolution.create( "Resolution", "resolution", MFnNumericData::kInt, 2 );
+    nAttrResolution.setKeyable (true);	
+	nAttrResolution.setWritable(true);
+	nAttrResolution.setSoftMin(1);	
+	nAttrResolution.setSoftMax(6);	
+	nAttrResolution.setMin(1);	
+	nAttrResolution.setMax(6);	
+    addAttribute( resolution );
+    attributeAffects( aaOceanMaya::resolution, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrOceanSize;
 	oceanSize= nAttrOceanSize.create( "oceanSize", "oceanSize", MFnNumericData::kFloat, 100.f );
@@ -174,11 +179,21 @@ MStatus aaOceanMaya::initialize()
     addAttribute( currTime );
     attributeAffects( aaOceanMaya::currTime, aaOceanMaya::outputGeom);
 
+	MFnNumericAttribute nAttrDoFoam;
+	doFoam = nAttrCurrTime.create( "doFoam", "doFoam", MFnNumericData::kInt, 0 );
+    nAttrCurrTime.setKeyable(  true );
+	nAttrWaveAlign.setWritable(true);
+    addAttribute( doFoam );
+    attributeAffects( aaOceanMaya::doFoam, aaOceanMaya::outputGeom);
+
 	return MStatus::kSuccess;
 }
 
 aaOceanMaya::aaOceanMaya() 
 {
+	// initialize fftw threads routines
+	fftwf_init_threads();
+
 	pOcean = new aaOcean;
 	MGlobal::displayInfo( "[aaOcean Maya] Created a new ocean patch" );
 }
@@ -189,6 +204,10 @@ aaOceanMaya::~aaOceanMaya()
 		delete pOcean;
 		pOcean = NULL;
 		MGlobal::displayInfo( "[aaOcean Maya] Deleted ocean patch" );
+	
+		// call fftw cleanup routines
+		fftwf_cleanup_threads();
+		fftwf_cleanup();
 	}
 }
 void* aaOceanMaya::creator()
@@ -200,7 +219,7 @@ void* aaOceanMaya::creator()
 MStatus initializePlugin( MObject obj )
 {
 	MStatus result;
-	MFnPlugin plugin( obj, "Amaan Akram", "2.0", "Any");
+	MFnPlugin plugin( obj, "Amaan Akram", "2.6", "Any");
 	result = plugin.registerNode( "aaOceanMaya", aaOceanMaya::id, aaOceanMaya::creator, 
 								  aaOceanMaya::initialize, MPxNode::kDeformerNode );
 
@@ -213,59 +232,4 @@ MStatus uninitializePlugin( MObject obj)
 	MFnPlugin plugin( obj );
 	result = plugin.deregisterNode( aaOceanMaya::id );
 	return result;
-}
-
-void aaOceanMaya::fetchInput(MDataBlock& block)
-{	
-	float temp;
-	int temp1;
-
-	temp =  DegsToRads(block.inputValue(waveDirection).asFloat());
-	if(pOcean->m_windDir != temp)
-	{
-		pOcean->m_windDir = temp;
-		pOcean->m_redoHoK = true;
-	}
-	temp = (block.inputValue(waveSmooth).asFloat() * 0.01f);
-	if(pOcean->m_cutoff != temp)
-	{
-		pOcean->m_cutoff = temp;
-		pOcean->m_redoHoK = true;
-	}
-	temp = maximum<float>(block.inputValue(oceanSize).asFloat(),0.00001f);
-	if(pOcean->m_oceanScale	!= temp)
-	{
-		pOcean->m_oceanScale = temp;
-		pOcean->m_redoHoK = true;
-	}
-	temp = maximum<float>(((block.inputValue(waveSize).asFloat()  * block.inputValue(waveSize).asFloat()) / (aa_GRAVITY)),0.00001f);
-	if(pOcean->m_velocity !=  temp)
-	{
-		pOcean->m_velocity = temp;
-		pOcean->m_redoHoK = true;
-	}
-	temp1 = maximum<int>(((block.inputValue(waveAlign).asInt() + 1) * 2),2);
-	if(pOcean->m_windAlign != temp1)
-	{
-		pOcean->m_windAlign = temp1;
-		pOcean->m_redoHoK = true;
-	}
-	temp = block.inputValue(waveReflection).asFloat();
-	if(pOcean->m_damp != temp)
-	{
-		pOcean->m_damp = temp;
-		pOcean->m_redoHoK = true;
-	}
-
-	temp1 =  block.inputValue(seed).asInt();
-	if(pOcean->m_seed	!= temp1)
-	{
-		pOcean->m_seed	= temp1;
-		pOcean->m_redoHoK = true;
-		pOcean->setup_grid(); 
-	}
-	pOcean->m_chopAmount	= block.inputValue(waveChop).asFloat()  * .01f;		//divided by scale for better ocean control;
-	pOcean->m_waveHeight	= block.inputValue(waveHeight).asFloat()* .01f;		//divided by scale for better ocean control;
-	pOcean->m_waveSpeed		= block.inputValue(waveSpeed).asFloat();
-	pOcean->m_time			= block.inputValue(currTime).asFloat(); // time in seconds
 }
