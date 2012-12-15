@@ -38,6 +38,8 @@ public:
 	static  MObject  uCoord;
 	static  MObject  vCoord;
 
+	static  MObject  inTransform;
+
 	static  MTypeId	 id;
 
 	aaOcean* pOcean;
@@ -58,6 +60,8 @@ MObject		aaOceanMaya::currTime;
 MObject		aaOceanMaya::doFoam;
 MObject		aaOceanMaya::uCoord;
 MObject		aaOceanMaya::vCoord;
+MObject		aaOceanMaya::inTransform;
+
 MTypeId     aaOceanMaya::id( 0x20B6EF34 ); //Maya Node ID 548859700
 
 MStatus aaOceanMaya::initialize()
@@ -175,16 +179,23 @@ MStatus aaOceanMaya::initialize()
 	MFnNumericAttribute nAttrCurrTime;
 	currTime = nAttrCurrTime.create( "currTime", "currTime", MFnNumericData::kFloat, 0.042f );
     nAttrCurrTime.setKeyable(  true );
-	nAttrWaveAlign.setWritable(true);
+	nAttrCurrTime.setWritable(true);
     addAttribute( currTime );
     attributeAffects( aaOceanMaya::currTime, aaOceanMaya::outputGeom);
 
 	MFnNumericAttribute nAttrDoFoam;
 	doFoam = nAttrCurrTime.create( "doFoam", "doFoam", MFnNumericData::kInt, 0 );
-    nAttrCurrTime.setKeyable(  true );
-	nAttrWaveAlign.setWritable(true);
+    nAttrDoFoam.setKeyable(  true );
+	nAttrDoFoam.setWritable(true);
     addAttribute( doFoam );
     attributeAffects( aaOceanMaya::doFoam, aaOceanMaya::outputGeom);
+
+	MFnMatrixAttribute nAttrInTransform;
+	inTransform = nAttrInTransform.create( "InputTransform", "InputTransform", MFnMatrixAttribute::kFloat );
+    nAttrInTransform.setConnectable(true);
+	nAttrInTransform.setStorable(false);
+    addAttribute( inTransform );
+    attributeAffects( aaOceanMaya::inTransform, aaOceanMaya::outputGeom);
 
 	return MStatus::kSuccess;
 }
@@ -215,17 +226,17 @@ void* aaOceanMaya::creator()
 	return new aaOceanMaya();
 }
 
-
+// extern "C" __declspec(dllexport)
 MStatus initializePlugin( MObject obj )
 {
 	MStatus result;
 	MFnPlugin plugin( obj, "Amaan Akram", "2.6", "Any");
 	result = plugin.registerNode( "aaOceanMaya", aaOceanMaya::id, aaOceanMaya::creator, 
 								  aaOceanMaya::initialize, MPxNode::kDeformerNode );
-
 	return result;
 }
 
+// extern "C" __declspec(dllexport)
 MStatus uninitializePlugin( MObject obj)
 {
 	MStatus result;

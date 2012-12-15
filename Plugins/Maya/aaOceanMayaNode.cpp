@@ -38,13 +38,48 @@
 #include <maya/MThreadUtils.h>
 #include <maya/MDagModifier.h>
 
+#include <maya/MFloatMatrix.h>
+#include <maya/MFloatArray.h>
+#include <maya/MGeometryManager.h>
+#include <maya/MGeometry.h>
+#include <maya/MGeometryData.h>
+#include <maya/MGeometryPrimitive.h>
+#include <maya/MGeometry.h>
+#include <maya/MGeometryData.h>
+#include <maya/MFnMesh.h>
+
 #include "aaOceanMayaNode.h"
 
 MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix& mat, unsigned int multiIndex)
 {
 	// get maya points array
 	MPointArray verts;
+	int numVerts = iter.count();
 	iter.allPositions(verts);
+
+	// The following block of code is from Chad Vernon's site
+	// It provides access to the geometry the deformer is applied to
+	// so that we can query data on it, such as UVs
+	MStatus status;
+    MArrayDataHandle hInput = block.outputArrayValue( input, &status );
+    CHECK_MSTATUS_AND_RETURN_IT( status )
+	if (status != MS::kSuccess) 		// Make sure we didn't fail.
+	    return status ;
+    status = hInput.jumpToElement( multiIndex );
+    CHECK_MSTATUS_AND_RETURN_IT( status )
+	if (status != MS::kSuccess) 		// Make sure we didn't fail.
+	    return status ;
+    MObject oInputGeom = hInput.outputValue().child( inputGeom ).asMesh();
+    MFnMesh mesh( oInputGeom );
+	
+	MFloatArray uCoord(numVerts,0.0);
+	MFloatArray vCoord(numVerts,0.0);
+
+	// only getting one UV for now
+	// change this later to user-specified
+	MString uvSetName;
+	mesh.getCurrentUVSetName( uvSetName );
+	mesh.getUVs(uCoord, vCoord, &uvSetName);
 
 	// main input function
 	pOcean->input(	block.inputValue(resolution).asInt(),
@@ -64,10 +99,14 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 
 	if(pOcean->isValid())
 	{
-		float worldSpaceDisplacementVec[3] = {0.0f, 0.0f, 0.0f};
-		float transformedVector[3];
+		MPoint worldSpaceDisplacementVec;
+		MPoint oceanLocalSpace;
 
-		#pragma omp parallel for private(worldSpaceDisplacementVec, transformedVector)
+		// the following matrix holds junk values
+		MDataHandle matData = block.inputValue(inTransform);
+		MMatrix transform = matData.asMatrix();
+
+		#pragma omp parallel for private(worldSpaceDisplacementVec, oceanLocalSpace)
 		for(int i = 0; i < verts.length(); i++)
 		{
 			// get height field
@@ -78,6 +117,9 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 				worldSpaceDisplacementVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPX);
 				worldSpaceDisplacementVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPZ);
 			}
+
+			// oceanLocalSpace = worldSpaceDisplacementVec * transform;
+			verts[i] += worldSpaceDisplacementVec;
 		}
 		iter.setAllPositions(verts);
 		return MS::kSuccess;
