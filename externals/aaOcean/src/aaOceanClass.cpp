@@ -74,7 +74,9 @@ aaOcean::aaOcean() :
 	m_fft_chopX(0),
 	m_fft_chopZ(0),
 	m_fft_jxx(0),
+	m_fft_jxxZComponent(0),
 	m_fft_jzz(0),
+	m_fft_jzzZComponent(0),
 	m_fft_jxz(0)
 {
 	strcpy (m_state, "[aaOcean Core] Default initialized value");
@@ -220,6 +222,12 @@ void aaOcean::prepareOcean()
 		if(!m_isFoamAllocated)
 			allocateFoamArrays();
 		evaluateJacobians();
+		
+		makeTileable(m_fft_jxx); 
+		makeTileable(m_fft_jxxZComponent);
+		makeTileable(m_fft_jzz);
+		makeTileable(m_fft_jzzZComponent);
+		makeTileable(m_fft_jxz); 
 	}
 }
 
@@ -267,9 +275,11 @@ void aaOcean::allocateBaseArrays()
 {
 	int size = (m_resolution + 1) * (m_resolution + 1);
 
-	m_fft_jxx = (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
-	m_fft_jxz = (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
-	m_fft_jzz = (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
+	m_fft_jxx			= (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex));
+	m_fft_jxxZComponent = (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
+	m_fft_jzz			= (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
+	m_fft_jzzZComponent = (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
+	m_fft_jxz			= (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
 
 	m_planJxx = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jxx, m_fft_jxx, 1, FFTW_ESTIMATE);
 	m_planJxz = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jxz, m_fft_jxz, 1, FFTW_ESTIMATE);
@@ -340,14 +350,22 @@ void aaOcean::clearArrays()
 {
 	if(m_isAllocated)
 	{
-		if(m_fft_jzz)
-		{
-			fftwf_destroy_plan(m_planJzz);
-			fftwf_free(m_fft_jzz);  
-			m_fft_jzz = FALSE;
-		}
 		if(m_isFoamAllocated)
 		{
+			if(m_fft_jxx)
+			{
+				fftwf_destroy_plan(m_planJxx);
+				fftwf_free(m_fft_jxx); 
+				fftwf_free(m_fft_jxxZComponent);
+				m_fft_jxxZComponent = m_fft_jxx = FALSE;
+			}
+			if(m_fft_jzz)
+			{
+				fftwf_destroy_plan(m_planJzz);
+				fftwf_free(m_fft_jzz);  
+				fftwf_free(m_fft_jzzZComponent);
+				m_fft_jxxZComponent = m_fft_jzz = FALSE;
+			}
 			if(m_fft_jxz)
 			{
 				fftwf_destroy_plan(m_planJxz);
@@ -355,12 +373,6 @@ void aaOcean::clearArrays()
 				m_fft_jxz = FALSE;
 			}
 			m_isFoamAllocated = FALSE;
-		}
-		if(m_fft_jxx)
-		{
-			fftwf_destroy_plan(m_planJxx);
-			fftwf_free(m_fft_jxx); 
-			m_fft_jxx = FALSE;
 		}
 		if(m_fft_chopZ)
 		{
@@ -617,14 +629,14 @@ void aaOcean::evaluateJacobians()
 		qPlus	= (jPlus  - Jxx) / Jxz;
 		qMinus	= (jMinus - Jxx) / Jxz;
 
-		m_fft_jxx[index][0] = 1.0f  /  sqrt( 1.0f + qPlus * qPlus);
-		m_fft_jxx[index][1] = qPlus /  sqrt( 1.0f + qPlus * qPlus);
+		m_fft_jxx[index][0]				= 1.0f  /  sqrt( 1.0f + qPlus * qPlus);
+		m_fft_jxxZComponent[index][0]	= qPlus /  sqrt( 1.0f + qPlus * qPlus);
 
-		m_fft_jzz[index][0] = 1.0f   /  sqrt( 1.0f + qMinus * qMinus);
-		m_fft_jzz[index][1] = qMinus /  sqrt( 1.0f + qMinus * qMinus);
+		m_fft_jzz[index][0]				= 1.0f   /  sqrt( 1.0f + qMinus * qMinus);
+		m_fft_jzzZComponent[index][0]	= qMinus /  sqrt( 1.0f + qMinus * qMinus);
 
 		//store foam back in this array for convenience
-		//fft_jxz[index][0] =   (Jxx * Jzz) - (Jxz * Jxz); //original jacobian.
+		//m_fft_jxz[index][0] =   (Jxx * Jzz) - (Jxz * Jxz); //original jacobian.
 		m_fft_jxz[index][0] =   (Jxz * Jxz) - (Jxx * Jzz) + 1.0f; // invert hack
 	}
 }
@@ -679,16 +691,12 @@ float aaOcean::getOceanData(float uCoord, float vCoord, int TYPE, bool rotateUV 
 		arrayPointer = m_fft_jxz;
 	else if(TYPE == EIGENPLUSX)
 		arrayPointer = m_fft_jxx;
-	else if(TYPE == EIGENPLUSZ)	{
-		arrayPointer = m_fft_jxx;
-		arrayIndex = 1;
-	}
+	else if(TYPE == EIGENPLUSZ)	
+		arrayPointer = m_fft_jxxZComponent;
 	else if(TYPE == EIGENMINUSX)
 		arrayPointer = m_fft_jzz;
-	else if(TYPE == EIGENMINUSZ){
-		arrayPointer = m_fft_jzz;
-		arrayIndex = 1;
-	}
+	else if(TYPE == EIGENMINUSZ)
+		arrayPointer = m_fft_jzzZComponent;
 	
 	// prepare for indexing into the array and wrapping
 	float u, v, du, dv = 0;

@@ -82,9 +82,11 @@ private:
 	fftwf_complex *m_fft_htField;
 	fftwf_complex *m_fft_chopX;
 	fftwf_complex *m_fft_chopZ;
-	fftwf_complex *m_fft_jxx;
-	fftwf_complex *m_fft_jzz;
-	fftwf_complex *m_fft_jxz;
+	fftwf_complex *m_fft_jxx; // eigenvector
+	fftwf_complex *m_fft_jxxZComponent; // eigenvector
+	fftwf_complex *m_fft_jzz; // eigenvector
+	fftwf_complex *m_fft_jzzZComponent; // eigenvector
+	fftwf_complex *m_fft_jxz; // eigenvalue
 
 	fftwf_plan m_planHeightField;
 	fftwf_plan m_planChopX;
