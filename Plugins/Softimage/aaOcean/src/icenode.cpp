@@ -10,6 +10,21 @@
 #include "icenode_portdefs.h"
 #include "icenode_registration.h"
 
+void multiplyMatrix(float *InVector, float *OutVector, XSI::CDataArrayMatrix4f &transform, int transformArraySize)
+{
+	OutVector[0] =	InVector[0] * transform[transformArraySize].GetValue(0,0) + 
+					InVector[1] * transform[transformArraySize].GetValue(1,0) + 
+					InVector[2] * transform[transformArraySize].GetValue(2,0);
+
+	OutVector[1] =	InVector[0] * transform[transformArraySize].GetValue(0,1) + 
+					InVector[1] * transform[transformArraySize].GetValue(1,1) + 
+					InVector[2] * transform[transformArraySize].GetValue(2,1);
+
+	OutVector[2] =	InVector[0] * transform[transformArraySize].GetValue(0,2) + 
+					InVector[1] * transform[transformArraySize].GetValue(1,2) + 
+					InVector[2] * transform[transformArraySize].GetValue(2,2);
+}
+
 SICALLBACK aaOcean_Init( CRef& in_ctxt )
 {
 	// initialize fftw threads routines
@@ -100,11 +115,14 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 	CDataArrayBool bEnable(in_ctxt, ID_IN_ENABLE);
 	CDataArrayFloat uCoord(in_ctxt, ID_IN_U);
 	CDataArrayFloat vCoord(in_ctxt, ID_IN_V);
+	CDataArrayBool enableFoam( in_ctxt, ID_IN_ENABLEFOAM);
 	CDataArrayMatrix4f transform(in_ctxt, ID_IN_TRANSFORM);
 
-	float worldSpaceDisplacementVec[3] = {0.0f, 0.0f, 0.0f};
-	float oceanLocalSpace[3];
 	const int count = PointID.GetCount();
+
+	float worldSpaceVec[3] = {0.0f, 0.0f, 0.0f};
+	float localSpaceVec[3] = {0.0f, 0.0f, 0.0f};
+
 	int transformArraySize = 0;
 	bool transformSingleton = TRUE;
 
@@ -119,36 +137,36 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 			CDataArrayVector3f outData( in_ctxt );
 			if(bEnable[0])
 			{
-				#pragma omp parallel for private(worldSpaceDisplacementVec, oceanLocalSpace)
+				#pragma omp parallel for private(worldSpaceVec, localSpaceVec)
 				for(int i = 0; i<count; ++i)
 				{
 					// get ocean displacement vector
-					worldSpaceDisplacementVec[1] = pOcean->getOceanData(uCoord[i], vCoord[i], HEIGHTFIELD);
+					worldSpaceVec[1] = pOcean->getOceanData(uCoord[i], vCoord[i], HEIGHTFIELD);
 					if(pOcean->isChoppy())
 					{
-						worldSpaceDisplacementVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPX);
-						worldSpaceDisplacementVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPZ);
+						worldSpaceVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPX);
+						worldSpaceVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPZ);
 					}
 
 					// multiply displacement vector by input transform matrix
 					if(!transformSingleton)
 						transformArraySize = i;
 
-					oceanLocalSpace[0] =	worldSpaceDisplacementVec[0] * transform[transformArraySize].GetValue(0,0) + 
-											worldSpaceDisplacementVec[1] * transform[transformArraySize].GetValue(1,0) + 
-											worldSpaceDisplacementVec[2] * transform[transformArraySize].GetValue(2,0);
+					multiplyMatrix(&worldSpaceVec[0], &localSpaceVec[0], transform, transformArraySize);
 
-					oceanLocalSpace[1] =	worldSpaceDisplacementVec[0] * transform[transformArraySize].GetValue(0,1) + 
-											worldSpaceDisplacementVec[1] * transform[transformArraySize].GetValue(1,1) + 
-											worldSpaceDisplacementVec[2] * transform[transformArraySize].GetValue(2,1);
-
-					oceanLocalSpace[2] =	worldSpaceDisplacementVec[0] * transform[transformArraySize].GetValue(0,2) + 
-											worldSpaceDisplacementVec[1] * transform[transformArraySize].GetValue(1,2) + 
-											worldSpaceDisplacementVec[2] * transform[transformArraySize].GetValue(2,2);
-
-					outData[i].PutX(oceanLocalSpace[0]);
-					outData[i].PutY(oceanLocalSpace[1]);
-					outData[i].PutZ(oceanLocalSpace[2]);
+					outData[i].PutX(localSpaceVec[0]);
+					outData[i].PutY(localSpaceVec[1]);
+					outData[i].PutZ(localSpaceVec[2]);
+				}
+			}
+			else
+			{
+				#pragma omp parallel for
+				for(int i = 0; i<count; ++i)
+				{
+					outData[i].PutX(0.f); 
+					outData[i].PutY(0.f); 
+					outData[i].PutZ(0.f);
 				}
 			}
 		}
@@ -156,7 +174,7 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 
 		case ID_OUT_FOAM:
 		{
-			if(pOcean->isChoppy() && bEnable[0])
+			if(pOcean->isChoppy() && bEnable[0] && enableFoam[0])
 			{				
 				CDataArrayFloat outData( in_ctxt );
 
@@ -171,14 +189,19 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 		case ID_OUT_EIGEN_MINUS:
 		{
 			CDataArrayVector3f outData( in_ctxt );
-			if(pOcean->isChoppy() && bEnable[0])
+			if(pOcean->isChoppy() && bEnable[0] && enableFoam[0])
 			{
-				#pragma omp parallel for
+				#pragma omp parallel for private(worldSpaceVec, localSpaceVec)
 				for(int i = 0; i<count; ++i)
 				{
-					outData[i].PutX(pOcean->getOceanData(uCoord[i], vCoord[i], EIGENPLUSX));
+					worldSpaceVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], EIGENMINUSX);
+					worldSpaceVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], EIGENMINUSZ);
+
+					multiplyMatrix(&worldSpaceVec[0], &localSpaceVec[0], transform, transformArraySize);
+
+					outData[i].PutX(localSpaceVec[0]);
 					outData[i].PutY(0.0f);
-					outData[i].PutZ(pOcean->getOceanData(uCoord[i], vCoord[i], EIGENPLUSZ));
+					outData[i].PutZ(localSpaceVec[2]);
 				}
 			}
 			else
@@ -193,14 +216,19 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 		case ID_OUT_EIGEN_PLUS:
 		{
 			CDataArrayVector3f outData( in_ctxt );
-			if(pOcean->isChoppy() && bEnable[0])
+			if(pOcean->isChoppy() && bEnable[0] && enableFoam[0])
 			{
-				#pragma omp parallel for
+				#pragma omp parallel for private(worldSpaceVec, localSpaceVec)
 				for(int i = 0; i<count; ++i)
 				{
-					outData[i].PutX(pOcean->getOceanData(uCoord[i], vCoord[i], EIGENMINUSX));
+					worldSpaceVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], EIGENPLUSX);
+					worldSpaceVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], EIGENPLUSZ);
+
+					multiplyMatrix(&worldSpaceVec[0], &localSpaceVec[0], transform, transformArraySize);
+
+					outData[i].PutX(localSpaceVec[0]);
 					outData[i].PutY(0.0f);
-					outData[i].PutZ(pOcean->getOceanData(uCoord[i], vCoord[i], EIGENMINUSZ));
+					outData[i].PutZ(localSpaceVec[2]);
 				}
 			}
 			else
