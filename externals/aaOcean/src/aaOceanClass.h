@@ -115,6 +115,8 @@ private:
 	// interpolation functions
 	inline float catmullRom(float t, float a, float b, float c, float d);
 	inline int wrap(int x, int n);
+
+	void makeTileable(fftwf_complex *&fft_array);
 };
 
 #endif  /* AAOCEANCLASS_H */
