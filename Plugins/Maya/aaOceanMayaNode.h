@@ -191,9 +191,9 @@ MStatus aaOceanMaya::initialize()
     attributeAffects( aaOceanMaya::doFoam, aaOceanMaya::outputGeom);
 
 	MFnMatrixAttribute nAttrInTransform;
-	inTransform = nAttrInTransform.create( "InputTransform", "InputTransform", MFnMatrixAttribute::kFloat );
-    nAttrInTransform.setConnectable(true);
-	nAttrInTransform.setStorable(false);
+	inTransform = nAttrInTransform.create( "InputTransform", "InputTransform", MFnMatrixAttribute::kDouble, 0);
+   // nAttrInTransform.setConnectable(true);
+//	nAttrInTransform.setStorable(false);
     addAttribute( inTransform );
     attributeAffects( aaOceanMaya::inTransform, aaOceanMaya::outputGeom);
 

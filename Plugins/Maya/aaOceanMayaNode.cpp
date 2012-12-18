@@ -99,27 +99,27 @@ MStatus aaOceanMaya::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix
 
 	if(pOcean->isValid())
 	{
-		MPoint worldSpaceDisplacementVec;
-		MPoint oceanLocalSpace;
+		MPoint worldSpaceVec;
+		MPoint localSpaceVec;
 
 		// the following matrix holds junk values
 		MDataHandle matData = block.inputValue(inTransform);
 		MMatrix transform = matData.asMatrix();
 
-		#pragma omp parallel for private(worldSpaceDisplacementVec, oceanLocalSpace)
+		#pragma omp parallel for private(worldSpaceVec, localSpaceVec)
 		for(int i = 0; i < verts.length(); i++)
 		{
 			// get height field
-			worldSpaceDisplacementVec[1] = pOcean->getOceanData(uCoord[i], vCoord[i], HEIGHTFIELD);
+			worldSpaceVec[1] = pOcean->getOceanData(uCoord[i], vCoord[i], HEIGHTFIELD);
 			if(pOcean->isChoppy())
 			{
 				// get x and z displacement
-				worldSpaceDisplacementVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPX);
-				worldSpaceDisplacementVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPZ);
+				worldSpaceVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPX);
+				worldSpaceVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPZ);
 			}
 
-			// oceanLocalSpace = worldSpaceDisplacementVec * transform;
-			verts[i] += worldSpaceDisplacementVec;
+			localSpaceVec = worldSpaceVec * transform;
+			verts[i] += localSpaceVec;
 		}
 		iter.setAllPositions(verts);
 		return MS::kSuccess;
