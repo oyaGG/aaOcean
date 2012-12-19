@@ -4,12 +4,15 @@ www.amaanakram.com
 aaOcean is free software and can be redistributed and modified under the terms of the 
 GNU General Public License (Version 3) as provided by the Free Software Foundation.
 GNU General Public License http://www.gnu.org/licenses/gpl.html
-Please note that this aaOcean core code is not the one used to generate the binaries that are downloadable from my website
+Please note that this aaOcean core code is not the one used to generate the binaries 
+that are downloadable from my website
 
 Some key features
 -Multi-threaded via openmp
 -Has gone through a few levels of code optimization via profiling
--The shape of the ocean does not change between resolution changes. You can change resolution at any time without changing the shape/position of waves
+-The shape of the ocean does not change between resolution changes. 
+You can change resolution at any time without changing the shape/position 
+of waves
 
 Example of work done with aaOcean:
 https://vimeo.com/42087457
@@ -27,8 +30,9 @@ This repository contains the following
 
 LINUX:
 All plugins/shaders come with makefiles
-You will need single-precision, threaded fftw library installed. See 'externals/fftw' for a ./configure script that 
-I use to generate a static library to link with. Download source from fftw.org
+You will need single-precision, threaded fftw library installed. See 
+'externals/fftw' for a ./configure script that I use to generate 
+a static library to link with. Download source from fftw.org
 You will also need OpenEXR and Z-lib installed
 
 MAYA & LINUX:
