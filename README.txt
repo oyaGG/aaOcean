@@ -31,6 +31,11 @@ You will need single-precision, threaded fftw library installed. See 'externals/
 I use to generate a static library to link with. Download source from fftw.org
 You will also need OpenEXR and Z-lib installed
 
+MAYA & LINUX:
+To compile the Maya plugin, you will need gcc-4.2.4. 
+This version is ABI-compatible with gcc-4.1.x and supports OpenMP which is used
+by aaOcean
+
 WINDOWS:
 Look at the linux makefiles to make your Visual Studio projects
 You will need single-precision fftw library to link with. Download from fftw.org
