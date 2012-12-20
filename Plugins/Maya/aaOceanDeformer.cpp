@@ -48,7 +48,7 @@
 #include <maya/MGeometryData.h>
 #include <maya/MFnMesh.h>
 
-#include "aaOceanMayaNode.h"
+#include "aaOceanDeformer.h"
 
 MStatus aaOceanDeformer::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix& mat, unsigned int multiIndex)
 {
