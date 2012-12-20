@@ -9,7 +9,7 @@ INCLUDES := -I$(MAYAINC) -I$(FFTWLOC) -I../../externals/aaOcean/src -I../../exte
 LDFLAGS  := -fopenmp $(FFTWLOC)/libfftw3f.a $(FFTWLOC)/libfftw3f_omp.a -L$(MAYA_LIB) -lOpenMaya
 CXXFLAGS := -w -O2 -fPIC -DLINUX -D_BOOL -DI386 -ffast-math -DREQUIRE_IOSTREAM
 CXX	     := $(GXXLOC)g++
-SOURCES  := aaOceanMayaNode.cpp
+SOURCES  := aaOceanDeformer.cpp
 OBJECTS  := $(SOURCES:.cpp=.o)
 TARGET   := $(TARGETLOC)aaOceanDeformer.so
 
