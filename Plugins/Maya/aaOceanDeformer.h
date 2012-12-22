@@ -32,8 +32,9 @@ public:
 	static  MObject  waveDirection;
 	static  MObject  waveReflection;
 	static  MObject  waveAlign;
-	static  MObject  currTime;
 	static  MObject  doFoam;
+	static  MObject  time;
+	static  MObject  timeOffset;
 
 	static  MObject  uCoord;
 	static  MObject  vCoord;
@@ -56,8 +57,9 @@ MObject		aaOceanDeformer::waveSmooth;
 MObject		aaOceanDeformer::waveDirection;
 MObject		aaOceanDeformer::waveReflection;
 MObject		aaOceanDeformer::waveAlign;
-MObject		aaOceanDeformer::currTime;
 MObject		aaOceanDeformer::doFoam;
+MObject		aaOceanDeformer::time;
+MObject		aaOceanDeformer::timeOffset;
 MObject		aaOceanDeformer::uCoord;
 MObject		aaOceanDeformer::vCoord;
 MObject		aaOceanDeformer::inTransform;
@@ -176,24 +178,32 @@ MStatus aaOceanDeformer::initialize()
     addAttribute( waveAlign );
     attributeAffects( aaOceanDeformer::waveAlign, aaOceanDeformer::outputGeom);
 
-	MFnNumericAttribute nAttrCurrTime;
-	currTime = nAttrCurrTime.create( "currTime", "currTime", MFnNumericData::kFloat, 0.042f );
-    nAttrCurrTime.setKeyable(  true );
-	nAttrCurrTime.setWritable(true);
-    addAttribute( currTime );
-    attributeAffects( aaOceanDeformer::currTime, aaOceanDeformer::outputGeom);
-
 	MFnNumericAttribute nAttrDoFoam;
-	doFoam = nAttrCurrTime.create( "doFoam", "doFoam", MFnNumericData::kInt, 0 );
+	doFoam = nAttrDoFoam.create( "doFoam", "doFoam", MFnNumericData::kInt, 0 );
     nAttrDoFoam.setKeyable(  true );
 	nAttrDoFoam.setWritable(true);
     addAttribute( doFoam );
     attributeAffects( aaOceanDeformer::doFoam, aaOceanDeformer::outputGeom);
 
+	MFnUnitAttribute  uTime;
+	time = uTime.create( "time", "time", MFnUnitAttribute::kTime);
+    //uTime.setHidden(true);
+	uTime.setStorable(false);
+	uTime.setKeyable(false);
+    addAttribute( time );
+    attributeAffects( aaOceanDeformer::time, aaOceanDeformer::outputGeom);
+
+	MFnNumericAttribute nAttrTimeOffset;
+	timeOffset = nAttrTimeOffset.create( "timeOffset", "timeOffset", MFnNumericData::kFloat, 0.f );
+    nAttrDoFoam.setKeyable(  true );
+	nAttrDoFoam.setWritable(true);
+    addAttribute( timeOffset );
+    attributeAffects( aaOceanDeformer::timeOffset, aaOceanDeformer::outputGeom);
+
 	MFnMatrixAttribute nAttrInTransform;
-	inTransform = nAttrInTransform.create( "InputTransform", "InputTransform", MFnMatrixAttribute::kDouble, 0);
-   // nAttrInTransform.setConnectable(true);
-//	nAttrInTransform.setStorable(false);
+	inTransform = nAttrInTransform.create( "InputTransform", "InputTransform", MFnMatrixAttribute::kDouble);
+	nAttrInTransform.setConnectable(true);
+	nAttrInTransform.setStorable(false);
     addAttribute( inTransform );
     attributeAffects( aaOceanDeformer::inTransform, aaOceanDeformer::outputGeom);
 

@@ -17,6 +17,7 @@
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnMatrixAttribute.h>
 #include <maya/MFnMatrixData.h>
+#include <maya/MFnUnitAttribute.h>
 
 #include <maya/MFnPlugin.h>
 #include <maya/MFnDependencyNode.h>
@@ -81,6 +82,11 @@ MStatus aaOceanDeformer::deform( MDataBlock& block,	MItGeometry& iter,	const MMa
 	mesh.getCurrentUVSetName( uvSetName );
 	mesh.getUVs(uCoord, vCoord, &uvSetName);
 
+	// get current time
+	float timeOffsetValue = block.inputValue(timeOffset).asFloat();
+	MTime appTime = block.inputValue(time).asTime();
+	float currentTime = (float)appTime.as(MTime::kSeconds) + timeOffsetValue;
+
 	// main input function
 	pOcean->input(	block.inputValue(resolution).asInt(),
 					block.inputValue(seed).asInt(),
@@ -93,7 +99,7 @@ MStatus aaOceanDeformer::deform( MDataBlock& block,	MItGeometry& iter,	const MMa
 					block.inputValue(waveSpeed).asFloat(),
 					block.inputValue(waveHeight).asFloat(),
 					block.inputValue(waveChop).asFloat(),
-					block.inputValue(currTime).asFloat(),
+					currentTime,
 					block.inputValue(doFoam).asInt(),
 					1);
 
