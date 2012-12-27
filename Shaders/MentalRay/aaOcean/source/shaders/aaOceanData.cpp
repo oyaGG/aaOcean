@@ -38,17 +38,17 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
 
 	// retrieve heightfield
 	miVector oceanWorldSpace;
-	oceanWorldSpace.y = pOcean->getOceanData(coord->x, coord->y, HEIGHTFIELD) * (1.0f - fade);
+	oceanWorldSpace.y = pOcean->getOceanData(coord->x, coord->y, aaOcean::eHEIGHTFIELD) * (1.0f - fade);
 	oceanWorldSpace.x = oceanWorldSpace.z = 0.0f;
 	
 	if(pOcean->isChoppy())
 	{
 		// retrieve chop displacement
-		oceanWorldSpace.x = pOcean->getOceanData(coord->x, coord->y, CHOPX)  *  (1.0f - fade);
-		oceanWorldSpace.z = pOcean->getOceanData(coord->x, coord->y, CHOPZ)  *  (1.0f - fade);
+		oceanWorldSpace.x = pOcean->getOceanData(coord->x, coord->y, aaOcean::eCHOPX)  *  (1.0f - fade);
+		oceanWorldSpace.z = pOcean->getOceanData(coord->x, coord->y, aaOcean::eCHOPZ)  *  (1.0f - fade);
 
 		// retrieve foam and store it in our alpha channel
-		result->a = pOcean->getOceanData(coord->x, coord->y, FOAM);
+		result->a = pOcean->getOceanData(coord->x, coord->y, aaOcean::eFOAM);
 
 		// see if user has requested normalized or raw foam values
 		if(!*mi_eval_boolean(&params->rawOutput))
