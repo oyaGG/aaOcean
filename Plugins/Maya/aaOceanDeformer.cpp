@@ -5,131 +5,223 @@
 // GNU General Public License (Version 3) as provided by the Free Software Foundation.
 // GNU General Public License http://www.gnu.org/licenses/gpl.html
 
-#include <string.h>
-#include <maya/MIOStream.h>
-#include <math.h>
-#include <maya/MGlobal.h>
-
-#include <maya/MPxDeformerNode.h> 
-#include <maya/MItGeometry.h>
-#include <maya/MPxLocatorNode.h> 
-
-#include <maya/MFnNumericAttribute.h>
-#include <maya/MFnMatrixAttribute.h>
-#include <maya/MFnMatrixData.h>
-#include <maya/MFnUnitAttribute.h>
-
-#include <maya/MFnPlugin.h>
-#include <maya/MFnDependencyNode.h>
-
-#include <maya/MTypeId.h> 
-#include <maya/MPlug.h>
-
-#include <maya/MDataBlock.h>
-#include <maya/MDataHandle.h>
-#include <maya/MArrayDataHandle.h>
-
-#include <maya/MPoint.h>
-#include <maya/MVector.h>
-#include <maya/MMatrix.h>
-
-#include <maya/MAnimControl.h>
-#include <maya/MPointArray.h>
-
-#include <maya/MThreadUtils.h>
-#include <maya/MDagModifier.h>
-
-#include <maya/MFloatMatrix.h>
-#include <maya/MFloatArray.h>
-#include <maya/MGeometryManager.h>
-#include <maya/MGeometry.h>
-#include <maya/MGeometryData.h>
-#include <maya/MGeometryPrimitive.h>
-#include <maya/MGeometry.h>
-#include <maya/MGeometryData.h>
-#include <maya/MFnMesh.h>
 
 #include "aaOceanDeformer.h"
 
-MStatus aaOceanDeformer::deform( MDataBlock& block,	MItGeometry& iter,	const MMatrix& mat, unsigned int multiIndex)
+bool aaOceanDeformer::getUVs(MFnMesh &mesh, MDataBlock &block)
 {
-	// get maya points array
-	MPointArray verts;
-	int numVerts = iter.count();
-	iter.allPositions(verts);
+	MString userUV = block.inputValue(uvMap).asString();
+	MStringArray uvSetNames;
+	mesh.getUVSetNames(uvSetNames);
 
-	// The following block of code is from Chad Vernon's site
-	// It provides access to the geometry the deformer is applied to
-	// so that we can query data on it, such as UVs
-	MStatus status;
-    MArrayDataHandle hInput = block.outputArrayValue( input, &status );
-    CHECK_MSTATUS_AND_RETURN_IT( status )
-	if (status != MS::kSuccess) 		// Make sure we didn't fail.
-	    return status ;
-    status = hInput.jumpToElement( multiIndex );
-    CHECK_MSTATUS_AND_RETURN_IT( status )
-	if (status != MS::kSuccess) 		// Make sure we didn't fail.
-	    return status ;
-    MObject oInputGeom = hInput.outputValue().child( inputGeom ).asMesh();
-    MFnMesh mesh( oInputGeom );
+	int uvIndex = 0;
+	bool uvFound = FALSE;
+	int numUVs = uvSetNames.length();
 
-	MFloatArray uCoord(numVerts,0.0);
-	MFloatArray vCoord(numVerts,0.0);
-
-	// only getting one UV for now
-	// change this later to user-specified
-	MString uvSetName;
-	mesh.getCurrentUVSetName( uvSetName );
-	mesh.getUVs(uCoord, vCoord, &uvSetName);
-
-	// get current time
-	float timeOffsetValue = block.inputValue(timeOffset).asFloat();
-	MTime appTime = block.inputValue(time).asTime();
-	float currentTime = (float)appTime.as(MTime::kSeconds) + timeOffsetValue;
-
-	// main input function
-	pOcean->input(	block.inputValue(resolution).asInt(),
-					block.inputValue(seed).asInt(),
-					block.inputValue(oceanSize).asFloat(),
-					block.inputValue(waveSize).asFloat(),
-					block.inputValue(waveSmooth).asFloat(),
-					block.inputValue(waveDirection).asFloat(),
-					block.inputValue(waveAlign).asInt(),
-					block.inputValue(waveReflection).asFloat(),
-					block.inputValue(waveSpeed).asFloat(),
-					block.inputValue(waveHeight).asFloat(),
-					block.inputValue(waveChop).asFloat(),
-					currentTime,
-					block.inputValue(doFoam).asInt(),
-					1);
-
-	if(pOcean->isValid())
+	for(; uvIndex < numUVs; ++uvIndex)
 	{
+		if(userUV == uvSetNames[uvIndex])
+		{
+			uvFound = TRUE;
+			break;
+		}
+	}
+	if(!uvFound)
+	{
+		char errMsg[64];
+		sprintf(errMsg, "[aaOcean] uvset \'%s\' not found on mesh", userUV.asChar());
+		MGlobal::displayError( MString(errMsg));
+		return FALSE;
+	}
+	else
+	{
+		mesh.getUVs(u, v, &uvSetNames[uvIndex]);
+		return TRUE;
+	}
+}
+
+void aaOceanDeformer::getColorSets(MFnMesh &mesh, MDataBlock &block)
+{
+	// query Color maps
+	MString userEigenVec = block.inputValue(eigenVectorMap).asString();
+	MString userEigenVal = block.inputValue(eigenValueMap).asString();
+	MStringArray colSetNames;
+	foundEigenVector = foundEigenValue = FALSE;
+	MStatus status;
+
+	int numcolors = mesh.numColorSets();
+	mesh.getColorSetNames(colSetNames);
+	if(numcolors == 0)
+		MGlobal::displayInfo( "[aaOcean] No Color-At-Vertex Maps found. Skipping EigenVectors/Values");
+	else
+	{
+		for(int i = 0; i < colSetNames.length(); ++i)
+		{
+			if(userEigenVec == colSetNames[i])
+				foundEigenVector = TRUE;
+			if(userEigenVal == colSetNames[i])
+				foundEigenValue = TRUE;
+		}
+		if(foundEigenVector)
+		{
+			status = mesh.createColorSetDataMesh(userEigenVec);
+			if(status != MStatus::kSuccess)
+				MGlobal::displayInfo( status.errorString());
+			colArrayEigenVector.setLength(mesh.numVertices());
+		}
+		else
+			MGlobal::displayError( "[aaOcean] Specified Color Set for Eigen Vectors not found on mesh. Skipping Eigen Vectors");
+
+		if(foundEigenValue)
+		{
+			status = mesh.createColorSetDataMesh(userEigenVal);
+			if(status != MStatus::kSuccess)
+				MGlobal::displayInfo( status.errorString());
+			colArrayEigenValue.setLength(mesh.numVertices());
+		}
+		else
+			MGlobal::displayError( "[aaOcean] Specified Color Set for Eigen Values not found on mesh. Skipping Eigen Values");
+	}
+}
+
+void aaOceanDeformer::setColorSets(MFnMesh &mesh, MDataBlock &block)
+{
+	if(foundEigenVector || foundEigenValue)
+	{
+		int numPolys = mesh.numPolygons();
+		if(numPolygons != numPolys)
+			faceColorID.setLength(mesh.numFaceVertices());
+
+		int index;
+		MIntArray vertexList;
+		
+		#pragma omp parallel for private(vertexList, index)
+		for(int i = 0; i < numPolys; ++i)
+		{
+			vertexList.clear();					
+			mesh.getPolygonVertices(i,vertexList);
+			
+			for (int j = 0; j < vertexList.length(); ++j)
+			{
+				mesh.getFaceVertexColorIndex(i, j, index);
+				faceColorID[index] = vertexList[j];							
+			}
+		}
+
+		MStatus status;
+		if(foundEigenVector)
+		{
+			MString colSet = block.inputValue(eigenVectorMap).asString();
+			status = mesh.setColors(colArrayEigenVector, &colSet);
+			status = mesh.assignColors(faceColorID, &colSet);
+		}
+
+		if(foundEigenValue)
+		{
+			MString colSet = block.inputValue(eigenValueMap).asString();
+			status = mesh.setColors(colArrayEigenValue, &colSet);
+			status = mesh.assignColors(faceColorID, &colSet);
+		}
+	}
+}
+
+MDataHandle aaOceanDeformer::getMeshHandle(const MPlug& plug, MDataBlock &block)
+{
+	// using compute() in deformer as described in
+	// http://download.autodesk.com/us/maya/2011help/API/class_m_px_deformer_node.html
+    // get the input corresponding to this output
+	unsigned int index = plug.logicalIndex();
+    MObject thisNode = this->thisMObject();
+    MPlug inPlug(thisNode, input);
+    inPlug.selectAncestorLogicalIndex(index, input);
+    MDataHandle hInput = block.inputValue(inPlug);
+
+    // get the input geometry and input groupId
+    MDataHandle hGeom = hInput.child(inputGeom);
+    MDataHandle hGroup = hInput.child(groupId);
+    MDataHandle hOutput = block.outputValue(plug);
+	hOutput.copy(hGeom);
+	return hOutput;
+}
+
+MStatus aaOceanDeformer::compute(const MPlug& plug, MDataBlock& block)
+{
+    MStatus status = MStatus::kUnknownParameter;
+
+    if (plug.attribute() == outputGeom) 
+	{
+        MDataHandle hOutput = getMeshHandle(plug, block);
+		MFnMesh mesh(hOutput.asMesh(), &status);
+
+		// if no UVs on mesh, return
+		if(getUVs(mesh, block) == FALSE)
+			return MStatus::kNotFound;
+		
+		// pull in some attribute values for convenience
+		float timeOffsetValue = block.inputValue(timeOffset).asFloat();
+		MTime appTime = block.inputValue(time).asTime();
+		float currentTime = (float)appTime.as(MTime::kSeconds) + timeOffsetValue;
+		bool foam = block.inputValue(doFoam).asBool();
+		MMatrix transform = block.inputValue(inTransform).asMatrix();
+
+		// main ocean input function
+		pOcean->input(	block.inputValue(resolution).asInt(),
+						block.inputValue(seed).asInt(),
+						block.inputValue(oceanSize).asFloat(),
+						block.inputValue(waveSize).asFloat(),
+						block.inputValue(waveSmooth).asFloat(),
+						block.inputValue(waveDirection).asFloat(),
+						block.inputValue(waveAlign).asInt(),
+						block.inputValue(waveReflection).asFloat(),
+						block.inputValue(waveSpeed).asFloat(),
+						block.inputValue(waveHeight).asFloat(),
+						block.inputValue(waveChop).asFloat(),
+						currentTime,
+						foam,
+						TRUE);
+
+		getColorSets(mesh, block);
+
 		MPoint worldSpaceVec;
 		MPoint localSpaceVec;
+		MPointArray verts;
+		mesh.getPoints(verts);
 
-		// the following matrix holds junk values
-		MDataHandle matData = block.inputValue(inTransform);
-		MMatrix transform = matData.asMatrix();
-
-		#pragma omp parallel for private(worldSpaceVec, localSpaceVec)
-		for(int i = 0; i < verts.length(); i++)
+		float r, g, b, a = 0.f;
+        #pragma omp parallel for private(worldSpaceVec, localSpaceVec, r, g, b, a)
+		for(int i = 0; i < mesh.numVertices(); i++) 
 		{
 			// get height field
-			worldSpaceVec[1] = pOcean->getOceanData(uCoord[i], vCoord[i], HEIGHTFIELD);
+			worldSpaceVec[1] = pOcean->getOceanData(u[i], v[i], aaOcean::eHEIGHTFIELD);
 			if(pOcean->isChoppy())
 			{
 				// get x and z displacement
-				worldSpaceVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPX);
-				worldSpaceVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPZ);
+				worldSpaceVec[0] = pOcean->getOceanData(u[i], v[i], aaOcean::eCHOPX);
+				worldSpaceVec[2] = pOcean->getOceanData(u[i], v[i], aaOcean::eCHOPZ);
+
+				if(foam && foundEigenVector)
+				{
+					r = pOcean->getOceanData(u[i], v[i], aaOcean::eEIGENMINUSX);
+					g = pOcean->getOceanData(u[i], v[i], aaOcean::eEIGENMINUSZ);
+					b = pOcean->getOceanData(u[i], v[i], aaOcean::eEIGENPLUSX);
+					a = pOcean->getOceanData(u[i], v[i], aaOcean::eEIGENPLUSZ);
+					colArrayEigenVector.set(i, r, g, b, a);
+				}
+				if(foam && foundEigenValue)
+				{
+					r = pOcean->getOceanData(u[i], v[i], aaOcean::eFOAM);
+					colArrayEigenValue.set(i, r, r, r);
+				}
 			}
 
 			localSpaceVec = worldSpaceVec * transform;
 			verts[i] += localSpaceVec;
 		}
-		iter.setAllPositions(verts);
-		return MS::kSuccess;
-	}
-	else
-		return MS::kFailure;
+
+		if(foam)
+			setColorSets(mesh, block);
+		mesh.setPoints(verts);
+    }
+	block.setClean(plug);
+    return status;
 }

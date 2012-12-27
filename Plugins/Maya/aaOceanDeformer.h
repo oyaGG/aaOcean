@@ -5,6 +5,48 @@
 // GNU General Public License (Version 3) as provided by the Free Software Foundation.
 // GNU General Public License http://www.gnu.org/licenses/gpl.html
 
+#include <string.h>
+#include <maya/MIOStream.h>
+#include <math.h>
+#include <maya/MGlobal.h>
+
+#include <maya/MPxDeformerNode.h> 
+#include <maya/MItGeometry.h>
+#include <maya/MPxLocatorNode.h> 
+
+#include <maya/MFnNumericAttribute.h>
+#include <maya/MFnTypedAttribute.h>
+#include <maya/MFnMatrixAttribute.h>
+#include <maya/MFnUnitAttribute.h>
+
+#include <maya/MFnPlugin.h>
+#include <maya/MFnDependencyNode.h>
+
+#include <maya/MTypeId.h> 
+#include <maya/MPlug.h>
+
+#include <maya/MDataBlock.h>
+#include <maya/MDataHandle.h>
+#include <maya/MArrayDataHandle.h>
+
+#include <maya/MPoint.h>
+#include <maya/MVector.h>
+#include <maya/MMatrix.h>
+
+#include <maya/MAnimControl.h>
+#include <maya/MPointArray.h>
+#include <maya/MFloatVectorArray.h>
+#include <maya/MFnStringData.h>
+
+#include <maya/MFloatMatrix.h>
+#include <maya/MFnMatrixData.h>
+#include <maya/MFloatArray.h>
+#include <maya/MGeometryManager.h>
+#include <maya/MGeometry.h>
+#include <maya/MGeometryData.h>
+#include <maya/MGeometryPrimitive.h>
+#include <maya/MFnMesh.h>
+
 #include "aaOceanClass.cpp"
 
 //Maya Node ID 0x20B6EF34  (548859700)  -- Randomly generated. Change if this conflicts
@@ -17,7 +59,12 @@ public:
 	static  void*		creator();
 	static  MStatus		initialize();
 
-    virtual MStatus  deform(MDataBlock& block, MItGeometry& iter, const MMatrix& mat, unsigned int multiIndex);
+	virtual void	 postConstructor();
+	virtual MStatus	 compute( const MPlug& plug, MDataBlock& data );
+	bool getUVs(MFnMesh &mesh, MDataBlock &block);
+	void getColorSets(MFnMesh &mesh, MDataBlock &block);
+	void setColorSets(MFnMesh &mesh, MDataBlock &block);
+	MDataHandle getMeshHandle(const MPlug& plug, MDataBlock &block);
 
 	static  MObject  resolution;	
 	static  MObject  oceanSize;	
@@ -32,18 +79,29 @@ public:
 	static  MObject  waveDirection;
 	static  MObject  waveReflection;
 	static  MObject  waveAlign;
-	static  MObject  doFoam;
 	static  MObject  time;
 	static  MObject  timeOffset;
+	static  MObject  doFoam;
 
-	static  MObject  uCoord;
-	static  MObject  vCoord;
+	static  MObject  uvMap;
+	static  MObject  eigenVectorMap;
+	static  MObject  eigenValueMap;
 
 	static  MObject  inTransform;
 
 	static  MTypeId	 id;
 
 	aaOcean* pOcean;
+	
+	MFloatArray u;
+	MFloatArray v;
+	MColorArray colArrayEigenVector;
+	MColorArray colArrayEigenValue;
+	bool foundEigenVector;
+	bool foundEigenValue;
+	MIntArray faceColorID;
+
+	int numPolygons;
 };
 
 MObject		aaOceanDeformer::resolution;	
@@ -57,11 +115,12 @@ MObject		aaOceanDeformer::waveSmooth;
 MObject		aaOceanDeformer::waveDirection;
 MObject		aaOceanDeformer::waveReflection;
 MObject		aaOceanDeformer::waveAlign;
-MObject		aaOceanDeformer::doFoam;
 MObject		aaOceanDeformer::time;
 MObject		aaOceanDeformer::timeOffset;
-MObject		aaOceanDeformer::uCoord;
-MObject		aaOceanDeformer::vCoord;
+MObject		aaOceanDeformer::doFoam;
+MObject		aaOceanDeformer::uvMap;
+MObject		aaOceanDeformer::eigenVectorMap;
+MObject		aaOceanDeformer::eigenValueMap;
 MObject		aaOceanDeformer::inTransform;
 
 MTypeId     aaOceanDeformer::id( 0x20B6EF34 ); //Maya Node ID 548859700
@@ -178,32 +237,53 @@ MStatus aaOceanDeformer::initialize()
     addAttribute( waveAlign );
     attributeAffects( aaOceanDeformer::waveAlign, aaOceanDeformer::outputGeom);
 
+	MFnUnitAttribute  uTime;
+	time = uTime.create( "time", "time", MFnUnitAttribute::kTime);
+    uTime.setHidden(true);
+	uTime.setStorable(false);
+	uTime.setKeyable(false);
+    addAttribute( time );
+    attributeAffects( aaOceanDeformer::time, aaOceanDeformer::outputGeom);
+	
+	MFnNumericAttribute nAttrTimeOffset;
+	timeOffset = nAttrTimeOffset.create( "timeOffset", "timeOffset", MFnNumericData::kFloat, 0.f );
+    nAttrTimeOffset.setKeyable(  true );
+	nAttrTimeOffset.setWritable(true);
+    addAttribute( timeOffset );
+    attributeAffects( aaOceanDeformer::timeOffset, aaOceanDeformer::outputGeom);
+
 	MFnNumericAttribute nAttrDoFoam;
-	doFoam = nAttrDoFoam.create( "doFoam", "doFoam", MFnNumericData::kInt, 0 );
+	doFoam = nAttrDoFoam.create( "doFoam", "doFoam", MFnNumericData::kBoolean, 0 );
     nAttrDoFoam.setKeyable(  true );
 	nAttrDoFoam.setWritable(true);
     addAttribute( doFoam );
     attributeAffects( aaOceanDeformer::doFoam, aaOceanDeformer::outputGeom);
 
-	MFnUnitAttribute  uTime;
-	time = uTime.create( "time", "time", MFnUnitAttribute::kTime);
-    //uTime.setHidden(true);
-	uTime.setStorable(false);
-	uTime.setKeyable(false);
-    addAttribute( time );
-    attributeAffects( aaOceanDeformer::time, aaOceanDeformer::outputGeom);
+	MObject defaultValue;
+	MFnTypedAttribute nAttrUVMap;
+	defaultValue = MFnStringData().create(MString("map1"));
+	uvMap = nAttrUVMap.create("uvMap", "uvMap",MFnData::kString, defaultValue);
+	nAttrUVMap.setWritable(true);
+	addAttribute(uvMap);
+	attributeAffects( aaOceanDeformer::uvMap, aaOceanDeformer::outputGeom);
 
-	MFnNumericAttribute nAttrTimeOffset;
-	timeOffset = nAttrTimeOffset.create( "timeOffset", "timeOffset", MFnNumericData::kFloat, 0.f );
-    nAttrDoFoam.setKeyable(  true );
-	nAttrDoFoam.setWritable(true);
-    addAttribute( timeOffset );
-    attributeAffects( aaOceanDeformer::timeOffset, aaOceanDeformer::outputGeom);
+	MFnTypedAttribute nAttrEigenVectorMap;
+	defaultValue = MFnStringData().create(MString("<none>"));
+	eigenVectorMap = nAttrEigenVectorMap.create("eigenVectorMap", "eigenVectorMap",MFnData::kString, defaultValue);
+	nAttrEigenVectorMap.setWritable(true);
+	addAttribute(eigenVectorMap);
+	attributeAffects( aaOceanDeformer::eigenVectorMap, aaOceanDeformer::outputGeom);
+
+	MFnTypedAttribute nAttrEigenValueMap;
+	eigenValueMap = nAttrEigenValueMap.create("eigenValueMap", "eigenValueMap",MFnData::kString, defaultValue);
+	nAttrEigenValueMap.setWritable(true);
+	addAttribute(eigenValueMap);
+	attributeAffects( aaOceanDeformer::eigenValueMap, aaOceanDeformer::outputGeom);
 
 	MFnMatrixAttribute nAttrInTransform;
 	inTransform = nAttrInTransform.create( "InputTransform", "InputTransform", MFnMatrixAttribute::kDouble);
 	nAttrInTransform.setConnectable(true);
-	nAttrInTransform.setStorable(false);
+	nAttrInTransform.setHidden(true);
     addAttribute( inTransform );
     attributeAffects( aaOceanDeformer::inTransform, aaOceanDeformer::outputGeom);
 
@@ -216,6 +296,14 @@ aaOceanDeformer::aaOceanDeformer()
 	fftwf_init_threads();
 
 	pOcean = new aaOcean;
+	u.setLength(1);
+	v.setLength(1);
+	colArrayEigenVector.setLength(1);
+	colArrayEigenValue.setLength(1);
+	foundEigenVector = FALSE;
+	foundEigenValue = FALSE;
+	numPolygons = 0;
+
 	MGlobal::displayInfo( "[aaOcean Maya] Created a new ocean patch" );
 }
 aaOceanDeformer::~aaOceanDeformer() 
@@ -231,6 +319,12 @@ aaOceanDeformer::~aaOceanDeformer()
 		fftwf_cleanup();
 	}
 }
+
+void aaOceanDeformer::postConstructor()
+{
+	this->setDeformationDetails(MPxDeformerNode::kDeformsAll);
+}
+
 void* aaOceanDeformer::creator()
 {
 	return new aaOceanDeformer();
@@ -242,7 +336,7 @@ MStatus initializePlugin( MObject obj )
 	MStatus result;
 	MFnPlugin plugin( obj, "Amaan Akram", "2.6", "Any");
 	result = plugin.registerNode( "aaOceanDeformer", aaOceanDeformer::id, aaOceanDeformer::creator, 
-								  aaOceanDeformer::initialize, MPxNode::kDeformerNode );
+		aaOceanDeformer::initialize, MPxNode::kDeformerNode );
 	return result;
 }
 
