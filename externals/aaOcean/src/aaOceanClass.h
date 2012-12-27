@@ -17,6 +17,18 @@ public:
 	aaOcean(const aaOcean &cpy);
 	~aaOcean();
 
+	enum arrayType
+	{
+	   eHEIGHTFIELD,
+	   eCHOPX,
+	   eCHOPZ,
+	   eFOAM,
+	   eEIGENPLUSX,
+	   eEIGENPLUSZ,
+	   eEIGENMINUSX,
+	   eEIGENMINUSZ
+    };
+
 	void input(	int 	resolution,
 				ULONG 	seed, 
 				float 	oceanScale, 
@@ -32,7 +44,7 @@ public:
 				bool	doFoam,
 				bool    powTwoConversion);
 
-	float getOceanData(float uCoord, float vCoord, int TYPE, bool rotateUV);
+	float getOceanData(float uCoord, float vCoord, aaOcean::arrayType type, bool rotateUV);
 	void clearResidualArrays();
 
 	bool isValid();

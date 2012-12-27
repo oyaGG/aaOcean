@@ -664,7 +664,8 @@ void aaOcean::getFoamBounds(float inBoundsMin, float inBoundsMax, float& outBoun
 	}
 }
 
-float aaOcean::getOceanData(float uCoord, float vCoord, int TYPE, bool rotateUV = 1)
+
+float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type, bool rotateUV = 1)
 {
 	// rotate UVs by 90 degrees if requested
 	if(rotateUV)
@@ -676,26 +677,26 @@ float aaOcean::getOceanData(float uCoord, float vCoord, int TYPE, bool rotateUV 
 
 	// declare pointer to array we want to fetch data from, and the indexer into the array
 	fftwf_complex *arrayPointer;
-	int arrayIndex = 1;
+	const int arrayIndex = 1;
 	const int arraySize = m_resolution;
 	const int arraySizePlusOne = m_resolution + 1;
 
 	// set pointer to the array that we need to interpolate data from
-	if(TYPE == HEIGHTFIELD)
+	if(type == eHEIGHTFIELD)
 		arrayPointer = m_fft_htField;
-	else if(TYPE == CHOPX)
+	else if(type == eCHOPX)
 		arrayPointer = m_fft_chopX;
-	else if(TYPE == CHOPZ)
+	else if(type == eCHOPZ)
 		arrayPointer = m_fft_chopZ;
-	else if(TYPE == FOAM)
+	else if(type == eFOAM)
 		arrayPointer = m_fft_jxz;
-	else if(TYPE == EIGENPLUSX)
+	else if(type == eEIGENPLUSX)
 		arrayPointer = m_fft_jxx;
-	else if(TYPE == EIGENPLUSZ)	
+	else if(type == eEIGENPLUSZ)	
 		arrayPointer = m_fft_jxxZComponent;
-	else if(TYPE == EIGENMINUSX)
+	else if(type == eEIGENMINUSX)
 		arrayPointer = m_fft_jzz;
-	else if(TYPE == EIGENMINUSZ)
+	else if(type == eEIGENMINUSZ)
 		arrayPointer = m_fft_jzzZComponent;
 	
 	// prepare for indexing into the array and wrapping
