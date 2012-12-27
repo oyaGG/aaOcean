@@ -138,16 +138,16 @@ shader_evaluate
 
 	// retrieve heightfield in world space
 	AtPoint worldSpaceDisplacementVec;
-	worldSpaceDisplacementVec.y = pOcean->getOceanData(uvPt.x, uvPt.y, HEIGHTFIELD);
+	worldSpaceDisplacementVec.y = pOcean->getOceanData(uvPt.x, uvPt.y, aaOcean::eHEIGHTFIELD);
 
 	if(pOcean->isChoppy())
 	{
 		// retrieve chop displacement
-		worldSpaceDisplacementVec.x = pOcean->getOceanData(uvPt.x, uvPt.y, CHOPX);
-		worldSpaceDisplacementVec.z = pOcean->getOceanData(uvPt.x, uvPt.y, CHOPZ);
+		worldSpaceDisplacementVec.x = pOcean->getOceanData(uvPt.x, uvPt.y, aaOcean::eCHOPX);
+		worldSpaceDisplacementVec.z = pOcean->getOceanData(uvPt.x, uvPt.y, aaOcean::eCHOPZ);
 
 		// retrieve foam and store it in our alpha channel
-		sg->out.RGBA.a = pOcean->getOceanData(uvPt.x, uvPt.y, FOAM);
+		sg->out.RGBA.a = pOcean->getOceanData(uvPt.x, uvPt.y, aaOcean::eFOAM);
 
 		// see if user has requested normalized or raw foam values
 		if(!AiShaderEvalParamBool(p_raw))
