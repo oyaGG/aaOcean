@@ -141,11 +141,11 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 				for(int i = 0; i<count; ++i)
 				{
 					// get ocean displacement vector
-					worldSpaceVec[1] = pOcean->getOceanData(uCoord[i], vCoord[i], HEIGHTFIELD);
+					worldSpaceVec[1] = pOcean->getOceanData(uCoord[i], vCoord[i], aaOcean::eHEIGHTFIELD);
 					if(pOcean->isChoppy())
 					{
-						worldSpaceVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPX);
-						worldSpaceVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], CHOPZ);
+						worldSpaceVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], aaOcean::eCHOPX);
+						worldSpaceVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], aaOcean::eCHOPZ);
 					}
 
 					// multiply displacement vector by input transform matrix
@@ -181,7 +181,7 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 				// output raw (unscaled) foam in ICE deformer
 				#pragma omp parallel for
 				for(int i = 0; i<count; ++i)
-					outData[i] = pOcean->getOceanData(uCoord[i], vCoord[i], FOAM);
+					outData[i] = pOcean->getOceanData(uCoord[i], vCoord[i], aaOcean::eFOAM);
 			}
 		}
 		break;
@@ -194,8 +194,8 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 				#pragma omp parallel for private(worldSpaceVec, localSpaceVec)
 				for(int i = 0; i<count; ++i)
 				{
-					worldSpaceVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], EIGENMINUSX);
-					worldSpaceVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], EIGENMINUSZ);
+					worldSpaceVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], aaOcean::eEIGENMINUSX);
+					worldSpaceVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], aaOcean::eEIGENMINUSZ);
 
 					multiplyMatrix(&worldSpaceVec[0], &localSpaceVec[0], transform, transformArraySize);
 
@@ -221,8 +221,8 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 				#pragma omp parallel for private(worldSpaceVec, localSpaceVec)
 				for(int i = 0; i<count; ++i)
 				{
-					worldSpaceVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], EIGENPLUSX);
-					worldSpaceVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], EIGENPLUSZ);
+					worldSpaceVec[0] = pOcean->getOceanData(uCoord[i], vCoord[i], aaOcean::eEIGENPLUSX);
+					worldSpaceVec[2] = pOcean->getOceanData(uCoord[i], vCoord[i], aaOcean::eEIGENPLUSZ);
 
 					multiplyMatrix(&worldSpaceVec[0], &localSpaceVec[0], transform, transformArraySize);
 
