@@ -268,13 +268,14 @@ MStatus aaOceanDeformer::initialize()
 	attributeAffects( aaOceanDeformer::uvMap, aaOceanDeformer::outputGeom);
 
 	MFnTypedAttribute nAttrEigenVectorMap;
-	defaultValue = MFnStringData().create(MString("<none>"));
+	defaultValue = MFnStringData().create(MString("colorSetEigenVec"));
 	eigenVectorMap = nAttrEigenVectorMap.create("eigenVectorMap", "eigenVectorMap",MFnData::kString, defaultValue);
 	nAttrEigenVectorMap.setWritable(true);
 	addAttribute(eigenVectorMap);
 	attributeAffects( aaOceanDeformer::eigenVectorMap, aaOceanDeformer::outputGeom);
 
 	MFnTypedAttribute nAttrEigenValueMap;
+	defaultValue = MFnStringData().create(MString("colorSetEigenVal"));
 	eigenValueMap = nAttrEigenValueMap.create("eigenValueMap", "eigenValueMap",MFnData::kString, defaultValue);
 	nAttrEigenValueMap.setWritable(true);
 	addAttribute(eigenValueMap);

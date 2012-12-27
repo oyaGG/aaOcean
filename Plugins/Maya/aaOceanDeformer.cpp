@@ -180,7 +180,8 @@ MStatus aaOceanDeformer::compute(const MPlug& plug, MDataBlock& block)
 						foam,
 						TRUE);
 
-		getColorSets(mesh, block);
+		if(foam)
+			getColorSets(mesh, block);
 
 		MPoint worldSpaceVec;
 		MPoint localSpaceVec;

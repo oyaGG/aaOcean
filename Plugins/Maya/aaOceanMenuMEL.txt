@@ -1,45 +1,6 @@
-string $geoPlane[] = `polyPlane -ch on -o on -w 100 -h 100 -sw 64 -sh 64 -cuv 2`;
-rename $geoPlane[0] "aaOcean";
-rename $geoPlane[1] "aaOcean";
-connectAttr aaOcean1.width aaOcean1.height;
-deformer -type aaOceanDeformer;
-connectAttr "time1.outTime" "aaOceanDeformer1.currTime";
+string $geoPlane[] = `polyPlane -ch on -o on -w 100 -h 100 -sw 128 -sh 128 -cuv 2 -n aaOcean`;
+polyColorSet -create -clamped 0 -rpt RGBA -colorSet "colorSetEigenVec";
+polyColorSet -create -clamped 0 -rpt RGBA -colorSet "colorSetEigenVal";
 
-global proc viewResChanged() 
-{
-	int $value = `intSliderGrp -query -value ViewResolution`;
-	$value = $value  + 4;
-	$value = pow(2,$value);
-	print("view Resolution= "+ $value +"\n");
-	
-	setAttr "aaOcean1.subdivisionsWidth" $value;
-	setAttr "aaOcean1.subdivisionsHeight" $value;
-}
-
-			
-string $window  = `window -visible true -widthHeight 400 100 -title "aaOceanMenu"`;
-columnLayout;
-intSliderGrp -label "View Resolution" -field true
-    -minValue 3 -maxValue 6
-    -fieldMinValue 3 -fieldMaxValue 6
-    -value 3
-	-dragCommand "viewResChanged();"
-	-annotation "Define the resolution of the OpenGL ocean"
-	ViewResolution;
-
-
-	
-attrFieldSliderGrp -min 1 -max 10 -at "aaOceanDeformer1.seed" -label "Seed";	
-attrFieldSliderGrp -min 0.001 -max 1000 -at "aaOcean1.width" -label "Ocean Width";
-attrFieldSliderGrp -min 0.001 -at "aaOceanDeformer1.waveHeight" -label "Wave Height";
-attrFieldSliderGrp -min 0.001 -at "aaOceanDeformer1.waveSize" -label "Wave Size";	
-attrFieldSliderGrp -min 0.001 -at "aaOceanDeformer1.waveSpeed" -label "Wave Speed";	
-attrFieldSliderGrp -min 0.0 -at "aaOceanDeformer1.waveChop" -label "Wave Choppiness";
-attrFieldSliderGrp -min 0.0 -at "aaOceanDeformer1.waveSmooth" -label "Wave Smoothness";
-attrFieldSliderGrp -min 0.0 -max 360.0 -at "aaOceanDeformer1.waveDirection" -label "Wind Direction";
-attrFieldSliderGrp -min 0.0 -at "aaOceanDeformer1.waveReflection" -label "Reflected Wind Waves";
-attrFieldSliderGrp -min 0 -at "aaOceanDeformer1.waveAlign" -label "Wind Align";
-showWindow $window;
-
-
-
+deformer -type aaOceanDeformer -n aaOceanDeformer;
+connectAttr "time1.outTime" "aaOceanDeformer.time";
