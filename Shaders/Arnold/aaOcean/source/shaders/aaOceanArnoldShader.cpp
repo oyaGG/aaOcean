@@ -109,7 +109,7 @@ node_update
 		float outMin, outMax;
 		float	fmin		= params[p_fMin].FLT;
 		float	fmax		= params[p_fMax].FLT;
-		pOcean->getFoamBounds(fmin, fmax, outMin, outMax);
+		pOcean->getFoamBounds(outMin, outMax);
 
 		float epsilon = 1e-3f;
 		if(!isfEqual(fmin, outMin, epsilon) || !isfEqual(fmax, outMax, epsilon) )
