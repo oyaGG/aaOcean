@@ -21,15 +21,6 @@
 #include "agnerFog/userintf.cpp"
 #include "aaOceanClass.h"
 
-#define HEIGHTFIELD		0
-#define CHOPX			1
-#define CHOPZ			2
-#define FOAM			3
-#define EIGENPLUSX		4
-#define EIGENPLUSZ		5
-#define EIGENMINUSX		6
-#define EIGENMINUSZ		7
-
 aaOcean::aaOcean() :
 	// input variables
     m_resolution(0),
@@ -85,6 +76,20 @@ aaOcean::aaOcean() :
 aaOcean::aaOcean(const aaOcean &cpy)
 {
 	// empty copy constructor
+	input(	cpy.m_resolution,
+			cpy.m_seed,
+			cpy.m_oceanScale,
+			cpy.m_velocity,
+			cpy.m_cutoff,
+			cpy.m_windDir,
+			cpy.m_windAlign,
+			cpy.m_damp,
+			cpy.m_waveSpeed,
+			cpy.m_waveHeight,
+			cpy.m_chopAmount,
+			cpy.m_time,
+			cpy.m_doFoam,
+			TRUE);
 }
 
 aaOcean::~aaOcean()
@@ -641,14 +646,14 @@ void aaOcean::evaluateJacobians()
 	}
 }
 
-void aaOcean::getFoamBounds(float inBoundsMin, float inBoundsMax, float& outBoundsMin, float& outBoundsMax)
+void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax)
 {
 	outBoundsMax = -FLT_MAX;
 	outBoundsMin =  FLT_MAX;
 
 	int i, j, n, index, idx;
 	n = m_resolution;
-	idx = 0;
+	idx = 1;
 	//if fft_array has been copied and tiled, set idx = 1, else 0
 	for(i = 0; i< n; i++)
 	{
@@ -698,6 +703,8 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 		arrayPointer = m_fft_jzz;
 	else if(type == eEIGENMINUSZ)
 		arrayPointer = m_fft_jzzZComponent;
+	else
+		return 0.f;
 	
 	// prepare for indexing into the array and wrapping
 	float u, v, du, dv = 0;

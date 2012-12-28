@@ -51,11 +51,11 @@ public:
 	bool isChoppy();
 	int getResolution();
 	char* getState();
-	void getFoamBounds(float inBoundsMin, float inBoundsMax, float& outBoundsMin, float& outBoundsMax);
+	void getFoamBounds(float& outBoundsMin, float& outBoundsMax);
 
 private:
 	int		m_resolution;
-	int		m_seed;
+	unsigned int m_seed;
 	int		m_windAlign;
 	float	m_velocity;
 	float	m_windDir;
