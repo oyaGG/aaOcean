@@ -145,7 +145,7 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 			float outMin, outMax;
 			miScalar fmin = *mi_eval_scalar(&params->fmin);
 			miScalar fmax = *mi_eval_scalar(&params->fmax);
-			pOcean->getFoamBounds(fmin, fmax, outMin, outMax);
+			pOcean->getFoamBounds(outMin, outMax);
 
 			float epsilon = 1e-3f;
 			if( ( !isfEqual(fmin, outMin, epsilon) || !isfEqual(fmax, outMax, epsilon) ))
