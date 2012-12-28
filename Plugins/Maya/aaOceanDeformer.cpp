@@ -55,7 +55,7 @@ void aaOceanDeformer::getColorSets(MFnMesh &mesh, MDataBlock &block)
 		MGlobal::displayInfo( "[aaOcean] No Color-At-Vertex Maps found. Skipping EigenVectors/Values");
 	else
 	{
-		for(int i = 0; i < colSetNames.length(); ++i)
+		for(unsigned int i = 0; i < colSetNames.length(); ++i)
 		{
 			if(userEigenVec == colSetNames[i])
 				foundEigenVector = TRUE;
@@ -101,7 +101,7 @@ void aaOceanDeformer::setColorSets(MFnMesh &mesh, MDataBlock &block)
 			vertexList.clear();					
 			mesh.getPolygonVertices(i,vertexList);
 			
-			for (int j = 0; j < vertexList.length(); ++j)
+			for (unsigned int j = 0; j < vertexList.length(); ++j)
 			{
 				mesh.getFaceVertexColorIndex(i, j, index);
 				faceColorID[index] = vertexList[j];							
@@ -188,9 +188,10 @@ MStatus aaOceanDeformer::compute(const MPlug& plug, MDataBlock& block)
 		MPointArray verts;
 		mesh.getPoints(verts);
 
+		int numVertices = mesh.numVertices();
 		float r, g, b, a = 0.f;
         #pragma omp parallel for private(worldSpaceVec, localSpaceVec, r, g, b, a)
-		for(int i = 0; i < mesh.numVertices(); i++) 
+		for(int i = 0; i < numVertices; ++i) 
 		{
 			// get height field
 			worldSpaceVec[1] = pOcean->getOceanData(u[i], v[i], aaOcean::eHEIGHTFIELD);
@@ -200,18 +201,21 @@ MStatus aaOceanDeformer::compute(const MPlug& plug, MDataBlock& block)
 				worldSpaceVec[0] = pOcean->getOceanData(u[i], v[i], aaOcean::eCHOPX);
 				worldSpaceVec[2] = pOcean->getOceanData(u[i], v[i], aaOcean::eCHOPZ);
 
-				if(foam && foundEigenVector)
+				if(foam)
 				{
-					r = pOcean->getOceanData(u[i], v[i], aaOcean::eEIGENMINUSX);
-					g = pOcean->getOceanData(u[i], v[i], aaOcean::eEIGENMINUSZ);
-					b = pOcean->getOceanData(u[i], v[i], aaOcean::eEIGENPLUSX);
-					a = pOcean->getOceanData(u[i], v[i], aaOcean::eEIGENPLUSZ);
-					colArrayEigenVector.set(i, r, g, b, a);
-				}
-				if(foam && foundEigenValue)
-				{
-					r = pOcean->getOceanData(u[i], v[i], aaOcean::eFOAM);
-					colArrayEigenValue.set(i, r, r, r);
+					if(foundEigenVector)
+					{
+						r = pOcean->getOceanData(u[i], v[i], aaOcean::eEIGENMINUSX);
+						g = pOcean->getOceanData(u[i], v[i], aaOcean::eEIGENMINUSZ);
+						b = pOcean->getOceanData(u[i], v[i], aaOcean::eEIGENPLUSX);
+						a = pOcean->getOceanData(u[i], v[i], aaOcean::eEIGENPLUSZ);
+						colArrayEigenVector.set(i, r, g, b, a);
+					}
+					if(foundEigenValue)
+					{
+						r = pOcean->getOceanData(u[i], v[i], aaOcean::eFOAM);
+						colArrayEigenValue.set(i, r, r, r);
+					}
 				}
 			}
 
