@@ -42,21 +42,21 @@ void newSopOperator(OP_OperatorTable *table)
 
 static PRM_Name names[] = 
 {
-	PRM_Name("resolution",		"resolution"),
-	PRM_Name("seed",			"seed"),
-	PRM_Name("oceanScale",		"oceanScale"),
+	PRM_Name("resolution",		"Resolution"),
+	PRM_Name("seed",			"Seed"),
+	PRM_Name("oceanScale",		"Ocean Scale"),
 
-	PRM_Name("velocity",		"velocity"),
-	PRM_Name("cutoff",			"cutoff"),
-	PRM_Name("windDir",			"windDir"),
-	PRM_Name("windAlign",		"windAlign"),
+	PRM_Name("velocity",		"Wave Size"),
+	PRM_Name("cutoff",			"Wave Smooth"),
+	PRM_Name("windDir",			"Wind Dir"),
+	PRM_Name("windAlign",		"Wind Align"),
 
-	PRM_Name("damp",			"damp"),
-	PRM_Name("waveSpeed",		"waveSpeed"),
-	PRM_Name("waveHeight",		"waveHeight"),
-	PRM_Name("chop",			"chop"),
+	PRM_Name("damp",			"Reflected Waves"),
+	PRM_Name("waveSpeed",		"Wave Speed"),
+	PRM_Name("waveHeight",		"Wave Height"),
+	PRM_Name("chop",			"Chop Amount"),
 	PRM_Name("enableFoam",		"enableFoam"),
-	PRM_Name("timeOffset",		"timeOffset"),
+	PRM_Name("timeOffset",		"Time Offset"),
 
 };
 
@@ -76,7 +76,7 @@ PRM_Template aaOceanSOP::myTemplateList[] =
 	PRM_Template(PRM_FLT_J,	1, &names[8], PRMoneDefaults,  0, &PRMdivision0Range),	// waveSpeed
 	PRM_Template(PRM_FLT_J,	1, &names[9], PRMoneDefaults,  0, &PRMdivision0Range),	// waveHeight
 	PRM_Template(PRM_FLT_J,	1, &names[10], PRMzeroDefaults, 0, &PRMlodRange),		// chop
-	PRM_Template(PRM_TOGGLE,    1, &names[11]),										// enable Foam
+	PRM_Template(PRM_TOGGLE,1, &names[11]),										// enable Foam
 	PRM_Template(PRM_FLT_J,	1, &names[12], PRMzeroDefaults, 0, &PRMscaleRange),		// timeOffset
 
 	PRM_Template(),
@@ -109,14 +109,16 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
 	int			npts	= gdp->points().entries();
 	UT_Vector3	UVvalue;
 	UT_Vector4	Pvalue;
+	float		u,v;
 
-
-	// Before we do anything, we must lock our inputs.  Before returning,
-	//	we have to make sure that the inputs get unlocked.
 	if (lockInputs(context) >= UT_ERROR_ABORT)
 		return error();
 
 	duplicateSource(0, context);
+
+	setVariableOrder(3, 2, 0, 1);
+    setCurGdh(0, myGdpHandle);
+    setupLocalVars();
 
 	// Flag the SOP as being time dependent (i.e. cook on time changes)
 	flags().timeDep = 1;
@@ -137,7 +139,7 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
 
 	if(pOcean->isValid())
 	{
-		#pragma omp parallel for private(UVvalue, Pvalue)
+		#pragma omp parallel for private(UVvalue, Pvalue, u, v)
 		for (int i = 0; i < npts; ++i)
 		{
 			GEO_AttributeHandle	UVhandle = gdp->getAttribute(GEO_POINT_DICT,"uv");
@@ -148,15 +150,19 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
 
 				UVhandle.setElement(gdp->points()(i));
 				UVvalue = UVhandle.getV3();
+				u = UVvalue.x();
+				// Houdini V coord runs in opposite direction compared to Softimage/Maya
+				// conforming with other apps to make ocean shape consistent across apps
+				v = 1.0 - UVvalue.y();
 
 				Phandle.setElement(gdp->points()(i));
 				Pvalue = Phandle.getV3();
 
-				Pvalue.y() += pOcean->getOceanData(UVvalue.x(), UVvalue.y(), aaOcean::eHEIGHTFIELD, FALSE);
+				Pvalue.y() += pOcean->getOceanData(u, v, aaOcean::eHEIGHTFIELD);
 				if(pOcean->isChoppy())
 				{
-					Pvalue.x() += pOcean->getOceanData(UVvalue.x(), UVvalue.y(), aaOcean::eCHOPX, FALSE);
-					Pvalue.z() += pOcean->getOceanData(UVvalue.x(), UVvalue.y(), aaOcean::eCHOPZ, FALSE);
+					Pvalue.x() += pOcean->getOceanData(u, v, aaOcean::eCHOPX);
+					Pvalue.z() += pOcean->getOceanData(u, v, aaOcean::eCHOPZ);
 				}
 				Phandle.setV3(Pvalue);
 			}
