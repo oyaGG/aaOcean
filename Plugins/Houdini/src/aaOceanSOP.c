@@ -110,6 +110,8 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
 	UT_Vector3	UVvalue;
 	UT_Vector4	Pvalue;
 	float		u,v;
+	GEO_AttributeHandle	UVhandle, Phandle;
+
 
 	if (lockInputs(context) >= UT_ERROR_ABORT)
 		return error();
@@ -137,35 +139,32 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
 					now,
 					(bool)ENABLEFOAM());
 
-	if(pOcean->isValid())
+	UVhandle = gdp->getAttribute(GEO_POINT_DICT,"uv");
+	if(pOcean->isValid() && UVhandle.isAttributeValid())
 	{
-		#pragma omp parallel for private(UVvalue, Pvalue, u, v)
+		#pragma omp parallel for private(UVvalue, Pvalue, u, v, UVhandle, Phandle)
 		for (int i = 0; i < npts; ++i)
 		{
-			GEO_AttributeHandle	UVhandle = gdp->getAttribute(GEO_POINT_DICT,"uv");
+			UVhandle = gdp->getAttribute(GEO_POINT_DICT,"uv");
+			Phandle  = gdp->getAttribute(GEO_POINT_DICT, "P");
 
-			if(UVhandle.isAttributeValid())
+			UVhandle.setElement(gdp->points()(i));
+			UVvalue = UVhandle.getV3();
+			u = UVvalue.x();
+			// Houdini V coord runs in opposite direction compared to Softimage/Maya
+			// conforming with other apps to make ocean shape consistent across apps
+			v = 1.0 - UVvalue.y();
+
+			Phandle.setElement(gdp->points()(i));
+			Pvalue = Phandle.getV3();
+
+			Pvalue.y() += pOcean->getOceanData(u, v, aaOcean::eHEIGHTFIELD);
+			if(pOcean->isChoppy())
 			{
-				GEO_AttributeHandle	Phandle  = gdp->getAttribute(GEO_POINT_DICT, "P");
-
-				UVhandle.setElement(gdp->points()(i));
-				UVvalue = UVhandle.getV3();
-				u = UVvalue.x();
-				// Houdini V coord runs in opposite direction compared to Softimage/Maya
-				// conforming with other apps to make ocean shape consistent across apps
-				v = 1.0 - UVvalue.y();
-
-				Phandle.setElement(gdp->points()(i));
-				Pvalue = Phandle.getV3();
-
-				Pvalue.y() += pOcean->getOceanData(u, v, aaOcean::eHEIGHTFIELD);
-				if(pOcean->isChoppy())
-				{
-					Pvalue.x() += pOcean->getOceanData(u, v, aaOcean::eCHOPX);
-					Pvalue.z() += pOcean->getOceanData(u, v, aaOcean::eCHOPZ);
-				}
-				Phandle.setV3(Pvalue);
+				Pvalue.x() += pOcean->getOceanData(u, v, aaOcean::eCHOPX);
+				Pvalue.z() += pOcean->getOceanData(u, v, aaOcean::eCHOPZ);
 			}
+			Phandle.setV3(Pvalue);
 		}
 	}
 	unlockInputs();
