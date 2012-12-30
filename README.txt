@@ -21,11 +21,11 @@ This repository contains the following
 
 -aaOcean core class
 -aaOcean Mental Ray shaders
--Shader Definitions for Mental Ray shaders
+-Softimage Shader Definitions for Mental Ray shaders
 -aaOcean Arnold shaders
 -aaOcean Softimage ICE deformer
 -aaOcean Maya Deformer
--Houdini FFT node, which I used to port aaOcean as a deformer to Houdini
+-aaOcean Houdini SOP
 -several helper functions that I often use
 
 LINUX:
