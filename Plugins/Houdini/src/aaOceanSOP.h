@@ -44,7 +44,7 @@ private:
     int		ENABLEFOAM()			{ return evalInt("enableFoam", 0, 0); }
     fpreal	TIMEOFFSET(fpreal t)	{ return evalFloat("timeOffset", 0, t); }
 
-    void	getUVAttribute(UT_String &str){ evalString(str, "uvAttribute", 0, 0); }
+    void	getUVAttributeName(UT_String &str){ evalString(str, "uvAttribute", 0, 0); }
     void	getEigenPlusAttribute(UT_String &str){ evalString(str, "eigenPlusAttribute", 0, 0); }
     void	getEigenMinusAttribute(UT_String &str){ evalString(str, "eigenMinusAttribute", 0, 0); }
     void	getEigenValueAttribute(UT_String &str){ evalString(str, "eigenValueAttribute", 0, 0); }
