@@ -27,7 +27,14 @@ protected:
     virtual OP_ERROR cookMySop(OP_Context &context);
 
 private:
-    //void	getGroups(UT_String &str)	{ evalString(str, "group", 0, 0); }
+	// working variables
+	bool enableEigens;
+	char eVecPlusName[10];
+	char eVecMinusName[10];
+	char eValuesName[10];
+	UT_String	UvAttribute;
+	
+
     int		RESOLUTION()			{ return evalInt("resolution", 0, 0); }
     int		SEED()					{ return evalInt("seed", 0, 0); }
     fpreal	OCEANSCALE(fpreal t)	{ return evalFloat("oceanScale", 0, t); }
@@ -41,7 +48,7 @@ private:
     fpreal	WAVESPEED(fpreal t)		{ return evalFloat("waveSpeed", 0, t); }
     fpreal	WAVEHEIGHT(fpreal t)	{ return evalFloat("waveHeight", 0, t); }
     fpreal	CHOP(fpreal t)			{ return evalFloat("chop", 0, t); }
-    int		ENABLEFOAM()			{ return evalInt("enableFoam", 0, 0); }
+    int		ENABLEEIGENS()			{ return evalInt("enableEigens", 0, 0); }
     fpreal	TIMEOFFSET(fpreal t)	{ return evalFloat("timeOffset", 0, t); }
 
     void	getUVAttributeName(UT_String &str){ evalString(str, "uvAttribute", 0, 0); }

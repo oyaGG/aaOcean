@@ -62,7 +62,7 @@ static PRM_Name names[] =
     PRM_Name("waveSpeed",		"Wave Speed"),
     PRM_Name("waveHeight",		"Wave Height"),
     PRM_Name("chop",			"Chop Amount"),
-    PRM_Name("enableFoam",		"Output Eigens Attributes"),
+    PRM_Name("enableEigens",	"Output Eigens Attributes"),
     PRM_Name("timeOffset",		"Time Offset"),
     PRM_Name("uvAttribute",		"UV Attribute"),
 
@@ -100,6 +100,11 @@ OP_Node *aaOceanSOP::myConstructor(OP_Network *net, const char *name, OP_Operato
 aaOceanSOP::aaOceanSOP(OP_Network *net, const char *name, OP_Operator *op)
     : SOP_Node(net, name, op)
 {
+	sprintf(eVecPlusName,	"eVecPlus");
+	sprintf(eVecMinusName,	"eVecMinus");
+	sprintf(eValuesName,	"eValues");
+	enableEigens = FALSE;
+
     pOcean = new aaOcean;
 }
 
@@ -113,16 +118,11 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
 {
     fpreal		now		= context.getTime();
     int			npts	= gdp->points().entries();
-    UT_Vector4	PtValue;
-    float		u, v;
-    UT_String	UvAttribute;
-	bool		enableFoam = FALSE;
-    GEO_AttributeHandle	UvHandle, PtHandle, eVecPlusHandle, eVecMinusHandle, eValuesHandle;
+    float u, v;
 	UT_Vector3 eigenVectorPlusValue, eigenVectorMinusValue, eigenValuesValue;
-	const char* eVecPlusName	= "eVecPlus";
-	const char* eVecMinusName	= "eVecMinus";
-	const char* eValuesName		= "eValues";
-
+	UT_Vector4	PtValue;
+	GEO_AttributeHandle	UvHandle, PtHandle, eVecPlusHandle, eVecMinusHandle, eValuesHandle;
+	
     if (lockInputs(context) >= UT_ERROR_ABORT)
         return error();
 
@@ -135,9 +135,9 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
     flags().timeDep = 1;
 
     // start pulling in SOP inputs and send to aaOcean 
-	enableFoam = (ENABLEFOAM() != 0);
-	if(pOcean->isChoppy() && enableFoam)
-		enableFoam = TRUE;
+	enableEigens = (ENABLEEIGENS() != 0);
+	if(pOcean->isChoppy() && enableEigens)
+		enableEigens = TRUE;
     now = now + TIMEOFFSET(now);
     pOcean->input(	RESOLUTION(), 
                     SEED(),
@@ -151,11 +151,15 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
                     WAVEHEIGHT(now),
                     CHOP(now), 
                     now,
-                    enableFoam);
+                    enableEigens);
 
     if(pOcean->isValid() == FALSE)
     {
-		addError(SOP_MESSAGE, "[aaOcean] Failed to allocate Ocean. Bad input"); 
+		char msg[256];
+		sprintf(msg, "[aaOcean] Failed to allocate Ocean. Bad input", msg);
+		addError(SOP_MESSAGE, ""); 
+		cout<<msg;
+		cout.flush();
         unlockInputs();
         return error();
     }
@@ -171,21 +175,24 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
     {
         // uv attribute not found
 		char msg[256];
-		sprintf(msg, "[aaOcean] Specified UV attribute %s not found", attribName);
+		sprintf(msg, "[aaOcean] Specified UV attribute \'%s\' not found on geometry.\
+					 \nUV's are required for aaOcean to cook", attribName);
+		cout<<msg;
+		cout.flush();
 		addError(SOP_MESSAGE, msg); 
         unlockInputs();
         return error();
     }
 	
 	// setup local variables to output Eigens
-	if(enableFoam)
+	if(enableEigens)
 	{
 		gdp->addFloatTuple(GA_ATTRIB_POINT, eVecPlusName,	3);
 		gdp->addFloatTuple(GA_ATTRIB_POINT, eVecMinusName,	3);
 		gdp->addFloatTuple(GA_ATTRIB_POINT, eValuesName,	3);
 	}
     
-    // inputs validated. Begin sending ocean data to 
+    // inputs validated. Begin writing ocean data to output handles
     #pragma omp parallel for private(PtHandle, PtValue, u, v, UvHandle, eVecPlusHandle, eVecMinusHandle, eValuesHandle, eigenVectorPlusValue, eigenVectorMinusValue, eigenValuesValue)
     for (int i = 0; i < npts; ++i)
     {
@@ -210,15 +217,15 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
         }
         PtHandle.setV3(PtValue);
 
-		if(enableFoam)
+		if(enableEigens)
 		{
 			eVecPlusHandle.setElement(gdp->points()(i));
 			eVecMinusHandle.setElement(gdp->points()(i));
 			eValuesHandle.setElement(gdp->points()(i));
 
-			eVecPlusHandle = gdp->getAttribute(GEO_POINT_DICT, eVecPlusName);
+			eVecPlusHandle	= gdp->getAttribute(GEO_POINT_DICT, eVecPlusName);
 			eVecMinusHandle = gdp->getAttribute(GEO_POINT_DICT, eVecMinusName);
-			eValuesHandle = gdp->getAttribute(GEO_POINT_DICT, eValuesName);
+			eValuesHandle	= gdp->getAttribute(GEO_POINT_DICT, eValuesName);
 
 			eigenVectorPlusValue.x() =  pOcean->getOceanData(u, v, aaOcean::eEIGENPLUSX);
 			eigenVectorPlusValue.y() =  0.0f;
@@ -236,7 +243,7 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
 			eValuesHandle.setV3(eigenValuesValue);
 		}
     }
-
+	
     // Notify the display cache
     gdp->notifyCache(GU_CACHE_ALL);
     unlockInputs();
