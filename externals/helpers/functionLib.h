@@ -1,8 +1,6 @@
 #ifndef FUNCTION_LIB_H
 #define FUNCTION_LIB_H
 
-#include "constants.h"
-
 #if defined(_MSC_VER)
 	#include <io.h> // For access().
 #else
@@ -111,7 +109,6 @@ float intpow( float base, int exponent )
 	}
 	return out;
 }
-
 
 float fastPow(float a, float b) 
 {
