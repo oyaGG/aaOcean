@@ -28,6 +28,17 @@ protected:
 
 private:
 	// working variables
+	GA_ROAttributeRef uvRef;
+	const GA_Attribute *uvAttribute;
+	const GA_AIFTuple *uvTuple;
+
+	GA_RWAttributeRef eVecPlusRef;
+	GA_RWAttributeRef eVecMinusRef;
+	GA_RWAttributeRef eValuesRef;
+	GA_RWHandleV3 eVecPlusHandle;
+	GA_RWHandleV3 eVecMinusHandle;
+	GA_RWHandleF eValuesHandle;
+
 	bool enableEigens;
 	char eVecPlusName[10];
 	char eVecMinusName[10];

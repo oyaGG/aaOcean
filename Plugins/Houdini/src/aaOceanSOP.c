@@ -25,6 +25,7 @@
 #include <UT/UT_Math.h>
 #include <UT/UT_Matrix3.h>
 #include <UT/UT_Matrix4.h>
+#include <UT/UT_ThreadedAlgorithm.h>
 #include <GU/GU_Detail.h>
 #include <GU/GU_PrimPoly.h>
 #include <PRM/PRM_Include.h>
@@ -38,6 +39,7 @@
 #include <PRM/PRM_Include.h>
 #include "aaOceanSOP.h"
 
+#include "timer/Timer.cpp"
 
 void newSopOperator(OP_OperatorTable *table)
 {
@@ -140,22 +142,11 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
     setVariableOrder(3, 2, 0, 1);
     setCurGdh(0, myGdpHandle);
     setupLocalVars();
-	
+
 	// variable declarations
     float u;
 	float v;
 	float now  = context.getTime();
-    int	  npts = gdp->getNumPoints();
-
-    UT_Vector3 eigenVectorPlusValue;
-	UT_Vector3 eigenVectorMinusValue;
-	UT_Vector3 eigenValuesValue;
-    UT_Vector4	PtValue;
-    GEO_AttributeHandle	UvHandle;
-	GEO_AttributeHandle	PtHandle;
-	GEO_AttributeHandle	eVecPlusHandle;
-	GEO_AttributeHandle	eVecMinusHandle;
-	GEO_AttributeHandle	eValuesHandle;
 
 	// Flag the SOP as being time dependent (i.e. cook on time changes)
     flags().timeDep = 1;
@@ -165,19 +156,20 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
     if(pOcean->isChoppy() && enableEigens)
         enableEigens = TRUE;
     now = now + TIMEOFFSET(now);
+
     pOcean->input(	RESOLUTION(), 
-        SEED(),
-        OCEANSCALE(now), 
-        VELOCITY(now), 
-        CUTOFF(now), 
-        WINDDIR(now), 
-        WINDALIGN(), 
-        DAMP(now), 
-        WAVESPEED(now), 
-        WAVEHEIGHT(now),
-        CHOP(now), 
-        now,
-        enableEigens);
+					SEED(),
+					OCEANSCALE(now), 
+					VELOCITY(now), 
+					CUTOFF(now), 
+					WINDDIR(now), 
+					WINDALIGN(), 
+					DAMP(now), 
+					WAVESPEED(now), 
+					WAVEHEIGHT(now),
+					CHOP(now), 
+					now,
+					enableEigens);
 
     if(pOcean->isValid() == FALSE)
     {
@@ -194,64 +186,65 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
     getUVAttributeName(UvAttribute);
     if(UvAttribute.length() == 0)
         UvAttribute = "uv";
-    const char* attribName = (const char *)UvAttribute;
-    UvHandle = gdp->getAttribute(GEO_POINT_DICT, attribName);
+    const char* UVAttribName = (const char *)UvAttribute;
+	uvRef = gdp->findFloatTuple(GA_ATTRIB_POINT, UVAttribName, 3);
 
-    if(UvHandle.isAttributeValid() == FALSE)
+    if(uvRef.isValid() == TRUE)
     {
-        // uv attribute not found
+		uvAttribute = uvRef.getAttribute();
+		uvTuple = uvRef.getAIFTuple(); 
+    }
+	else
+	{
+		// uv attribute not found
         char msg[256];
         sprintf(msg, "[aaOcean] Specified UV attribute \'%s\' not found on geometry.\
-                     \nUV's are required for aaOcean to cook", attribName);
+                     \nUV's are required for aaOcean to cook", UVAttribName);
         cout<<msg;
         cout.flush();
         addError(SOP_MESSAGE, msg); 
         unlockInputs();
         return error();
-    }
+	}
 
     // setup local variables to output Eigens
     if(enableEigens)
     {
-        gdp->addFloatTuple(GA_ATTRIB_POINT, eVecPlusName,	3);
-        gdp->addFloatTuple(GA_ATTRIB_POINT, eVecMinusName,	3);
-        gdp->addFloatTuple(GA_ATTRIB_POINT, eValuesName,	3);
+        eVecPlusRef  = gdp->addFloatTuple(GA_ATTRIB_POINT, eVecPlusName,	3);
+        eVecMinusRef = gdp->addFloatTuple(GA_ATTRIB_POINT, eVecMinusName,	3);
+        eValuesRef   = gdp->addFloatTuple(GA_ATTRIB_POINT, eValuesName,		1);
+
+		eVecPlusHandle	= GA_RWHandleV3::GA_RWHandleT(eVecPlusRef.getAttribute());
+		eVecMinusHandle = GA_RWHandleV3::GA_RWHandleT(eVecMinusRef.getAttribute());
+		eValuesHandle	= GA_RWHandleF::GA_RWHandleT(eValuesRef.getAttribute());
     }
-
+	
     // inputs validated. Begin writing ocean data to output handles
-	#pragma omp parallel for private(PtHandle, PtValue, u, v, UvHandle, eVecPlusHandle, eVecMinusHandle, eValuesHandle, eigenVectorPlusValue, eigenVectorMinusValue, eigenValuesValue)
-    for (int i = 0; i < npts; ++i)
+	for (GA_Iterator it(gdp->getPointRange()); !it.atEnd(); ++it)
     {
-        UvHandle = gdp->getAttribute(GEO_POINT_DICT, attribName);
-        PtHandle  = gdp->getAttribute(GEO_POINT_DICT, "P");
-
-        UvHandle.setElement(gdp->points()(i));
-        PtHandle.setElement(gdp->points()(i));
-
-        u = UvHandle.getV3().x();
+		GA_Offset pt_offset = *it;
+		UT_Vector3F pos = gdp->getPos3(pt_offset);
+		UT_Vector3F UV;
+		
+        uvTuple->get(uvAttribute, pt_offset, UV.data(), 3);
         // Houdini V coord runs in opposite direction compared to Softimage/Maya
         // Conforming with other apps to make ocean shape consistent across apps
-        v = 1.0 - (fmod(UvHandle.getV3().y(), 1.0f));
+		u = UV.x();
+		v = 1.0f - (fmod(UV.y(), 1.0f));
 
-        PtValue = PtHandle.getV3();
-
-        PtValue.y() += pOcean->getOceanData(u, v, aaOcean::eHEIGHTFIELD);
+		pos.y() += pOcean->getOceanData(u, v, aaOcean::eHEIGHTFIELD);
         if(pOcean->isChoppy())
         {
-            PtValue.x() += pOcean->getOceanData(u, v, aaOcean::eCHOPX);
-            PtValue.z() += pOcean->getOceanData(u, v, aaOcean::eCHOPZ);
+            pos.x() += pOcean->getOceanData(u, v, aaOcean::eCHOPX);
+            pos.z() += pOcean->getOceanData(u, v, aaOcean::eCHOPZ);
         }
-        PtHandle.setV3(PtValue);
+		gdp->setPos3(pt_offset, pos);
 
-        if(enableEigens)
+       if(enableEigens)
         {
-            eVecPlusHandle.setElement(gdp->points()(i));
-            eVecMinusHandle.setElement(gdp->points()(i));
-            eValuesHandle.setElement(gdp->points()(i));
-
-            eVecPlusHandle	= gdp->getAttribute(GEO_POINT_DICT, eVecPlusName);
-            eVecMinusHandle = gdp->getAttribute(GEO_POINT_DICT, eVecMinusName);
-            eValuesHandle	= gdp->getAttribute(GEO_POINT_DICT, eValuesName);
+			UT_Vector3F eigenVectorPlusValue;
+			UT_Vector3F eigenVectorMinusValue;
+			float eigenValue;
 
             eigenVectorPlusValue.x() =  pOcean->getOceanData(u, v, aaOcean::eEIGENPLUSX);
             eigenVectorPlusValue.y() =  0.0f;
@@ -261,12 +254,11 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
             eigenVectorMinusValue.y() = 0.0f;
             eigenVectorMinusValue.z() = pOcean->getOceanData(u, v, aaOcean::eEIGENMINUSZ);
 
-            eigenValuesValue.x() = pOcean->getOceanData(u, v, aaOcean::eFOAM);
-            eigenValuesValue.z() = eigenValuesValue.y() = eigenValuesValue.x();
+            eigenValue = pOcean->getOceanData(u, v, aaOcean::eFOAM);
 
-            eVecPlusHandle.setV3(eigenVectorPlusValue);
-            eVecMinusHandle.setV3(eigenVectorMinusValue);
-            eValuesHandle.setV3(eigenValuesValue);
+			eVecPlusHandle.set(*it,eigenVectorPlusValue);
+			eVecMinusHandle.set(*it,eigenVectorMinusValue);
+			eValuesHandle.set(*it,eigenValue);
         }
     }
 
