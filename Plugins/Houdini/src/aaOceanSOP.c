@@ -144,8 +144,6 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
     setupLocalVars();
 
 	// variable declarations
-    float u;
-	float v;
 	float now  = context.getTime();
 
 	// Flag the SOP as being time dependent (i.e. cook on time changes)
@@ -220,17 +218,18 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
     }
 	
     // inputs validated. Begin writing ocean data to output handles
-	for (GA_Iterator it(gdp->getPointRange()); !it.atEnd(); ++it)
+	int npts = gdp->getNumPoints();
+	#pragma omp parallel for 
+	for (int pt_offset = 0; pt_offset < npts; ++pt_offset)
     {
-		GA_Offset pt_offset = *it;
 		UT_Vector3F pos = gdp->getPos3(pt_offset);
 		UT_Vector3F UV;
 		
         uvTuple->get(uvAttribute, pt_offset, UV.data(), 3);
         // Houdini V coord runs in opposite direction compared to Softimage/Maya
         // Conforming with other apps to make ocean shape consistent across apps
-		u = UV.x();
-		v = 1.0f - (fmod(UV.y(), 1.0f));
+		float u = UV.x();
+		float v = 1.0f - (fmod(UV.y(), 1.0f));
 
 		pos.y() += pOcean->getOceanData(u, v, aaOcean::eHEIGHTFIELD);
         if(pOcean->isChoppy())
@@ -256,12 +255,11 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
 
             eigenValue = pOcean->getOceanData(u, v, aaOcean::eFOAM);
 
-			eVecPlusHandle.set(*it,eigenVectorPlusValue);
-			eVecMinusHandle.set(*it,eigenVectorMinusValue);
-			eValuesHandle.set(*it,eigenValue);
+			eVecPlusHandle.set(pt_offset,eigenVectorPlusValue);
+			eVecMinusHandle.set(pt_offset,eigenVectorMinusValue);
+			eValuesHandle.set(pt_offset,eigenValue);
         }
     }
-
     unlockInputs();
 
     return error();
