@@ -51,6 +51,12 @@
 
 //Maya Node ID 0x20B6EF34  (548859700)  -- Randomly generated. Change if this conflicts
 
+#ifdef __GNUC__
+	#if __GNUC_MINOR__ > 2 
+		#error [aaOcean] compiler version may generate code incompatible with Maya
+	#endif
+#endif
+
 class aaOceanDeformer : public MPxDeformerNode
 {
 public:
