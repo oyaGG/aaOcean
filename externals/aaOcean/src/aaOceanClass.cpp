@@ -433,7 +433,7 @@ ULONG aaOcean::generateUID(float xCoord, float zCoord)
 		length = sqrt(zCoord * zCoord + xCoord * xCoord); 
 		id_out = (length * length)  +  (length * angle);
 		
-		if( angle == 0.0f)
+		if(angle == 0.0f)
 			returnVal = (ULONG)(length * length);
 		else if (zCoord <= 0.0f)
 			returnVal = (ULONG)floor(id_out + 0.5f);
@@ -473,7 +473,7 @@ void aaOcean::setupGrid()
 
  void aaOcean::evaluateHokData()
 {
-	register float k_sq, k_mag,  k_dot_w, philips, x, z;
+	register float k_sq, k_mag, k_dot_w, philips, x, z;
 
 	register const int		n		 = m_resolution * m_resolution;
 	register const float	k_mult	 = aa_TWOPI / m_oceanScale;
@@ -515,9 +515,9 @@ void aaOcean::setupGrid()
  void aaOcean::evaluateHieghtField()
 {
 	int  i,j,index, index_rev;
-	register float  hokReal, hokImag, hokRealOpp, hokImagOpp, sinwt, coswt;
+	register float hokReal, hokImag, hokRealOpp, hokImagOpp, sinwt, coswt;
 
-	float	wt  = m_waveSpeed * m_time;
+	const float	wt  = m_waveSpeed * m_time;
 	const int n = m_resolution;
 	const int nn = n * n;
 	register const int n_sq = n * n - 1;
@@ -557,21 +557,21 @@ void aaOcean::setupGrid()
  void aaOcean::evaluateChopField()
 {
 	int  i, j, index;
-	register float _kX,_kZ, kMag;
+	register float  kX, kZ, kMag;
 	int n = m_resolution * m_resolution;
 
-	#pragma omp parallel for private( index, _kX, _kZ, kMag)  
+	#pragma omp parallel for private( index,  kX,  kZ, kMag)  
 	for(index = 0; index < n; ++index)
 	{			
 		kMag = sqrt(m_kX[index] * m_kX[index] + m_kZ[index] * m_kZ[index]);
-		_kX = m_kX[index] / kMag;
-		_kZ = m_kZ[index] / kMag;
+		kX = m_kX[index] / kMag;
+		kZ = m_kZ[index] / kMag;
 		
-		m_fft_chopX[index][0] =  m_hktImag[index] * _kX;
-		m_fft_chopX[index][1] = -m_hktReal[index] * _kX;
+		m_fft_chopX[index][0] =  m_hktImag[index] * kX;
+		m_fft_chopX[index][1] = -m_hktReal[index] * kX;
 
-		m_fft_chopZ[index][0] =  m_hktImag[index] * _kZ;
-		m_fft_chopZ[index][1] = -m_hktReal[index] * _kZ;
+		m_fft_chopZ[index][0] =  m_hktImag[index] * kZ;
+		m_fft_chopZ[index][1] = -m_hktReal[index] * kZ;
 	}
 
 	fftwf_execute(m_planChopX);
@@ -593,22 +593,22 @@ void aaOcean::setupGrid()
 void aaOcean::evaluateJacobians()
 {
 	int  i, j, index;
-	register float _kX, _kZ, kMag, kXZ;
+	register float kX, kZ, kMag, kXZ;
 	int n = m_resolution * m_resolution;
 
-	#pragma omp parallel for private( index, _kX, _kZ, kXZ, kMag) 
+	#pragma omp parallel for private( index, kX, kZ, kXZ, kMag) 
 	for(index = 0; index < n; ++index)
 	{			
 		kMag = 1.0f / sqrt(m_kX[index] * m_kX[index] + m_kZ[index] * m_kZ[index]);
-		_kX  = (m_kX[index] * m_kX[index]) * kMag;
-		_kZ  = (m_kZ[index] * m_kZ[index]) * kMag;
+		kX   = (m_kX[index] * m_kX[index]) * kMag;
+		kZ   = (m_kZ[index] * m_kZ[index]) * kMag;
 		kXZ  = (m_kX[index] * m_kZ[index]) * kMag;
 
-		m_fft_jxx[index][0] =  m_hktReal[index] * _kX;
-		m_fft_jxx[index][1] =  m_hktImag[index] * _kX;
+		m_fft_jxx[index][0] =  m_hktReal[index] * kX;
+		m_fft_jxx[index][1] =  m_hktImag[index] * kX;
 
-		m_fft_jzz[index][0] =  m_hktReal[index] * _kZ;
-		m_fft_jzz[index][1] =  m_hktImag[index] * _kZ;
+		m_fft_jzz[index][0] =  m_hktReal[index] * kZ;
+		m_fft_jzz[index][1] =  m_hktImag[index] * kZ;
 
 		m_fft_jxz[index][0] =  m_hktReal[index] * kXZ;
 		m_fft_jxz[index][1] =  m_hktImag[index] * kXZ;
