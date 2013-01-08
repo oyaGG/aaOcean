@@ -113,17 +113,24 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 {
 	m_isValid = FALSE;
 
+	// forcing to be power of two, setting minimum resolution of 4
 	if(powTwoConversion)
-		resolution	= (int)pow(2.0f, (4 + resolution)); // forcing to be power of two
-	oceanScale	= maximum<float>(oceanScale, 0.00001f);	// clamping to minimum value
-	velocity	= maximum<float>(((velocity  * velocity) / aa_GRAVITY), 0.00001f); // clamping to minimum value
+		resolution	= (int)pow(2.0f, (4 + abs(resolution))); 
+	// clamping to minimum value
+	oceanScale	= maximum<float>(oceanScale, 0.00001f);	
+	velocity	= maximum<float>(((velocity  * velocity) / aa_GRAVITY), 0.00001f); 
+	// scaling for better UI control
 	cutoff		= fabs(cutoff * 0.01f);
-	windDir		= windDir * aa_PIBY180; // to radians
-	windAlign	= maximum<int>(((windAlign + 1) * 2), 2); // forcing to even numbers
-	damp		= minimum<float>(damp, 1.0f); // clamping to a maximum value of 1
+	// to radians
+	windDir		= windDir * aa_PIBY180; 
+	// forcing to even numbers
+	windAlign	= maximum<int>(((windAlign + 1) * 2), 2); 
+	// clamping to a maximum value of 1
+	damp		= minimum<float>(damp, 1.0f); 
 
-	waveHeight *= 0.01f; // scaled for better UI control
-	chopAmount *= 0.01f; // scaled for better UI control
+	 // scaled for better UI control
+	waveHeight *= 0.01f;
+	chopAmount *= 0.01f; 
 
 	m_time			= time;
 	m_waveSpeed		= waveSpeed;
@@ -154,17 +161,21 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 		m_velocity		= velocity;
 		m_windAlign		= windAlign;
 		m_damp			= damp;
+
+		// re-evaluate HoK if any of these vars change
 		m_doHoK		    = TRUE;
 	}
 
 	if(m_seed != seed)
 	{
+		// setup grid and do HoK if seed changes
 		m_seed	= seed;
 		m_doHoK	= TRUE;
 		if(m_resolution == resolution)
 			m_doSetup = TRUE; 
 	}
 
+	// see if we need to flush arrays and reallocate them
 	if(reInit(resolution))
 		prepareOcean();
 }
@@ -191,29 +202,21 @@ int aaOcean::getResolution()
 
 bool aaOcean::reInit(int resolution)
 {
-	if(((resolution & (resolution - 1)) != 0) || resolution <= 0) // bad input -- not power of 2
-	{	
-		sprintf(m_state,"[aaOcean Core] Invalid point resolution of %d. Please select a power-of-2 subdivision value", resolution);
-		m_isValid = FALSE;
-	}
-	else
+	// If ocean resolution has changed, or if we are creating an ocean from scratch
+	// Flush any existing arrays and allocate them with the new array size (resolution)
+	if(m_resolution != resolution || !m_isAllocated )
 	{
-		// If ocean resolution has changed, or if we are creating an ocean from scratch
-		// Flush any existing arrays and allocate them with the new array size (resolution)
-		if(m_resolution != resolution || !m_isAllocated )
-		{
-			m_resolution = resolution;
-			allocateBaseArrays();				
-			m_doHoK  = TRUE;
-			setupGrid();
-			sprintf(m_state,"[aaOcean Core] Building ocean shader with resolution %dx%d", resolution, resolution);
-		}
-		// if doSetup has been set to True because of a change in Seed
-		if(m_doSetup)
-			setupGrid();
-
-		m_isValid = TRUE;
+		m_resolution = resolution;
+		allocateBaseArrays();				
+		m_doHoK  = TRUE;
+		setupGrid();
+		sprintf(m_state,"[aaOcean Core] Building ocean shader with resolution %dx%d", resolution, resolution);
 	}
+	// if doSetup has been set to True because of a change in Seed
+	if(m_doSetup)
+		setupGrid();
+
+	m_isValid = TRUE;
 	return m_isValid;
 }
 
