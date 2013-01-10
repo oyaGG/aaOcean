@@ -696,7 +696,6 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 	// declare pointer to array we want to fetch data from, and the indexer into the array
 	fftwf_complex *arrayPointer;
 	const int arrayIndex = 1;
-	const int arraySize = m_resolution;
 	const int arraySizePlusOne = m_resolution + 1;
 
 	// set pointer to the array that we need to interpolate data from
@@ -732,28 +731,28 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 	if(uCoord < 0.0f)
 		uCoord = uCoord- floor(uCoord);
 
-	u = vCoord * float(arraySize);
-	v = uCoord * float(arraySize);
+	u = vCoord * float(m_resolution);
+	v = uCoord * float(m_resolution);
 	x = (int)floor(u);
 	y = (int)floor(v);
 
 	// prepare catmul-rom end points for interpolation
-	xMinus1 =	wrap((x-1), arraySize);
-	yMinus1 =	wrap((y-1), arraySize);	
-	x =			wrap(x,		arraySize);
-	y =			wrap(y,		arraySize);		
-	xPlus1 =	wrap((x+1), arraySize);	
-	yPlus1 =	wrap((y+1), arraySize);	
-	xPlus2 =	wrap((x+2), arraySize);	
-	yPlus2 =	wrap((y+2), arraySize);	
+	xMinus1 =	wrap(x - 1);
+	yMinus1 =	wrap(y - 1);
+	x =			wrap(x);
+	y =			wrap(y);
+	xPlus1 =	wrap(x + 1);
+	yPlus1 =	wrap(y + 1);
+	xPlus2 =	wrap(x + 2);
+	yPlus2 =	wrap(y + 2);
 
 	du = u - x; 
 	dv = v - y;	
 
 	const int pMinus1	= xMinus1 * arraySizePlusOne;
-	const int pZero		= x * arraySizePlusOne;
-	const int pOne		= xPlus1 * arraySizePlusOne;
-	const int pTwo		= xPlus2 * arraySizePlusOne;
+	const int pZero		= x		  * arraySizePlusOne;
+	const int pOne		= xPlus1  * arraySizePlusOne;
+	const int pTwo		= xPlus2  * arraySizePlusOne;
 
 	float a1 = catmullRom(	du, 
 							arrayPointer[pMinus1	+ yMinus1][arrayIndex],
@@ -789,16 +788,16 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 inline float aaOcean::catmullRom(float t, float a, float b, float c, float d)
 {
 	return  0.5f * ( ( 2.0f * b ) + ( -a + c ) * t + 
-			( 2.0f * a - 5.0f * b + 4 * c - d ) * t*t + 
+			( 2.0f * a - 5.0f * b + 4.0f * c - d ) * t*t + 
 			( -a + 3.0f * b - 3.0f * c + d )* t*t*t );
 }
 
-inline int aaOcean::wrap(int x, int n)
+inline int aaOcean::wrap(int x)
 {
-	if(x > n)
-		x = x % (n+1);
+	if(x > m_resolution)
+		x = x % (m_resolution + 1);
 	else if(x < 0)
-		x = (n+1) + x % (n+1);
+		x = (m_resolution + 1) + x % (m_resolution + 1);
 	
 	return x;
 }

@@ -128,7 +128,7 @@ private:
 	
 	// interpolation functions
 	inline float catmullRom(float t, float a, float b, float c, float d);
-	inline int wrap(int x, int n);
+	inline int wrap(int x);
 
 	void makeTileable(fftwf_complex *&fft_array);
 };
