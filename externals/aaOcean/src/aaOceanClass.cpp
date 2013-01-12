@@ -256,18 +256,18 @@ void aaOcean::allocateBaseArrays()
 
 	int size = m_resolution * m_resolution;
 
-	m_xCoord	= (int*)   malloc(size * sizeof(int)); 
-	m_zCoord	= (int*)   malloc(size * sizeof(int)); 
+	m_xCoord	= (int*)   aligned_malloc(size * sizeof(int)); 
+	m_zCoord	= (int*)   aligned_malloc(size * sizeof(int)); 
 	
-	m_hokReal	= (float*) malloc(size * sizeof(float)); 
-	m_hokImag	= (float*) malloc(size * sizeof(float)); 
-	m_hktReal	= (float*) malloc(size * sizeof(float)); 
-	m_hktImag	= (float*) malloc(size * sizeof(float)); 
-	m_kX		= (float*) malloc(size * sizeof(float)); 
-	m_kZ		= (float*) malloc(size * sizeof(float)); 
-	m_omega		= (float*) malloc(size * sizeof(float)); 
-	m_rand1		= (float*) malloc(size * sizeof(float)); 
-	m_rand2		= (float*) malloc(size * sizeof(float)); 
+	m_hokReal	= (float*) aligned_malloc(size * sizeof(float)); 
+	m_hokImag	= (float*) aligned_malloc(size * sizeof(float)); 
+	m_hktReal	= (float*) aligned_malloc(size * sizeof(float)); 
+	m_hktImag	= (float*) aligned_malloc(size * sizeof(float)); 
+	m_kX		= (float*) aligned_malloc(size * sizeof(float)); 
+	m_kZ		= (float*) aligned_malloc(size * sizeof(float)); 
+	m_omega		= (float*) aligned_malloc(size * sizeof(float)); 
+	m_rand1		= (float*) aligned_malloc(size * sizeof(float)); 
+	m_rand2		= (float*) aligned_malloc(size * sizeof(float)); 
 	
 	if(m_resolution > 254)
 	{
@@ -309,57 +309,57 @@ void aaOcean::clearResidualArrays()
 {
 	if(m_rand2)
 	{
-		free(m_rand2); 
+		aligned_free(m_rand2); 
 		m_rand2 = FALSE;
 	}
 	if(m_rand1)
 	{
-		free(m_rand1); 
+		aligned_free(m_rand1); 
 		m_rand1 = FALSE;
 	}
 	if(m_omega)
 	{
-		free(m_omega); 
+		aligned_free(m_omega); 
 		m_omega = FALSE;
 	}
 	if(m_kZ)
 	{
-		free(m_kZ); 
+		aligned_free(m_kZ); 
 		m_kZ = FALSE;
 	}
 	if(m_kX)
 	{
-		free(m_kX); 
+		aligned_free(m_kX); 
 		m_kX = FALSE;
 	}
 	if(m_hktImag)
 	{
-		free(m_hktImag); 
+		aligned_free(m_hktImag); 
 		m_hktImag = FALSE;
 	}
 	if(m_hktReal)
 	{
-		free(m_hktReal); 
+		aligned_free(m_hktReal); 
 		m_hktReal = FALSE;
 	}
 	if(m_hokImag)
 	{
-		free(m_hokImag); 
+		aligned_free(m_hokImag); 
 		m_hokImag = FALSE;
 	}
 	if(m_hokReal)
 	{
-		free(m_hokReal); 
+		aligned_free(m_hokReal); 
 		m_hokReal = FALSE;
 	}
 	if(m_zCoord)
 	{
-		free(m_zCoord); 
+		aligned_free(m_zCoord); 
 		m_zCoord = FALSE;
 	}
 	if(m_xCoord)
 	{
-		free(m_xCoord); 
+		aligned_free(m_xCoord); 
 		m_xCoord = FALSE;
 	}
 }

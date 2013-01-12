@@ -41,7 +41,7 @@ inline float isEven(int x)
 	// used in FFT
 	// (-1)^(x+y), shift back from centre representation for zero-frequencies to left
 	// x, y being coordinates of 2d array holding fft data
-    if(!(x % 2))
+    if((x % 2)==0)
 		return 1.0f;
 	else
 		return -1.0f;
@@ -150,29 +150,42 @@ inline bool dirExists(const char* path)
 	
 }
 
-//bool isAligned(void* data, int alignment = 16)
-//{
-//	// check that the alignment is a power of two
-//	assert((alignment & (alignment-1)) == 0); 
-//	return ((uintptr_t)data & (alignment-1)) == 0;
-//}
+bool isAligned(void* data, int alignment = 16)
+{
+	// check that the alignment is a power of two
+	assert((alignment & (alignment-1)) == 0); 
+	return ((uintptr_t)data & (alignment-1)) == 0;
+}
 
-//void* aligned_malloc(int size, int alignment)
-//{
-//	const int pointerSize = sizeof(void*);
-//	const int requestedSize = size + alignment - 1 + pointerSize;
-//	void* raw = std::malloc(requestedSize);
-//	void* start = (char*)raw + pointerSize;
-//	void* aligned = (void*)(((unsigned int)((char*)start+alignment-1)) & ~(alignment-1));
-//	*(void**)((char*)aligned-pointerSize) = raw;
-//	return aligned;
-//}
-//
-//void aligned_free(void* aligned)
-//{
-//	void* raw = *(void**)((char*)aligned-sizeof(void*));
-//	std::free(raw);
-//}
+void* aligned_malloc(int size, int alignment = 16)
+{
+
+#ifdef GCC_VERSION 
+	const int pointerSize = sizeof(void*);
+	const int requestedSize = size + alignment - 1 + pointerSize;
+	void* raw = malloc(requestedSize);
+	void* start = (char*)raw + pointerSize;
+	void* aligned = (void*)(((unsigned int)((char*)start+alignment-1)) & ~(alignment-1));
+	*(void**)((char*)aligned-pointerSize) = raw;
+	return aligned;
+#else
+	void* aligned =_aligned_malloc( size, alignment);
+	return aligned;
+#endif
+
+}
+
+void aligned_free(void* aligned)
+{
+
+#ifdef GCC_VERSION 
+	void* raw = *(void**)((char*)aligned-sizeof(void*));
+	free(raw);
+#else
+	_aligned_free(aligned);
+#endif
+
+}
 
 #if defined(_MSC_VER)
 	#define DATA_ALIGN(declaration, alignment) __declspec(align(alignment)) declaration
