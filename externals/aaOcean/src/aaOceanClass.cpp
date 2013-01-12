@@ -419,29 +419,31 @@ void aaOcean::clearArrays()
 ULONG aaOcean::generateUID(float xCoord, float zCoord)
 {
 	// a very simple hash function. should probably do a better one at some point
-	register float angle  = 0.0f;
-	register float length = 0.0f;
+	register float angle;
+	register float length;
+	register float coordSq;
 	register float id_out;
 	ULONG returnVal = 1;
 
 	if (zCoord != 0.0f && xCoord != 0.0f)
 	{
-		angle = xCoord / sqrt(zCoord * zCoord + xCoord * xCoord); 
+		coordSq = zCoord * zCoord + xCoord * xCoord;
+		length = sqrt(coordSq);
+		angle = xCoord / length; 
 		angle = acos(angle);
 		angle = RadsToDegs(angle);
 		
 		if (angle > 180.0f)
 			angle = 360.0f - angle;
 		
-		length = sqrt(zCoord * zCoord + xCoord * xCoord); 
-		id_out = (length * length)  +  (length * angle);
+		id_out = coordSq + (length * angle) + 0.5f;
 		
 		if(angle == 0.0f)
-			returnVal = (ULONG)(length * length);
+			returnVal = (ULONG)coordSq;
 		else if (zCoord <= 0.0f)
-			returnVal = (ULONG)floor(id_out + 0.5f);
+			returnVal = (ULONG)floor(id_out);
 		else
-			returnVal = INT_MAX - (ULONG)floor(id_out + 0.5f) ;
+			returnVal = INT_MAX - (ULONG)floor(id_out) ;
 	}
 	return returnVal;
 }
