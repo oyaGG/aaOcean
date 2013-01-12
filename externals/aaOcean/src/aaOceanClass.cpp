@@ -586,11 +586,13 @@ void aaOcean::setupGrid()
 	#pragma omp parallel for private(i, j, index)  
 	for(i = 0; i < n; ++i)
 	{
+		float multiplier;
 		for(j = 0; j < n; ++j)
 		{
 			index = (i*n) + j;
-			m_fft_chopX[index][0] *= m_chopAmount * isEven(i+j) * -1.0f;
-			m_fft_chopZ[index][0] *= m_chopAmount * isEven(i+j) * -1.0f;
+			multiplier = m_chopAmount * isEven(i+j) * -1.0f;
+			m_fft_chopX[index][0] *= multiplier;
+			m_fft_chopZ[index][0] *= multiplier;
 		}
 	}
 }
@@ -627,33 +629,38 @@ void aaOcean::evaluateJacobians()
 	#pragma omp parallel for private(i, j, index)  
 	for(i = 0; i < n; ++i)
 	{
+		float multiplier;
 		for(j = 0; j < n; ++j)
 		{
 			index = (i*n) + j;
-			m_fft_jxx[index][0] = (m_fft_jxx[index][0] * -m_chopAmount * isEven(i+j)) + 1.0f;
-			m_fft_jzz[index][0] = (m_fft_jzz[index][0] * -m_chopAmount * isEven(i+j)) + 1.0f;
-			m_fft_jxz[index][0] =  m_fft_jxz[index][0] * -m_chopAmount * isEven(i+j);
+			multiplier = -m_chopAmount * isEven(i+j);
+			m_fft_jxx[index][0] = m_fft_jxx[index][0] * multiplier + 1.0f;
+			m_fft_jzz[index][0] = m_fft_jzz[index][0] * multiplier + 1.0f;
+			m_fft_jxz[index][0] = m_fft_jxz[index][0] * multiplier;
 		}
 	}
 
-	register float jPlus, jMinus, qPlus, qMinus, Jxx, Jzz, Jxz;
-	#pragma omp parallel for private(index, jPlus, jMinus, qPlus, qMinus, Jxx, Jzz, Jxz)  
+	register float jPlus, jMinus, qPlus, qMinus, Jxx, Jzz, Jxz, temp;
+	#pragma omp parallel for private(index, jPlus, jMinus, qPlus, qMinus, Jxx, Jzz, Jxz, temp)  
 	for(index = 0; index < n*n; ++index)
 	{
 		Jxx = m_fft_jxx[index][0];
 		Jzz = m_fft_jzz[index][0];
 		Jxz = m_fft_jxz[index][0];
 
-		jPlus	= (0.5f * (Jxx + Jzz))  +  (0.5f * sqrt( ((Jxx - Jzz)*(Jxx - Jzz)) + 4.0f * (Jxz*Jxz) ));
-		jMinus	= (0.5f * (Jxx + Jzz))  -  (0.5f * sqrt( ((Jxx - Jzz)*(Jxx - Jzz)) + 4.0f * (Jxz*Jxz) ));
+		temp = (0.5f * sqrt( ((Jxx - Jzz) * (Jxx - Jzz)) + 4.0f * (Jxz*Jxz)));
+		jPlus	= (0.5f * (Jxx + Jzz))  +  temp;
+		jMinus	= (0.5f * (Jxx + Jzz))  -  temp;
 		qPlus	= (jPlus  - Jxx) / Jxz;
 		qMinus	= (jMinus - Jxx) / Jxz;
 
-		m_fft_jxx[index][0]				= 1.0f  /  sqrt( 1.0f + qPlus * qPlus);
-		m_fft_jxxZComponent[index][0]	= qPlus /  sqrt( 1.0f + qPlus * qPlus);
+		temp = sqrt( 1.0f + qPlus * qPlus);
+		m_fft_jxx[index][0]				= 1.0f  / temp;
+		m_fft_jxxZComponent[index][0]	= qPlus / temp;
 
-		m_fft_jzz[index][0]				= 1.0f   /  sqrt( 1.0f + qMinus * qMinus);
-		m_fft_jzzZComponent[index][0]	= qMinus /  sqrt( 1.0f + qMinus * qMinus);
+		temp = sqrt( 1.0f + qMinus * qMinus);
+		m_fft_jzz[index][0]				= 1.0f   / temp;
+		m_fft_jzzZComponent[index][0]	= qMinus / temp;
 
 		//store foam back in this array for convenience
 		//m_fft_jxz[index][0] =   (Jxx * Jzz) - (Jxz * Jxz); //original jacobian.
