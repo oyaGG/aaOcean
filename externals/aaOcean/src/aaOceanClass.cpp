@@ -469,8 +469,8 @@ void aaOcean::setupGrid()
 			uID = (ULONG)generateUID((float)m_xCoord[index], (float)m_zCoord[index]);
 
 			StochasticLib1 sto(uID + (unsigned int)m_seed);
-			m_rand1[index] = (float)sto.Normal(0.0f, 1.0f);
-			m_rand2[index] = (float)sto.Normal(0.0f, 1.0f);
+			m_rand1[index] = (float)sto.Normal(0.0, 1.0);
+			m_rand2[index] = (float)sto.Normal(0.0, 1.0);
 		}
 	}
 	m_doSetup = FALSE;
