@@ -1,6 +1,8 @@
 #ifndef FUNCTION_LIB_H
 #define FUNCTION_LIB_H
 
+#include <assert.h>
+
 #if defined(_MSC_VER)
 	#include <io.h> // For access().
 #else
