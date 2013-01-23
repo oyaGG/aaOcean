@@ -45,6 +45,7 @@ public:
 				bool    powTwoConversion);
 
 	float getOceanData(float uCoord, float vCoord, aaOcean::arrayType type, bool rotateUV);
+	void getOceanArray(float *&outArray, aaOcean::arrayType type);
 	void clearResidualArrays();
 
 	bool isValid();
@@ -131,6 +132,8 @@ private:
 	inline int wrap(int x);
 
 	void makeTileable(fftwf_complex *&fft_array);
+
+	fftwf_complex* getArrayType(aaOcean::arrayType type);
 };
 
 #endif  /* AAOCEANCLASS_H */

@@ -691,6 +691,18 @@ void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax)
 	}
 }
 
+void aaOcean::getOceanArray(float *&outArray, aaOcean::arrayType type)
+{
+	fftwf_complex *arrayPointer = getArrayType(type);
+	const int arrayIndex = 1;
+	const int arraySize = (m_resolution + 1) * (m_resolution + 1);
+
+	#pragma omp parallel for 
+	for(int i = 0; i < arraySize; ++i)
+	{
+		outArray[i] = arrayPointer[i][arrayIndex];
+	}
+}
 
 float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type, bool rotateUV = 1)
 {
@@ -703,29 +715,9 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 	}
 
 	// declare pointer to array we want to fetch data from, and the indexer into the array
-	fftwf_complex *arrayPointer;
+	fftwf_complex *arrayPointer = getArrayType(type);
 	const int arrayIndex = 1;
 	const int arraySizePlusOne = m_resolution + 1;
-
-	// set pointer to the array that we need to interpolate data from
-	if(type == eHEIGHTFIELD)
-		arrayPointer = m_fft_htField;
-	else if(type == eCHOPX)
-		arrayPointer = m_fft_chopX;
-	else if(type == eCHOPZ)
-		arrayPointer = m_fft_chopZ;
-	else if(type == eFOAM)
-		arrayPointer = m_fft_jxz;
-	else if(type == eEIGENPLUSX)
-		arrayPointer = m_fft_jxx;
-	else if(type == eEIGENPLUSZ)	
-		arrayPointer = m_fft_jxxZComponent;
-	else if(type == eEIGENMINUSX)
-		arrayPointer = m_fft_jzz;
-	else if(type == eEIGENMINUSZ)
-		arrayPointer = m_fft_jzzZComponent;
-	else
-		return 0.f;
 	
 	// prepare for indexing into the array and wrapping
 	float u, v, du, dv = 0;
@@ -844,5 +836,30 @@ void aaOcean::makeTileable(fftwf_complex *&fft_array)
                     }
             }
     }
+}
+
+fftwf_complex* aaOcean::getArrayType(aaOcean::arrayType type)
+{
+	fftwf_complex *arrayPointer = 0;
+
+	// set pointer to the array that we need to interpolate data from
+	if(type == eHEIGHTFIELD)
+		arrayPointer = m_fft_htField;
+	else if(type == eCHOPX)
+		arrayPointer = m_fft_chopX;
+	else if(type == eCHOPZ)
+		arrayPointer = m_fft_chopZ;
+	else if(type == eFOAM)
+		arrayPointer = m_fft_jxz;
+	else if(type == eEIGENPLUSX)
+		arrayPointer = m_fft_jxx;
+	else if(type == eEIGENPLUSZ)	
+		arrayPointer = m_fft_jxxZComponent;
+	else if(type == eEIGENMINUSX)
+		arrayPointer = m_fft_jzz;
+	else if(type == eEIGENMINUSZ)
+		arrayPointer = m_fft_jzzZComponent;
+
+	return arrayPointer;
 }
 #endif  /* AAOCEANCLASS_CPP */
