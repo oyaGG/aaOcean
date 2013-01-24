@@ -5,6 +5,33 @@
 #include <half.h>
 #include <ImfRgbaFile.h>
 
+#if defined(_MSC_VER)
+	#include <io.h> // For access().
+#else
+	#include <sys/io.h> // For access().
+#endif
+
+
+inline bool dirExists(const char* path)
+{
+	#ifdef _MSC_VER
+		if ( _access(path, 0) == 0 )
+		{
+			return 1;
+		}
+		else
+    		return 0;
+	#else
+		if ( access(path, 0) == 0 )
+		{
+			return 1;
+		}
+		else
+    		return 0;
+	#endif
+	
+}
+
 void genFullFilePath(char* dest, const char* outputFolder, const char* postfix, const int frame)
 {
 	#ifdef _MSC_VER

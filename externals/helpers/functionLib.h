@@ -3,12 +3,6 @@
 
 #include <assert.h>
 
-#if defined(_MSC_VER)
-	#include <io.h> // For access().
-#else
-	#include <sys/io.h> // For access().
-#endif
-
 inline float DegsToRads(float degrees)	// Degrees to radians conversion...
 { 
 	return(degrees * aa_PIBY180);  
@@ -90,16 +84,6 @@ inline float rescale(const float& value, const float& oldMin, const float& oldMa
   return newValue;
 }
 
-inline int wrap(int x, int n)
-{
-	if(x > n)
-		x = x % (n+1);
-	else if(x < 0)
-		x = (n+1) + x % (n+1);
-	
-	return x;
-}
-
 float intpow( float base, int exponent )
 {
 	float out = 1.f, curpwr = base;
@@ -132,26 +116,6 @@ inline float lerp(float t, float a, float b)
 	return a*(1.0f - t) + b * t;
 }
 
-inline bool dirExists(const char* path)
-{
-	#ifdef _MSC_VER
-		if ( _access(path, 0) == 0 )
-		{
-			return true;
-		}
-		else
-    		return false;
-	#else
-		if ( access(path, 0) == 0 )
-		{
-			return true;
-		}
-		else
-    		return false;
-	#endif
-	
-}
-
 bool isAligned(void* data, int alignment = 16)
 {
 	// check that the alignment is a power of two
@@ -161,7 +125,6 @@ bool isAligned(void* data, int alignment = 16)
 
 void* aligned_malloc(int size, int alignment = 16)
 {
-
 #ifdef GCC_VERSION 
 	const int pointerSize = sizeof(void*);
 	const int requestedSize = size + alignment - 1 + pointerSize;
@@ -179,7 +142,6 @@ void* aligned_malloc(int size, int alignment = 16)
 
 void aligned_free(void* aligned)
 {
-
 #ifdef GCC_VERSION 
 	void* raw = *(void**)((char*)aligned-sizeof(void*));
 	free(raw);
