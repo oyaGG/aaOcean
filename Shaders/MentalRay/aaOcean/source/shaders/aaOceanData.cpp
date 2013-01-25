@@ -15,6 +15,12 @@
 #include "oceanStore.h"
 #include "aaOceanData.h"
 
+#ifdef WRITE_OPENEXR
+#include "openEXROutput.h"
+void writeOceanData(aaOceanDataShader_t *&params, miState *&state, aaOcean *&pOcean);
+char* mitag_to_string(miTag tag, char *default_value) ;
+#endif
+
 extern "C" DLLEXPORT 
 miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t *params)
 {
@@ -84,18 +90,12 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 {
 	if( !params )
 	{
-		// shader global initialization block
-
 		// request per-shader-instance initialization
 		*inst_init_req = miTRUE;
-
-		// initialize fftw threads routines
 		fftwf_init_threads();
 	}
 	else
 	{
-		// shader per-instance initialization block
-
 		// evaluated any previously connected ocean shaders
 		miScalar layerOcean	= *mi_eval_scalar(&params->layerOcean);
 
@@ -160,6 +160,16 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 	}
 }
 
+char* mitag_to_string(miTag tag, char *default_value) 
+{ 
+    char *result = default_value; 
+    if (tag != 0) 
+	{ 
+		result = (char*)mi_db_access(tag); 
+		mi_db_unpin(tag); 
+    } 
+    return result; 
+}
 
 extern "C" DLLEXPORT 
 void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
@@ -170,6 +180,10 @@ void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
 		if(mi_query( miQ_FUNC_USERPTR, state, 0, (void *)&os))
 		{
 			aaOcean *pOcean = (*os)->ocean;
+
+			#ifdef WRITE_OPENEXR
+			writeOceanData(params, state, pOcean);
+			#endif
 
 			if(pOcean)
 				delete pOcean;
@@ -186,12 +200,49 @@ void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
 		fftwf_cleanup_threads();
 		fftwf_cleanup();
 	}
-
 }
 
 extern "C" DLLEXPORT int aaOceanDataShader_version( )
 {
 	return( 1 );
 }
+
+#ifdef WRITE_OPENEXR
+void writeOceanData(aaOceanDataShader_t *&params, miState *&state, aaOcean *&pOcean)
+{
+	if(params->writeFile)
+	{
+		char* outputFolder	= mitag_to_string(params->outputFolder,"");
+
+		if(!dirExists(outputFolder))
+			mi_error("[aaOcean] Invalid folder path: %s", outputFolder);
+		else
+		{
+			int dimension = (pOcean->getResolution() + 1);
+			int arraySize = dimension * dimension;
+
+			float *red, *green, *blue, *alpha = 0;
+			green = (float*) malloc(arraySize * sizeof(float));
+			if(pOcean->isChoppy())
+			{
+				red		= (float*) malloc(arraySize * sizeof(float));
+				blue	= (float*) malloc(arraySize * sizeof(float));
+				alpha	= (float*) malloc(arraySize * sizeof(float));
+
+				pOcean->getOceanArray(red, aaOcean::eCHOPX);
+				pOcean->getOceanArray(blue, aaOcean::eCHOPZ);
+				pOcean->getOceanArray(alpha, aaOcean::eFOAM);
+			}
+
+			char* postfix = mitag_to_string(params->postfix,"");
+			int frame = *mi_eval_integer(&params->currentFrame);
+			char outputFileName[255];
+			genFullFilePath(&outputFileName[0], &outputFolder[0], &postfix[0], frame);
+			writeExr(&outputFileName[0], dimension, red, green, blue, alpha);
+			mi_info("[aaOcean] Image written to %s", outputFileName);
+		}
+	}
+}
+#endif /* WRITE_EXR */
 
 #endif /* aaOceanDataShader_CPP */
