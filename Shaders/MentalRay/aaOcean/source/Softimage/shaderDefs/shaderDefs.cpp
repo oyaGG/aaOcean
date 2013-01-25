@@ -5,17 +5,17 @@
 // GNU General Public License (Version 3) as provided by the Free Software Foundation.
 // GNU General Public License http://www.gnu.org/licenses/gpl.html
 
-SICALLBACK aaOceanMentalRay_oceanDataShader_2_5_DefineInfo(const CRef& in_ctxt)
+SICALLBACK aaOceanDataShader_aaOceanDataShader_1_0_DefineInfo( const CRef& in_ctxt )
 {
 	Context ctxt(in_ctxt);
 
-	ctxt.PutAttribute(L"Category", CValue(L"aaOceanMRay"));
-	ctxt.PutAttribute(L"DisplayName", CValue(L"aaOcean Data Shader"));
-
+	ctxt.PutAttribute("Category", "aaOceanDataShader" );
+	ctxt.PutAttribute("DisplayName", "aaOceanDataShader" );
+	
 	return CStatus::OK;
 }
 
-SICALLBACK aaOceanMentalRay_oceanDataShader_2_5_Define(const CRef& in_ctxt)
+SICALLBACK aaOceanDataShader_aaOceanDataShader_1_0_Define( const CRef& in_ctxt )
 {
 	Application app;
 	Context ctxt(in_ctxt);
@@ -225,6 +225,15 @@ SICALLBACK aaOceanMentalRay_oceanDataShader_2_5_Define(const CRef& in_ctxt)
 	layerOcean_opts.SetLongName("Layer Ocean");
 	inpdefs.AddParamDef(L"layerOcean", siShaderDataTypeScalar, layerOcean_popts);
 
+	// Input Parameter: Matrix
+	ShaderParamDefOptions paramOptions;
+	paramOptions = fact.CreateShaderParamDefOptions();
+	paramOptions.SetLongName("transform");
+	paramOptions.SetAnimatable(true);
+	paramOptions.SetTexturable(true);
+	paramOptions.SetInspectable(true);
+	inpdefs.AddParamDef( "transform", siShaderDataTypeMatrix44, paramOptions );	
+
 	CRef writeFile_popts = fact.CreateShaderParamDefOptions();
 	ShaderParamDefOptions writeFile_opts = ShaderParamDefOptions(writeFile_popts);
 	writeFile_opts.SetTexturable(false);
@@ -302,10 +311,9 @@ SICALLBACK aaOceanMentalRay_oceanDataShader_2_5_Define(const CRef& in_ctxt)
 	oPPGLayout.EndGroup();
 
 	// RENDERERS
-	MetaShaderRendererDef rend = sdef.AddRendererDef(L"mental ray");
-	rend.PutSymbolName(L"aaOceanDataShader");
-	rend.PutCodePath(L"aaOceanMentalRay");
-	ValueMap ropts = rend.GetRendererOptions();
-	ropts.Set(L"version", CValue(1));
+	// Renderer definition
+	MetaShaderRendererDef rendererDef = sdef.AddRendererDef( "Mental Ray" );
+	rendererDef.PutSymbolName( "aaOceanDataShader" );
+	rendererDef.PutCodePath( "aaOceanDataShader" );
 	return CStatus::OK;
 }
