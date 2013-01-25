@@ -10,6 +10,11 @@
 #include <limits>
 #include <string>
 
+#ifdef WRITE_OPENEXR
+#include "openEXROutput.h"
+void writeOceanData(const AtNode* node, aaOcean *&pOcean);
+#endif /* WRITE_EXR */
+
 AI_SHADER_NODE_EXPORT_METHODS(aaOceanArnoldMethods);
 
 enum aaOceanArnoldParams
@@ -205,6 +210,10 @@ node_finish
 {
 	// retrieve ocean pointer from user-data
 	aaOcean *pOcean = (aaOcean *)AiNodeGetLocalData(node);
+	
+	#ifdef WRITE_OPENEXR
+	writeOceanData(node, pOcean);
+	#endif
 
 	// cleanup ocean
 	delete pOcean;
@@ -227,3 +236,40 @@ node_loader
    strcpy(node->version, AI_VERSION);
    return TRUE;
 }
+
+#ifdef WRITE_OPENEXR
+void writeOceanData(const AtNode* node, aaOcean *&pOcean)
+{
+	if(AiNodeGetBool(node, "writeFile"))
+	{
+		const char *outputFolder = AiNodeGetStr(node, "outputFolder");
+		if(!dirExists(outputFolder))
+			AiMsgWarning("[aaOcean] Invalid folder path: %s", outputFolder);
+		else
+		{
+			int dimension = (pOcean->getResolution() + 1);
+			int arraySize = dimension * dimension;
+
+			float *red, *green, *blue, *alpha = 0;
+			green = (float*) malloc(arraySize * sizeof(float));
+			if(pOcean->isChoppy())
+			{
+				red		= (float*) malloc(arraySize * sizeof(float));
+				blue	= (float*) malloc(arraySize * sizeof(float));
+				alpha	= (float*) malloc(arraySize * sizeof(float));
+
+				pOcean->getOceanArray(red, aaOcean::eCHOPX);
+				pOcean->getOceanArray(blue, aaOcean::eCHOPZ);
+				pOcean->getOceanArray(alpha, aaOcean::eFOAM);
+			}
+
+			const char* postfix = AiNodeGetStr(node, "postfix");
+			int frame = AiNodeGetInt(node, "currentFrame");
+			char outputFileName[255];
+			genFullFilePath(&outputFileName[0], &outputFolder[0], &postfix[0], frame);
+			writeExr(&outputFileName[0], dimension, red, green, blue, alpha);
+			AiMsgInfo("[aaOcean] Image written to %s", outputFileName);
+		}
+	}
+}
+#endif /* WRITE_EXR */
