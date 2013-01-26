@@ -75,7 +75,7 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
 
 	// convert to the local space of the user-specified transform matrix
 	miVector oceanLocalSpace;
-	mi_vector_transform(&oceanLocalSpace, &oceanWorldSpace, mi_eval_transform(&params->transform));
+	mi_vector_transform(&oceanLocalSpace, &oceanWorldSpace, (*os)->transform);
 
 	// return the result
 	result->r = oceanLocalSpace.x;
@@ -109,6 +109,14 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 		// and create a new ocean pointer for convenient syntax
 		(*os)->ocean = new aaOcean;
 		aaOcean *pOcean = (*os)->ocean;
+
+		if(!mi_matrix_isnull(mi_eval_transform(&params->transform)))
+			mi_matrix_copy((*os)->transform, mi_eval_transform(&params->transform));
+		else
+		{
+			mi_matrix_ident((*os)->transform);
+			mi_warning("[aaOcean Shader] Shader's Transform input is zero. Using Identity instead");	
+		}
 	
 		// retrieve user input for shader
 		pOcean->input(
