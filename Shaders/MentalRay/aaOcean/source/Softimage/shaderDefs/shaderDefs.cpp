@@ -4,6 +4,7 @@
 // aaOcean is free software and can be redistributed and modified under the terms of the 
 // GNU General Public License (Version 3) as provided by the Free Software Foundation.
 // GNU General Public License http://www.gnu.org/licenses/gpl.html
+#include <xsi_matrix4f.h>
 
 SICALLBACK aaOceanDataShader_aaOceanDataShader_1_0_DefineInfo( const CRef& in_ctxt )
 {
@@ -226,11 +227,15 @@ SICALLBACK aaOceanDataShader_aaOceanDataShader_1_0_Define( const CRef& in_ctxt )
 	inpdefs.AddParamDef(L"layerOcean", siShaderDataTypeScalar, layerOcean_popts);
 
 	// Input Parameter: Matrix
+	XSI::MATH::CMatrix4f mat;
+	mat = mat.SetIdentity();
+	int test = mat.GetValue(0,0);
 	ShaderParamDefOptions paramOptions;
 	paramOptions = fact.CreateShaderParamDefOptions();
 	paramOptions.SetLongName("transform");
 	paramOptions.SetAnimatable(true);
 	paramOptions.SetTexturable(true);
+	paramOptions.SetDefaultValue(CValue(mat));
 	paramOptions.SetInspectable(true);
 	inpdefs.AddParamDef( "transform", siShaderDataTypeMatrix44, paramOptions );	
 
@@ -291,6 +296,7 @@ SICALLBACK aaOceanDataShader_aaOceanDataShader_1_0_Define( const CRef& in_ctxt )
 	oPPGLayout.EndGroup();
 	oPPGLayout.AddGroup("Misc");
 		oPPGLayout.AddItem("fade");
+		oPPGLayout.AddItem("transform");
 	oPPGLayout.EndGroup();
 
 	oPPGLayout.AddTab("Foam Parameters");
