@@ -725,7 +725,6 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 
 	vCoord = fmod(vCoord, 1.0f);
 	uCoord = fmod(uCoord, 1.0f);
-
 	if(vCoord < 0.0f)
 		vCoord =  1.f + vCoord;
 	if(uCoord < 0.0f)
@@ -739,8 +738,6 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 	// prepare catmul-rom end points for interpolation
 	xMinus1 =	wrap(x - 1);
 	yMinus1 =	wrap(y - 1);
-	x =			wrap(x);
-	y =			wrap(y);
 	xPlus1 =	wrap(x + 1);
 	yPlus1 =	wrap(y + 1);
 	xPlus2 =	wrap(x + 2);
@@ -788,16 +785,15 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 inline float aaOcean::catmullRom(float t, float a, float b, float c, float d)
 {
 	return  0.5f * ( ( 2.0f * b ) + ( -a + c ) * t + 
-			( 2.0f * a - 5.0f * b + 4.0f * c - d ) * t*t + 
-			( -a + 3.0f * b - 3.0f * c + d )* t*t*t );
+			( 2.0f * a - 5.0f * b + 4.0f * c - d ) * t * t + 
+			( -a + 3.0f * b - 3.0f * c + d )* t * t * t );
 }
 
 inline int aaOcean::wrap(int x)
 {
-	if(x > m_resolution)
-		x = x % m_resolution;
-	else if(x < 0)
-		x = m_resolution + (x % m_resolution);
+	x = x % m_resolution;
+	if(x < 0)
+		x = m_resolution + x;
 	
 	return x;
 }
