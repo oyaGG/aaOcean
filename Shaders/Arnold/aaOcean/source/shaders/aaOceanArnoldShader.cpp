@@ -252,6 +252,8 @@ void writeOceanData(const AtNode* node, aaOcean *&pOcean)
 
 			float *red, *green, *blue, *alpha = 0;
 			green = (float*) malloc(arraySize * sizeof(float));
+			pOcean->getOceanArray(green, aaOcean::eHEIGHTFIELD);
+
 			if(pOcean->isChoppy())
 			{
 				red		= (float*) malloc(arraySize * sizeof(float));
