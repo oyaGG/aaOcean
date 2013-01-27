@@ -226,7 +226,7 @@ void writeOceanData(aaOceanDataShader_t *&params, miState *&state, aaOcean *&pOc
 			mi_error("[aaOcean] Invalid folder path: %s", outputFolder);
 		else
 		{
-			int dimension = (pOcean->getResolution() + 1);
+			int dimension = pOcean->getResolution();
 			int arraySize = dimension * dimension;
 
 			float *red, *green, *blue, *alpha = 0;
