@@ -723,14 +723,13 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 	float u, v, du, dv = 0;
 	int xMinus1, yMinus1, x, y, xPlus1, yPlus1, xPlus2, yPlus2;
 
-	if(vCoord > 1.0f)
-		vCoord = vCoord - floor(vCoord);
-	if(uCoord > 1.0f)
-		uCoord = uCoord - floor(uCoord);
+	vCoord = fmod(vCoord, 1.0f);
+	uCoord = fmod(uCoord, 1.0f);
+
 	if(vCoord < 0.0f)
-		vCoord = vCoord - floor(vCoord);
+		vCoord =  1.f + vCoord;
 	if(uCoord < 0.0f)
-		uCoord = uCoord- floor(uCoord);
+		uCoord = 1.f + uCoord;
 
 	u = vCoord * float(m_resolution);
 	v = uCoord * float(m_resolution);
@@ -796,9 +795,9 @@ inline float aaOcean::catmullRom(float t, float a, float b, float c, float d)
 inline int aaOcean::wrap(int x)
 {
 	if(x > m_resolution)
-		x = x % (m_resolution + 1);
+		x = x % m_resolution;
 	else if(x < 0)
-		x = (m_resolution + 1) + x % (m_resolution + 1);
+		x = m_resolution + (x % m_resolution);
 	
 	return x;
 }
