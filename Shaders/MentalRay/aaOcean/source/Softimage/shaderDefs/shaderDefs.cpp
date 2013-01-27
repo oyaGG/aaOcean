@@ -229,7 +229,6 @@ SICALLBACK aaOceanDataShader_aaOceanDataShader_1_0_Define( const CRef& in_ctxt )
 	// Input Parameter: Matrix
 	XSI::MATH::CMatrix4f mat;
 	mat = mat.SetIdentity();
-	int test = mat.GetValue(0,0);
 	ShaderParamDefOptions paramOptions;
 	paramOptions = fact.CreateShaderParamDefOptions();
 	paramOptions.SetLongName("transform");
