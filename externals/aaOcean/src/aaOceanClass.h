@@ -131,8 +131,6 @@ private:
 	inline float catmullRom(float t, float a, float b, float c, float d);
 	inline int wrap(int x);
 
-	void makeTileable(fftwf_complex *&fft_array);
-
 	fftwf_complex* getArrayType(aaOcean::arrayType type);
 };
 

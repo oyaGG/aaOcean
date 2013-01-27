@@ -226,26 +226,15 @@ void aaOcean::prepareOcean()
 		evaluateHokData();
 
 	evaluateHieghtField();
-	makeTileable(m_fft_htField); 
 
 	if(m_doChop)
-	{
 		evaluateChopField();
-		makeTileable(m_fft_chopX); 
-        makeTileable(m_fft_chopZ);
-	}
 
 	if(m_doFoam)
 	{
 		if(!m_isFoamAllocated)
 			allocateFoamArrays();
 		evaluateJacobians();
-		
-		makeTileable(m_fft_jxx); 
-		makeTileable(m_fft_jxxZComponent);
-		makeTileable(m_fft_jzz);
-		makeTileable(m_fft_jzzZComponent);
-		makeTileable(m_fft_jxz); 
 	}
 }
 
@@ -277,8 +266,6 @@ void aaOcean::allocateBaseArrays()
 	else
 		fftwf_plan_with_nthreads(1);
 
-	size = (m_resolution + 1) * (m_resolution + 1);
-
 	m_fft_htField	= (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex));
 	m_fft_chopX		= (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex));  
 	m_fft_chopZ		= (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
@@ -291,7 +278,7 @@ void aaOcean::allocateBaseArrays()
 
  void aaOcean::allocateFoamArrays()
 {
-	int size = (m_resolution + 1) * (m_resolution + 1);
+	int size = m_resolution * m_resolution;
 
 	m_fft_jxx			= (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex));
 	m_fft_jxxZComponent = (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
@@ -675,7 +662,7 @@ void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax)
 
 	int i, j, n, index, idx;
 	n = m_resolution;
-	idx = 1;
+	idx = 0;
 	//if fft_array has been copied and tiled, set idx = 1, else 0
 	for(i = 0; i< n; i++)
 	{
@@ -694,13 +681,12 @@ void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax)
 void aaOcean::getOceanArray(float *&outArray, aaOcean::arrayType type)
 {
 	fftwf_complex *arrayPointer = getArrayType(type);
-	const int arrayIndex = 1;
-	const int arraySize = (m_resolution + 1) * (m_resolution + 1);
+	const int arraySize = m_resolution * m_resolution;
 
 	#pragma omp parallel for 
 	for(int i = 0; i < arraySize; ++i)
 	{
-		outArray[i] = arrayPointer[i][arrayIndex];
+		outArray[i] = arrayPointer[i][0];
 	}
 }
 
@@ -716,8 +702,8 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 
 	// declare pointer to array we want to fetch data from, and the indexer into the array
 	fftwf_complex *arrayPointer = getArrayType(type);
-	const int arrayIndex = 1;
-	const int arraySizePlusOne = m_resolution + 1;
+	const int arrayIndex = 0;
+	const int arraySizePlusOne = m_resolution;
 	
 	// prepare for indexing into the array and wrapping
 	float u, v, du, dv = 0;
@@ -746,37 +732,37 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 	du = u - x; 
 	dv = v - y;	
 
-	const int pMinus1	= xMinus1 * arraySizePlusOne;
-	const int pZero		= x		  * arraySizePlusOne;
-	const int pOne		= xPlus1  * arraySizePlusOne;
-	const int pTwo		= xPlus2  * arraySizePlusOne;
+	const int pMinus1	= xMinus1 * m_resolution;
+	const int pZero		= x		  * m_resolution;
+	const int pOne		= xPlus1  * m_resolution;
+	const int pTwo		= xPlus2  * m_resolution;
 
 	float a1 = catmullRom(	du, 
-							arrayPointer[pMinus1	+ yMinus1][arrayIndex],
-							arrayPointer[pZero		+ yMinus1][arrayIndex],
-							arrayPointer[pOne		+ yMinus1][arrayIndex],
-							arrayPointer[pTwo		+ yMinus1][arrayIndex] 
+							arrayPointer[pMinus1	+ yMinus1][0],
+							arrayPointer[pZero		+ yMinus1][0],
+							arrayPointer[pOne		+ yMinus1][0],
+							arrayPointer[pTwo		+ yMinus1][0] 
 							);
 
 	float b1 = catmullRom(	du, 
-							arrayPointer[pMinus1	+	y][arrayIndex],
-							arrayPointer[pZero		+	y][arrayIndex],
-							arrayPointer[pOne		+	y][arrayIndex],
-							arrayPointer[pTwo		+	y][arrayIndex]
+							arrayPointer[pMinus1	+	y][0],
+							arrayPointer[pZero		+	y][0],
+							arrayPointer[pOne		+	y][0],
+							arrayPointer[pTwo		+	y][0]
 							);
 
 	float c1 = catmullRom(	du, 
-							arrayPointer[pMinus1	+ yPlus1][arrayIndex],
-							arrayPointer[pZero		+ yPlus1][arrayIndex],
-							arrayPointer[pOne		+ yPlus1][arrayIndex],
-							arrayPointer[pTwo		+ yPlus1][arrayIndex] 
+							arrayPointer[pMinus1	+ yPlus1][0],
+							arrayPointer[pZero		+ yPlus1][0],
+							arrayPointer[pOne		+ yPlus1][0],
+							arrayPointer[pTwo		+ yPlus1][0] 
 							);
 
 	float d1 = catmullRom(	du, 
-							arrayPointer[pMinus1	+ yPlus2][arrayIndex],
-							arrayPointer[pZero		+ yPlus2][arrayIndex],
-							arrayPointer[pOne		+ yPlus2][arrayIndex],
-							arrayPointer[pTwo		+ yPlus2][arrayIndex]
+							arrayPointer[pMinus1	+ yPlus2][0],
+							arrayPointer[pZero		+ yPlus2][0],
+							arrayPointer[pOne		+ yPlus2][0],
+							arrayPointer[pTwo		+ yPlus2][0]
 							);
 
 	return catmullRom(dv,a1,b1,c1,d1);
@@ -796,41 +782,6 @@ inline int aaOcean::wrap(int x)
 		x = m_resolution + x;
 	
 	return x;
-}
-
-void aaOcean::makeTileable(fftwf_complex *&fft_array)
-{
-	int n = m_resolution;
-    int n1 = n + 1;
-    int index, i, j;
-        
-    #pragma omp parallel for private(index,i,j)
-    for(i = 0; i< n1; i++)
-    {                                       
-            for(j = 0; j< n1; j++)
-            {
-                    index = i*n1 + j;
-                    if( i<n && j<n) // regular array copy -- what a waste of resources
-                    {
-                            fft_array[index][1] = fft_array[i*n+j][0];
-                    }
-                    else
-                    {
-                            if(i==n)  //copy left-most col to right-most col
-                            {
-                                    fft_array[index][1] = fft_array[j][0];
-                            }
-                            if(j==n) // copy top row to bottom row
-                            {
-                                    fft_array[index][1] = fft_array[i*n][0];
-                            }
-                            if(i==n && j==n) // copy top-left corner to bottom-left
-                            {
-                                    fft_array[index][1] = fft_array[0][0];
-                            }
-                    }
-            }
-    }
 }
 
 fftwf_complex* aaOcean::getArrayType(aaOcean::arrayType type)
