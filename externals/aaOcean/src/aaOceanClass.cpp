@@ -30,6 +30,7 @@
 #include "agnerFog/stoc1.cpp"
 #include "agnerFog/userintf.cpp"
 #include "aaOceanClass.h"
+#include "vectorSSE.h"
 
 aaOcean::aaOcean() :
 	// input variables
@@ -682,9 +683,64 @@ void aaOcean::evaluateJacobians()
 
 void aaOcean::evaluateNormal()
 {
-	// TODO:
-	// do 4 fwd differences
-	// do a cross product for each and average teh normals
+	int index;
+	int n = m_resolution;
+
+	#pragma omp parallel for private(index)
+	for(int i = 0; i < n; ++i)
+	{
+		// position vectors to surrounding points
+		vector3 vCurrent, vNorth, vSouth, vEast, vWest, norm1, norm2, norm3, norm4;
+		for(int j = 0; j < n; ++j)
+		{
+			// building vectors
+			index = ((i+1) * n) + j;
+			index = wrap(index);
+			vNorth.x = m_xCoord[index] + m_fft_chopX[index][0];
+			vNorth.y = m_fft_htField[index][0];
+			vNorth.z = m_zCoord[index] + m_fft_chopZ[index][0];
+
+			index = ((i-1) * n) + j;
+			index = wrap(index);
+			vSouth.x = m_xCoord[index] + m_fft_chopX[index][0];
+			vSouth.y = m_fft_htField[index][0];
+			vSouth.z = m_zCoord[index] + m_fft_chopZ[index][0];
+
+			index = (i * n) + j + 1;
+			index = wrap(index);
+			vEast.x = m_xCoord[index] + m_fft_chopX[index][0];
+			vEast.y = m_fft_htField[index][0];
+			vEast.z = m_zCoord[index] + m_fft_chopZ[index][0];
+
+			index = (i * n) + j - 1;
+			index = wrap(index);
+			vWest.x = m_xCoord[index] + m_fft_chopX[index][0];
+			vWest.y = m_fft_htField[index][0];
+			vWest.z = m_zCoord[index] + m_fft_chopZ[index][0];
+
+			index = (i * n) + j;
+			vCurrent.x = m_xCoord[index] + m_fft_chopX[index][0];
+			vCurrent.y = m_fft_htField[index][0];
+			vCurrent.z = m_zCoord[index] + m_fft_chopZ[index][0];
+
+			vNorth	= vNorth - vCurrent;
+			vSouth	= vSouth - vCurrent;
+			vEast	= vEast - vCurrent; 
+			vWest	= vWest - vCurrent;
+
+			norm1 = vEast.cross(vNorth);
+			norm2 = vWest.cross(vSouth);
+			norm3 = vSouth.cross(vEast);
+			norm4 = vNorth.cross(vWest);
+
+			vector3 normal = (norm1.normalize() + norm2.normalize() + norm3.normalize() + norm4.normalize()) * 0.25f;
+			normal = normal.normalize();
+
+			m_normalsX[index] = normal.x;
+			m_normalsY[index] = normal.y;
+			m_normalsZ[index] = normal.z;
+		}
+	}
 }
 
 void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax)
