@@ -42,7 +42,7 @@ public:
 				float 	chopAmount,
 				float 	time,
 				bool	doFoam,
-				bool    powTwoConversion);
+				bool	doNormals);
 
 	float getOceanData(float uCoord, float vCoord, aaOcean::arrayType type, bool rotateUV) const;
 	void getOceanArray(float *&outArray, aaOcean::arrayType type);
@@ -82,15 +82,20 @@ private:
 	float	*m_omega;
 	float	*m_rand1;
 	float	*m_rand2;
+	float	*m_normalsX;
+	float	*m_normalsY;
+	float	*m_normalsZ;
 
 	//bool types for various checks during run-time
 	bool	m_isAllocated;
 	bool	m_isValid;
 	bool	m_isFoamAllocated;
+	bool	m_isNormalAllocated;
 	bool	m_doHoK;
 	bool	m_doSetup;
 	bool	m_doChop;
 	bool	m_doFoam;
+	bool	m_doNormals;
 
 	fftwf_complex *m_fft_htField;
 	fftwf_complex *m_fft_chopX;
@@ -113,6 +118,7 @@ private:
 	// memory management functions
 	void allocateBaseArrays();
 	void allocateFoamArrays();
+	void allocateNormalArrays();
 	void clearArrays();
 	
 	// initialization functions
@@ -126,6 +132,7 @@ private:
 	void evaluateHieghtField();
 	void evaluateChopField();
 	void evaluateJacobians();
+	void evaluateNormal();
 	
 	// interpolation functions
 	inline float catmullRom(const float t, const float a, const float b, const float c, const float d) const;

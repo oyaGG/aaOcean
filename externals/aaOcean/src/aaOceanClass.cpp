@@ -60,15 +60,20 @@ aaOcean::aaOcean() :
 	m_omega(0),
 	m_rand1(0),
 	m_rand2(0),
+	m_normalsX(0),
+	m_normalsY(0),
+	m_normalsZ(0),
 
 	// bools to check ocean state
 	m_isAllocated(0),
 	m_isValid(0),
 	m_isFoamAllocated(0),
+	m_isNormalAllocated(0),
 	m_doHoK(0),
 	m_doSetup(0),
 	m_doChop(0),
 	m_doFoam(0),
+	m_doNormals(0),
 	
 	// fftw arrays
 	m_fft_htField(0),
@@ -109,13 +114,12 @@ aaOcean::~aaOcean()
 
 void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity, 
 					float cutoff, float windDir, int windAlign, float damp, float waveSpeed, 
-					float waveHeight, float chopAmount, float time, bool doFoam, bool powTwoConversion = 1)
+					float waveHeight, float chopAmount, float time, bool doFoam, bool doNormals)
 {
 	m_isValid = FALSE;
 
 	// forcing to be power of two, setting minimum resolution of 4
-	if(powTwoConversion)
-		resolution	= (int)pow(2.0f, (4 + abs(resolution))); 
+	resolution	= (int)pow(2.0f, (4 + abs(resolution))); 
 	// clamping to minimum value
 	oceanScale	= maximum<float>(oceanScale, 0.00001f);	
 	velocity	= maximum<float>(((velocity  * velocity) / aa_GRAVITY), 0.00001f); 
@@ -136,6 +140,7 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 	m_waveSpeed		= waveSpeed;
 	m_waveHeight	= waveHeight;
 	m_doFoam		= doFoam;
+	m_doNormals		= doNormals;
 
 	if(chopAmount > 0.000001f)
 	{
@@ -292,6 +297,20 @@ void aaOcean::allocateBaseArrays()
 	m_isFoamAllocated = TRUE;
 }
 
+void aaOcean::allocateNormalArrays()
+{
+	if(m_isAllocated) 
+		clearArrays();
+
+	int size = m_resolution * m_resolution;
+
+	m_normalsX	= (float*) aligned_malloc(size * sizeof(float)); 
+	m_normalsY	= (float*) aligned_malloc(size * sizeof(float)); 
+	m_normalsZ	= (float*) aligned_malloc(size * sizeof(float)); 
+
+	m_isNormalAllocated = TRUE;
+}
+
 void aaOcean::clearResidualArrays()
 {
 	if(m_rand2)
@@ -355,6 +374,12 @@ void aaOcean::clearArrays()
 {
 	if(m_isAllocated)
 	{
+		if(m_isNormalAllocated)
+		{
+			aligned_free(m_normalsX);
+			aligned_free(m_normalsY);
+			aligned_free(m_normalsZ);
+		}
 		if(m_isFoamAllocated)
 		{
 			if(m_fft_jxx)
@@ -653,6 +678,13 @@ void aaOcean::evaluateJacobians()
 		//m_fft_jxz[index][0] =   (Jxx * Jzz) - (Jxz * Jxz); //original jacobian.
 		m_fft_jxz[index][0] =   (Jxz * Jxz) - (Jxx * Jzz) + 1.0f; // invert hack
 	}
+}
+
+void aaOcean::evaluateNormal()
+{
+	// TODO:
+	// do 4 fwd differences
+	// do a cross product for each and average teh normals
 }
 
 void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax)
