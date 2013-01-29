@@ -44,7 +44,7 @@ public:
 				bool	doFoam,
 				bool    powTwoConversion);
 
-	float getOceanData(float uCoord, float vCoord, aaOcean::arrayType type, bool rotateUV);
+	float getOceanData(float uCoord, float vCoord, aaOcean::arrayType type, bool rotateUV) const;
 	void getOceanArray(float *&outArray, aaOcean::arrayType type);
 	void clearResidualArrays();
 
@@ -128,10 +128,10 @@ private:
 	void evaluateJacobians();
 	
 	// interpolation functions
-	inline float catmullRom(float t, float a, float b, float c, float d);
-	inline int wrap(int x);
+	inline float catmullRom(const float t, const float a, const float b, const float c, const float d) const;
+	inline int wrap(int x) const;
 
-	fftwf_complex* getArrayType(aaOcean::arrayType type);
+	fftwf_complex* getArrayType(aaOcean::arrayType type) const;
 };
 
 #endif  /* AAOCEANCLASS_H */

@@ -690,7 +690,7 @@ void aaOcean::getOceanArray(float *&outArray, aaOcean::arrayType type)
 	}
 }
 
-float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type, bool rotateUV = 1)
+float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type, bool rotateUV = 1) const
 {
 	// rotate UVs by 90 degrees if requested
 	if(rotateUV)
@@ -700,91 +700,87 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 		vCoord = originalU;
 	}
 
-	// declare pointer to array we want to fetch data from, and the indexer into the array
-	fftwf_complex *arrayPointer = getArrayType(type);
-	const int arrayIndex = 0;
-	const int arraySizePlusOne = m_resolution;
-	
-	// prepare for indexing into the array and wrapping
 	float u, v, du, dv = 0;
 	int xMinus1, yMinus1, x, y, xPlus1, yPlus1, xPlus2, yPlus2;
+
+	fftwf_complex *arrayPointer = getArrayType(type);
 
 	vCoord = fmod(vCoord, 1.0f);
 	uCoord = fmod(uCoord, 1.0f);
 	if(vCoord < 0.0f)
-		vCoord =  1.f + vCoord;
+		vCoord =  1.0f + vCoord;
 	if(uCoord < 0.0f)
-		uCoord = 1.f + uCoord;
+		uCoord = 1.0f + uCoord;
 
+	// uv swap
 	u = vCoord * float(m_resolution);
 	v = uCoord * float(m_resolution);
 	x = (int)floor(u);
 	y = (int)floor(v);
-
-	// prepare catmul-rom end points for interpolation
-	xMinus1 =	wrap(x - 1);
-	yMinus1 =	wrap(y - 1);
-	xPlus1 =	wrap(x + 1);
-	yPlus1 =	wrap(y + 1);
-	xPlus2 =	wrap(x + 2);
-	yPlus2 =	wrap(y + 2);
-
 	du = u - x; 
 	dv = v - y;	
 
-	const int pMinus1	= xMinus1 * m_resolution;
-	const int pZero		= x		  * m_resolution;
-	const int pOne		= xPlus1  * m_resolution;
-	const int pTwo		= xPlus2  * m_resolution;
+	// prepare catmul-rom end points for interpolation
+	xMinus1 = wrap(x - 1) * m_resolution;
+	xPlus1	= wrap(x + 1) * m_resolution;
+	xPlus2	= wrap(x + 2) * m_resolution;
+	x *= m_resolution;
 
-	float a1 = catmullRom(	du, 
-							arrayPointer[pMinus1	+ yMinus1][0],
-							arrayPointer[pZero		+ yMinus1][0],
-							arrayPointer[pOne		+ yMinus1][0],
-							arrayPointer[pTwo		+ yMinus1][0] 
+	yMinus1 = wrap(y - 1);
+	yPlus1 =  wrap(y + 1);
+	yPlus2 =  wrap(y + 2);
+	
+	const float a1 = catmullRom(du, 
+							arrayPointer[xMinus1	+ yMinus1][0],
+							arrayPointer[x			+ yMinus1][0],
+							arrayPointer[xPlus1		+ yMinus1][0],
+							arrayPointer[xPlus2		+ yMinus1][0] 
 							);
 
-	float b1 = catmullRom(	du, 
-							arrayPointer[pMinus1	+	y][0],
-							arrayPointer[pZero		+	y][0],
-							arrayPointer[pOne		+	y][0],
-							arrayPointer[pTwo		+	y][0]
+	const float b1 = catmullRom(du, 
+							arrayPointer[xMinus1	+	y][0],
+							arrayPointer[x			+	y][0],
+							arrayPointer[xPlus1		+	y][0],
+							arrayPointer[xPlus2		+	y][0]
 							);
 
-	float c1 = catmullRom(	du, 
-							arrayPointer[pMinus1	+ yPlus1][0],
-							arrayPointer[pZero		+ yPlus1][0],
-							arrayPointer[pOne		+ yPlus1][0],
-							arrayPointer[pTwo		+ yPlus1][0] 
+	const float c1 = catmullRom(du, 
+							arrayPointer[xMinus1	+ yPlus1][0],
+							arrayPointer[x			+ yPlus1][0],
+							arrayPointer[xPlus1		+ yPlus1][0],
+							arrayPointer[xPlus2		+ yPlus1][0] 
 							);
 
-	float d1 = catmullRom(	du, 
-							arrayPointer[pMinus1	+ yPlus2][0],
-							arrayPointer[pZero		+ yPlus2][0],
-							arrayPointer[pOne		+ yPlus2][0],
-							arrayPointer[pTwo		+ yPlus2][0]
+	const float d1 = catmullRom(du, 
+							arrayPointer[xMinus1	+ yPlus2][0],
+							arrayPointer[x			+ yPlus2][0],
+							arrayPointer[xPlus1		+ yPlus2][0],
+							arrayPointer[xPlus2		+ yPlus2][0]
 							);
 
-	return catmullRom(dv,a1,b1,c1,d1);
+	return catmullRom(dv, a1, b1, c1, d1);
 }
 
-inline float aaOcean::catmullRom(float t, float a, float b, float c, float d)
+inline float aaOcean::catmullRom(const float t, const float a, const float b, const float c, const float d) const
 {
 	return  0.5f * ( ( 2.0f * b ) + ( -a + c ) * t + 
 			( 2.0f * a - 5.0f * b + 4.0f * c - d ) * t * t + 
 			( -a + 3.0f * b - 3.0f * c + d )* t * t * t );
 }
 
-inline int aaOcean::wrap(int x)
+inline int aaOcean::wrap(int x) const
 {
-	x = x % m_resolution;
+	if(x > 0 && x < m_resolution)
+		return x;
+
+	x = x & (m_resolution - 1);
 	if(x < 0)
 		x = m_resolution + x;
 	
 	return x;
 }
 
-fftwf_complex* aaOcean::getArrayType(aaOcean::arrayType type)
+fftwf_complex* aaOcean::getArrayType(aaOcean::arrayType type) const
 {
 	fftwf_complex *arrayPointer = 0;
 
