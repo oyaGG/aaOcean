@@ -98,7 +98,8 @@ node_update
 		params[p_waveHeight].FLT,
 		params[p_chopAmount].FLT,
 		params[p_time].FLT,
-		TRUE);
+		TRUE,
+		FALSE);
 
 	if(!pOcean->isValid())
 	{
