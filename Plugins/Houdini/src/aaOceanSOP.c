@@ -167,7 +167,8 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
 					WAVEHEIGHT(now),
 					CHOP(now), 
 					now,
-					enableEigens);
+					enableEigens,
+					FALSE);
 
     if(pOcean->isValid() == FALSE)
     {
