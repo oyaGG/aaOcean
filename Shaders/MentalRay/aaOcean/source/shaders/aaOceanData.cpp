@@ -132,7 +132,8 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 		*mi_eval_scalar (&params->waveHeight),
 		*mi_eval_scalar (&params->chopAmount), 
 		*mi_eval_scalar (&params->time),
-		miTRUE);
+		miTRUE,
+		miFALSE);
 
 		// get the tag of the currently running shader so that we can call its name
 		miTag shaderInst; 
