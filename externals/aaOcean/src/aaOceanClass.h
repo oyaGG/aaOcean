@@ -138,7 +138,7 @@ private:
 	inline float catmullRom(const float t, const float a, const float b, const float c, const float d) const;
 	inline int wrap(int x) const;
 
-	fftwf_complex* getArrayType(aaOcean::arrayType type) const;
+	void getArrayType(aaOcean::arrayType type, fftwf_complex*& outArray, int &arrayIndex) const;
 };
 
 #endif  /* AAOCEANCLASS_H */

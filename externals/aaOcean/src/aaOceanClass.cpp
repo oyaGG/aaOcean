@@ -768,13 +768,15 @@ void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax)
 
 void aaOcean::getOceanArray(float *&outArray, aaOcean::arrayType type)
 {
-	fftwf_complex *arrayPointer = getArrayType(type);
+	fftwf_complex *arrayPointer;
+	int arrayIndex;
+	getArrayType(type, arrayPointer, arrayIndex);
 	const int arraySize = m_resolution * m_resolution;
 
 	#pragma omp parallel for 
 	for(int i = 0; i < arraySize; ++i)
 	{
-		outArray[i] = arrayPointer[i][0];
+		outArray[i] = arrayPointer[i][arrayIndex];
 	}
 }
 
@@ -790,8 +792,8 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 
 	float u, v, du, dv = 0;
 	int xMinus1, yMinus1, x, y, xPlus1, yPlus1, xPlus2, yPlus2;
-
-	fftwf_complex *arrayPointer = getArrayType(type);
+	fftwf_complex *arrayPointer;
+	int arrayIndex;
 
 	vCoord = fmod(vCoord, 1.0f);
 	uCoord = fmod(uCoord, 1.0f);
@@ -818,33 +820,31 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type,
 	yPlus1 =  wrap(y + 1);
 	yPlus2 =  wrap(y + 2);
 	
+	getArrayType(type, arrayPointer, arrayIndex);
+
 	const float a1 = catmullRom(du, 
-							arrayPointer[xMinus1	+ yMinus1][0],
-							arrayPointer[x			+ yMinus1][0],
-							arrayPointer[xPlus1		+ yMinus1][0],
-							arrayPointer[xPlus2		+ yMinus1][0] 
-							);
+							arrayPointer[xMinus1	+ yMinus1][arrayIndex],
+							arrayPointer[x			+ yMinus1][arrayIndex],
+							arrayPointer[xPlus1		+ yMinus1][arrayIndex],
+							arrayPointer[xPlus2		+ yMinus1][arrayIndex]);
 
 	const float b1 = catmullRom(du, 
-							arrayPointer[xMinus1	+	y][0],
-							arrayPointer[x			+	y][0],
-							arrayPointer[xPlus1		+	y][0],
-							arrayPointer[xPlus2		+	y][0]
-							);
+							arrayPointer[xMinus1	+	y][arrayIndex],
+							arrayPointer[x			+	y][arrayIndex],
+							arrayPointer[xPlus1		+	y][arrayIndex],
+							arrayPointer[xPlus2		+	y][arrayIndex]);
 
 	const float c1 = catmullRom(du, 
-							arrayPointer[xMinus1	+ yPlus1][0],
-							arrayPointer[x			+ yPlus1][0],
-							arrayPointer[xPlus1		+ yPlus1][0],
-							arrayPointer[xPlus2		+ yPlus1][0] 
-							);
+							arrayPointer[xMinus1	+ yPlus1][arrayIndex],
+							arrayPointer[x			+ yPlus1][arrayIndex],
+							arrayPointer[xPlus1		+ yPlus1][arrayIndex],
+							arrayPointer[xPlus2		+ yPlus1][arrayIndex]);
 
 	const float d1 = catmullRom(du, 
-							arrayPointer[xMinus1	+ yPlus2][0],
-							arrayPointer[x			+ yPlus2][0],
-							arrayPointer[xPlus1		+ yPlus2][0],
-							arrayPointer[xPlus2		+ yPlus2][0]
-							);
+							arrayPointer[xMinus1	+ yPlus2][arrayIndex],
+							arrayPointer[x			+ yPlus2][arrayIndex],
+							arrayPointer[xPlus1		+ yPlus2][arrayIndex],
+							arrayPointer[xPlus2		+ yPlus2][arrayIndex]);
 
 	return catmullRom(dv, a1, b1, c1, d1);
 }
@@ -868,28 +868,25 @@ inline int aaOcean::wrap(int x) const
 	return x;
 }
 
-fftwf_complex* aaOcean::getArrayType(aaOcean::arrayType type) const
+void aaOcean::getArrayType(aaOcean::arrayType type, fftwf_complex*& outArray, int &arrayIndex) const
 {
-	fftwf_complex *arrayPointer = 0;
-
 	// set pointer to the array that we need to interpolate data from
+	arrayIndex = 0;
 	if(type == eHEIGHTFIELD)
-		arrayPointer = m_fft_htField;
+		outArray = m_fft_htField;
 	else if(type == eCHOPX)
-		arrayPointer = m_fft_chopX;
+		outArray = m_fft_chopX;
 	else if(type == eCHOPZ)
-		arrayPointer = m_fft_chopZ;
+		outArray = m_fft_chopZ;
 	else if(type == eFOAM)
-		arrayPointer = m_fft_jxz;
+		outArray = m_fft_jxz;
 	else if(type == eEIGENPLUSX)
-		arrayPointer = m_fft_jxx;
+		outArray = m_fft_jxx;
 	else if(type == eEIGENPLUSZ)	
-		arrayPointer = m_fft_jxxZComponent;
+		outArray = m_fft_jxxZComponent;
 	else if(type == eEIGENMINUSX)
-		arrayPointer = m_fft_jzz;
+		outArray = m_fft_jzz;
 	else if(type == eEIGENMINUSZ)
-		arrayPointer = m_fft_jzzZComponent;
-
-	return arrayPointer;
+		outArray = m_fft_jzzZComponent;
 }
 #endif  /* AAOCEANCLASS_CPP */
