@@ -94,7 +94,8 @@ SICALLBACK aaOcean_BeginEvaluate( ICENodeContext& in_ctxt )
 		waveHeight[0],
 		chop[0], 
 		time[0],
-		enableFoam[0]);
+		enableFoam[0],
+		FALSE);
 
 	return CStatus::OK;
 }
