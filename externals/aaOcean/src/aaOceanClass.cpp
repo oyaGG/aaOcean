@@ -61,9 +61,6 @@ aaOcean::aaOcean() :
 	m_omega(0),
 	m_rand1(0),
 	m_rand2(0),
-	m_normalsX(0),
-	m_normalsY(0),
-	m_normalsZ(0),
 
 	// bools to check ocean state
 	m_isAllocated(0),
@@ -81,10 +78,10 @@ aaOcean::aaOcean() :
 	m_fft_chopX(0),
 	m_fft_chopZ(0),
 	m_fft_jxx(0),
-	m_fft_jxxZComponent(0),
 	m_fft_jzz(0),
-	m_fft_jzzZComponent(0),
-	m_fft_jxz(0)
+	m_fft_jxz(0),
+	m_normalsXY(0),
+	m_normalsZ(0)
 {
 	strcpy (m_state, "[aaOcean Core] Default initialized value");
 }
@@ -287,9 +284,7 @@ void aaOcean::allocateBaseArrays()
 	int size = m_resolution * m_resolution;
 
 	m_fft_jxx			= (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex));
-	m_fft_jxxZComponent = (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
 	m_fft_jzz			= (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
-	m_fft_jzzZComponent = (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
 	m_fft_jxz			= (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex)); 
 
 	m_planJxx = fftwf_plan_dft_2d(m_resolution, m_resolution, m_fft_jxx, m_fft_jxx, 1, FFTW_ESTIMATE);
@@ -300,14 +295,10 @@ void aaOcean::allocateBaseArrays()
 
 void aaOcean::allocateNormalArrays()
 {
-	if(m_isAllocated) 
-		clearArrays();
-
 	int size = m_resolution * m_resolution;
 
-	m_normalsX	= (float*) aligned_malloc(size * sizeof(float)); 
-	m_normalsY	= (float*) aligned_malloc(size * sizeof(float)); 
-	m_normalsZ	= (float*) aligned_malloc(size * sizeof(float)); 
+	m_normalsXY = (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex));
+	m_normalsZ  = (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex));
 
 	m_isNormalAllocated = TRUE;
 }
@@ -377,9 +368,10 @@ void aaOcean::clearArrays()
 	{
 		if(m_isNormalAllocated)
 		{
-			aligned_free(m_normalsX);
-			aligned_free(m_normalsY);
-			aligned_free(m_normalsZ);
+			fftwf_free(m_normalsXY);
+			fftwf_free(m_normalsZ);
+			m_normalsXY = m_normalsZ = FALSE;
+			m_isNormalAllocated = FALSE;
 		}
 		if(m_isFoamAllocated)
 		{
@@ -387,15 +379,13 @@ void aaOcean::clearArrays()
 			{
 				fftwf_destroy_plan(m_planJxx);
 				fftwf_free(m_fft_jxx); 
-				fftwf_free(m_fft_jxxZComponent);
-				m_fft_jxxZComponent = m_fft_jxx = FALSE;
+				m_fft_jxx = FALSE;
 			}
 			if(m_fft_jzz)
 			{
 				fftwf_destroy_plan(m_planJzz);
 				fftwf_free(m_fft_jzz);  
-				fftwf_free(m_fft_jzzZComponent);
-				m_fft_jxxZComponent = m_fft_jzz = FALSE;
+				m_fft_jzz = FALSE;
 			}
 			if(m_fft_jxz)
 			{
@@ -668,12 +658,12 @@ void aaOcean::evaluateJacobians()
 		qMinus	= (jMinus - Jxx) / Jxz;
 
 		temp = sqrt( 1.0f + qPlus * qPlus);
-		m_fft_jxx[index][0]				= 1.0f  / temp;
-		m_fft_jxxZComponent[index][0]	= qPlus / temp;
+		m_fft_jxx[index][0]	= 1.0f  / temp;
+		m_fft_jxx[index][1]	= qPlus / temp;
 
 		temp = sqrt( 1.0f + qMinus * qMinus);
-		m_fft_jzz[index][0]				= 1.0f   / temp;
-		m_fft_jzzZComponent[index][0]	= qMinus / temp;
+		m_fft_jzz[index][0]	= 1.0f   / temp;
+		m_fft_jzz[index][1]	= qMinus / temp;
 
 		//store foam back in this array for convenience
 		//m_fft_jxz[index][0] =   (Jxx * Jzz) - (Jxz * Jxz); //original jacobian.
@@ -686,42 +676,88 @@ void aaOcean::evaluateNormal()
 	int index;
 	int n = m_resolution;
 
+	const int halfRes = n/2;	
+
 	#pragma omp parallel for private(index)
 	for(int i = 0; i < n; ++i)
 	{
 		// position vectors to surrounding points
 		vector3 vCurrent, vNorth, vSouth, vEast, vWest, norm1, norm2, norm3, norm4;
+		int ii, jj, xCoord, zCoord;
+		float cX, cZ;
 		for(int j = 0; j < n; ++j)
 		{
-			// building vectors
-			index = ((i+1) * n) + j;
-			index = wrap(index);
-			vNorth.x = m_xCoord[index] + m_fft_chopX[index][0];
+			xCoord = i - n;
+			zCoord = n - (n - j) + 1;
+
+			if(isChoppy())
+			{
+				ii = wrap(i+1);
+				index = (ii * n) + j;;
+				cX = m_fft_chopX[index][0];
+				cZ = m_fft_chopZ[index][0];
+			}
+			else
+				cX = cZ = 0.0f;
+
+			ii = wrap(i+1);
+			index = (ii * n) + j;
+			vNorth.x = xCoord + cX;
 			vNorth.y = m_fft_htField[index][0];
-			vNorth.z = m_zCoord[index] + m_fft_chopZ[index][0];
+			vNorth.z = zCoord + 1 + cZ;
 
-			index = ((i-1) * n) + j;
-			index = wrap(index);
-			vSouth.x = m_xCoord[index] + m_fft_chopX[index][0];
+			if(isChoppy())
+			{
+				ii = wrap(i-1);
+				index = (ii * n) + j;
+				cX = m_fft_chopX[index][0];
+				cZ = m_fft_chopZ[index][0];
+			}
+			else
+				cX = cZ = 0.0f;
+
+			vSouth.x = xCoord + cX;
 			vSouth.y = m_fft_htField[index][0];
-			vSouth.z = m_zCoord[index] + m_fft_chopZ[index][0];
+			vSouth.z = zCoord - 1 + cZ;
 
-			index = (i * n) + j + 1;
-			index = wrap(index);
-			vEast.x = m_xCoord[index] + m_fft_chopX[index][0];
+			if(isChoppy())
+			{
+				jj = wrap(j-1);
+				index = (i * n) + jj;
+				cX = m_fft_chopX[index][0];
+				cZ = m_fft_chopZ[index][0];
+			}
+			else
+				cX = cZ = 0.0f;
+			
+			vEast.x = xCoord - 1 + cX;
 			vEast.y = m_fft_htField[index][0];
-			vEast.z = m_zCoord[index] + m_fft_chopZ[index][0];
+			vEast.z = zCoord + cZ;
 
-			index = (i * n) + j - 1;
-			index = wrap(index);
-			vWest.x = m_xCoord[index] + m_fft_chopX[index][0];
+			if(isChoppy())
+			{
+				jj = wrap(j+1);
+				index = (i * n) + jj;
+				cX = m_fft_chopX[index][0];
+				cZ = m_fft_chopZ[index][0];
+			}
+			else
+				cX = cZ = 0.0f;
+			
+			vWest.x = xCoord + cX;
 			vWest.y = m_fft_htField[index][0];
-			vWest.z = m_zCoord[index] + m_fft_chopZ[index][0];
+			vWest.z = zCoord + 1 + cZ;
 
-			index = (i * n) + j;
-			vCurrent.x = m_xCoord[index] + m_fft_chopX[index][0];
+			index = (j * n) + i;
+			
+			if(isChoppy())
+			{
+				cX = m_fft_chopX[index][0];
+				cZ = m_fft_chopZ[index][0];
+			}
+			vCurrent.x = xCoord - cX;
 			vCurrent.y = m_fft_htField[index][0];
-			vCurrent.z = m_zCoord[index] + m_fft_chopZ[index][0];
+			vCurrent.z = zCoord - cZ;
 
 			vNorth	= vNorth - vCurrent;
 			vSouth	= vSouth - vCurrent;
@@ -734,11 +770,14 @@ void aaOcean::evaluateNormal()
 			norm4 = vNorth.cross(vWest);
 
 			vector3 normal = (norm1.normalize() + norm2.normalize() + norm3.normalize() + norm4.normalize()) * 0.25f;
-			normal = normal.normalize();
+			if(vCurrent.length()==0.0f)
+				norm1.x = norm1.y = norm1.z = 0.f;
+			else
+				norm1 = norm1.normalize();
 
-			m_normalsX[index] = normal.x;
-			m_normalsY[index] = normal.y;
-			m_normalsZ[index] = normal.z;
+			m_normalsXY[index][0] = norm1.x;
+			m_normalsXY[index][1] = norm1.y;
+			m_normalsZ[index][0]  = norm1.z;
 		}
 	}
 }
@@ -748,21 +787,15 @@ void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax)
 	outBoundsMax = -FLT_MAX;
 	outBoundsMin =  FLT_MAX;
 
-	int i, j, n, index, idx;
-	n = m_resolution;
-	idx = 0;
-	//if fft_array has been copied and tiled, set idx = 1, else 0
-	for(i = 0; i< n; i++)
+	int index, n;
+	n = m_resolution * m_resolution;
+	for(index = 0; index < n; index++)
 	{
-		for(j = 0; j< n; j++)
-		{
-			index = i*n + j;
-			if(outBoundsMax < m_fft_jxz[index][idx])
-				outBoundsMax = m_fft_jxz[index][idx];
+		if(outBoundsMax < m_fft_jxz[index][0])
+			outBoundsMax = m_fft_jxz[index][0];
 
-			if(outBoundsMin > m_fft_jxz[index][idx]) 
-				outBoundsMin = m_fft_jxz[index][idx];
-		}
+		if(outBoundsMin > m_fft_jxz[index][0]) 
+			outBoundsMin = m_fft_jxz[index][0];
 	}
 }
 
@@ -872,6 +905,7 @@ void aaOcean::getArrayType(aaOcean::arrayType type, fftwf_complex*& outArray, in
 {
 	// set pointer to the array that we need to interpolate data from
 	arrayIndex = 0;
+	
 	if(type == eHEIGHTFIELD)
 		outArray = m_fft_htField;
 	else if(type == eCHOPX)
@@ -882,11 +916,26 @@ void aaOcean::getArrayType(aaOcean::arrayType type, fftwf_complex*& outArray, in
 		outArray = m_fft_jxz;
 	else if(type == eEIGENPLUSX)
 		outArray = m_fft_jxx;
-	else if(type == eEIGENPLUSZ)	
-		outArray = m_fft_jxxZComponent;
+	else if(type == eEIGENPLUSZ)
+	{
+		outArray = m_fft_jxx;
+		arrayIndex = 1;
+	}
 	else if(type == eEIGENMINUSX)
 		outArray = m_fft_jzz;
 	else if(type == eEIGENMINUSZ)
-		outArray = m_fft_jzzZComponent;
+	{
+		outArray = m_fft_jzz;
+		arrayIndex = 1;
+	}
+	else if (type == eNORMALSX)
+		outArray = m_normalsXY;
+	else if (type == eNORMALSY)
+	{
+		outArray = m_normalsXY;
+		arrayIndex = 1;
+	}
+	else if (type == eNORMALSZ)
+		outArray = m_normalsZ;
 }
 #endif  /* AAOCEANCLASS_CPP */

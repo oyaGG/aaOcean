@@ -26,7 +26,10 @@ public:
 	   eEIGENPLUSX,
 	   eEIGENPLUSZ,
 	   eEIGENMINUSX,
-	   eEIGENMINUSZ
+	   eEIGENMINUSZ,
+	   eNORMALSX,
+	   eNORMALSY,
+	   eNORMALSZ
     };
 
 	void input(	int 	resolution,
@@ -54,7 +57,7 @@ public:
 	char* getState();
 	void getFoamBounds(float& outBoundsMin, float& outBoundsMax);
 
-private:
+//private:
 	int		m_resolution;
 	unsigned int m_seed;
 	int		m_windAlign;
@@ -82,9 +85,6 @@ private:
 	float	*m_omega;
 	float	*m_rand1;
 	float	*m_rand2;
-	float	*m_normalsX;
-	float	*m_normalsY;
-	float	*m_normalsZ;
 
 	//bool types for various checks during run-time
 	bool	m_isAllocated;
@@ -101,10 +101,10 @@ private:
 	fftwf_complex *m_fft_chopX;
 	fftwf_complex *m_fft_chopZ;
 	fftwf_complex *m_fft_jxx; // eigenvector
-	fftwf_complex *m_fft_jxxZComponent; // eigenvector
 	fftwf_complex *m_fft_jzz; // eigenvector
-	fftwf_complex *m_fft_jzzZComponent; // eigenvector
 	fftwf_complex *m_fft_jxz; // eigenvalue
+	fftwf_complex *m_normalsXY; // normals XY component
+	fftwf_complex *m_normalsZ; // normals Z component
 
 	fftwf_plan m_planHeightField;
 	fftwf_plan m_planChopX;
