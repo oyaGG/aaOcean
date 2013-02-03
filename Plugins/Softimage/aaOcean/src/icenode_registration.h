@@ -10,13 +10,10 @@ XSI::CStatus RegisteraaOcean( XSI::PluginRegistrar& in_reg );
 SICALLBACK XSILoadPlugin( PluginRegistrar& in_reg )
 {
 	in_reg.PutAuthor(L"Amaan Akram");
-	in_reg.PutName(L"aaOceanICENODE");
+	in_reg.PutName(L"aaOceanIceDeformer");
 	in_reg.PutEmail(L"amaan@amaanakram.com");
 	in_reg.PutURL(L"http://www.amaanakram.com");
-	in_reg.PutVersion(2,5);
-
-	//in_reg.RegisterProperty(L"aaOcean_Menu");
-	//in_reg.RegisterMenu(siMenuTbGetPropertyID,L"aaOcean_Menu_Menu",false,false);
+	in_reg.PutVersion(2,6);
 
 	RegisteraaOcean( in_reg );
 
