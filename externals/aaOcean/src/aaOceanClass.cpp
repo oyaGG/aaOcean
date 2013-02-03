@@ -813,35 +813,27 @@ void aaOcean::getOceanArray(float *&outArray, aaOcean::arrayType type)
 	}
 }
 
-float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type, bool rotateUV = 1) const
+float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type) const
 {
-	// rotate UVs by 90 degrees if requested
-	if(rotateUV)
-	{
-		float originalU = uCoord;
-		uCoord = -vCoord;
-		vCoord = originalU;
-	}
-
-	float u, v, du, dv = 0;
-	int xMinus1, yMinus1, x, y, xPlus1, yPlus1, xPlus2, yPlus2;
+	float du, dv;
+	int xMinus1, yMinus1, x, y, xPlus1, yPlus1, xPlus2, yPlus2, arrayIndex;
 	fftwf_complex *arrayPointer;
-	int arrayIndex;
 
-	vCoord = fmod(vCoord, 1.0f);
 	uCoord = fmod(uCoord, 1.0f);
-	if(vCoord < 0.0f)
-		vCoord =  1.0f + vCoord;
+	// internal ocean arrays' v-axis runs opposite UV coord's v-axis
+	vCoord = 1.0f - fmod(vCoord, 1.0f); 
+	
 	if(uCoord < 0.0f)
 		uCoord = 1.0f + uCoord;
+	if(vCoord < 0.0f)
+		vCoord =  1.0f + vCoord;
 
-	// uv swap
-	u = vCoord * float(m_resolution);
-	v = uCoord * float(m_resolution);
-	x = (int)floor(u);
-	y = (int)floor(v);
-	du = u - x; 
-	dv = v - y;	
+	uCoord = uCoord * float(m_resolution);
+	vCoord = vCoord * float(m_resolution);
+	x = (int)floor(uCoord);
+	y = (int)floor(vCoord);
+	du = uCoord - x; 
+	dv = vCoord - y;	
 
 	// prepare catmul-rom end points for interpolation
 	xMinus1 = wrap(x - 1) * m_resolution;

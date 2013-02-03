@@ -47,7 +47,7 @@ public:
 				bool	doFoam,
 				bool	doNormals);
 
-	float getOceanData(float uCoord, float vCoord, aaOcean::arrayType type, bool rotateUV) const;
+	float getOceanData(float uCoord, float vCoord, aaOcean::arrayType type) const;
 	void getOceanArray(float *&outArray, aaOcean::arrayType type);
 	void clearResidualArrays();
 
