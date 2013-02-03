@@ -666,8 +666,7 @@ void aaOcean::evaluateJacobians()
 		m_fft_jzz[index][1]	= qMinus / temp;
 
 		//store foam back in this array for convenience
-		//m_fft_jxz[index][0] =   (Jxx * Jzz) - (Jxz * Jxz); //original jacobian.
-		m_fft_jxz[index][0] =   (Jxz * Jxz) - (Jxx * Jzz) + 1.0f; // invert hack
+		m_fft_jxz[index][0] =   (Jxx * Jzz) - (Jxz * Jxz); 
 	}
 }
 
