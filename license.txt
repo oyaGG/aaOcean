@@ -5,7 +5,7 @@ aaOcean Maya Deformer
 aaOcean Softimage ICE Deformer
 aaOcean mental ray displacement and foam shaders
 aaOcean Arnold displacement and foam shaders
-Houdini FFT SOP
+Houdini SOP
 
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
