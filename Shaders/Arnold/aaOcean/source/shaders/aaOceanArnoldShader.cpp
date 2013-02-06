@@ -9,6 +9,8 @@
 
 #include <limits>
 #include <string>
+#include "ai.h"
+#include "aaOceanClass.cpp"
 
 #ifdef WRITE_OPENEXR
 #include "openEXROutput.h"
