@@ -178,7 +178,7 @@ MStatus aaOceanDeformer::compute(const MPlug& plug, MDataBlock& block)
 						block.inputValue(waveChop).asFloat(),
 						currentTime,
 						foam,
-						TRUE);
+						FALSE);
 
 		if(foam)
 			getColorSets(mesh, block);
