@@ -21,7 +21,7 @@ LDFLAGS  := -fopenmp -L$(ARNOLD)/bin -lai $(FFTWLOC)/libfftw3f.a $(FFTWLOC)libff
 CXXFLAGS := -w -O2 -fPIC -fopenmp -fvisibility=hidden
 
 CXX	 := $(GXXLOC)g++
-SOURCES  := aaOceanArnold.cpp
+SOURCES  := shaders/aaOceanArnoldShader.cpp
 OBJECTS  := $(SOURCES:.cpp=.o)
 TARGET   := $(TARGETLOC)aaOceanArnold.so
 
