@@ -165,7 +165,8 @@ shader_evaluate
 			float	fmax = AiShaderEvalParamFlt(p_fMax);
 			
 			// fitting to 0 - 1 range using rescale(...)
-			sg->out.RGBA.a  = rescale(sg->out.RGBA.a, fmin, fmax, 0.0f, 1.0f);
+			// invert result to put foam on wave peaks
+			sg->out.RGBA.a  = 1.0f - rescale(sg->out.RGBA.a, fmin, fmax, 0.0f, 1.0f);
 			// removing negative leftovers
 			sg->out.RGBA.a  = maximum<float>(sg->out.RGBA.a, 0.0f);
 			// apply gamma
