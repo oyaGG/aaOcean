@@ -39,6 +39,7 @@ enum aaOceanArnoldParams
 	p_gamma,
 	p_brightness,
 	p_raw,
+	p_invertFoam,
 	p_fMin,
 	p_fMax,
 	p_writeFile,
@@ -71,6 +72,7 @@ node_parameters
 	AiParameterFLT ( "gamma"			, 1.0f);
 	AiParameterFLT ( "brightness"		, 1.0f);
 	AiParameterBOOL( "raw"				, 0);
+	AiParameterBOOL( "invertFoam"		, 0);
 	AiParameterFLT ( "fMin"				, 0.0f);
 	AiParameterFLT ( "fMax"				, 0.0f);
 	AiParameterBOOL( "writeFile"		, 0);
@@ -166,7 +168,11 @@ shader_evaluate
 			
 			// fitting to 0 - 1 range using rescale(...)
 			// invert result to put foam on wave peaks
-			sg->out.RGBA.a  = 1.0f - rescale(sg->out.RGBA.a, fmin, fmax, 0.0f, 1.0f);
+			if(AiShaderEvalParamBool(p_invertFoam))
+				sg->out.RGBA.a  = 1.0f - rescale(sg->out.RGBA.a, fmin, fmax, 0.0f, 1.0f);
+			else
+				sg->out.RGBA.a  = rescale(sg->out.RGBA.a, fmin, fmax, 0.0f, 1.0f);
+
 			// removing negative leftovers
 			sg->out.RGBA.a  = maximum<float>(sg->out.RGBA.a, 0.0f);
 			// apply gamma

@@ -56,6 +56,8 @@
 		default             FLOAT   1.0
 	[attr raw]
 		default             BOOL   False
+	[attr invertFoam]
+		default             BOOL   False
 	[attr fMin]
 		default             FLOAT   0.0
 	[attr fMax]

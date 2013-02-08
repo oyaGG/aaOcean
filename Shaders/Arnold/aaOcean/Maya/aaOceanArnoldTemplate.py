@@ -37,6 +37,7 @@ class AEaaOceanArnoldTemplate(ShaderAETemplate):
 		
 		self.beginLayout("Foam Parameters", collapse=True)
 		self.addControl("raw", label="Raw Output")
+		self.addControl("invertFoam", label="Invert Foam")
 		self.addControl("gamma", label="Gamma")
 		self.addControl("brightness", label="Brightness")
 		self.addControl("fMin", label="Foam Min")

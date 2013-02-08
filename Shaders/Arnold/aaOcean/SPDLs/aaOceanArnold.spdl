@@ -272,6 +272,19 @@ PropertySet "aaOceanArnold_params"
 		readable = on;
 		inspectable = on;
 	}
+	Parameter "invertFoam" input
+	{
+		guid = "{6A9FF125-3BDA-4F22-8CCA-846B744713B0}";
+		type = boolean;
+		flags = 0;
+		texturable = on;
+		value = 0;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
 	Parameter "fMin" input
 	{
 		guid = "{AF06EAB5-B595-4fe8-9274-B0F773FF5466}";
@@ -481,6 +494,11 @@ Defaults
 		Name = "Raw Output";
 		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
 	}
+	invertFoam
+	{
+		Name = "Invert Foam";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+	}
 	fMin
 	{
 		Name = "Foam Min";
@@ -551,6 +569,7 @@ Layout "Default"
 		raw;
 		Group "Non raw options"
 		{
+			invertFoam;
 			gamma;
 			brightness;
 			fMin;
