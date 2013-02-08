@@ -1,6 +1,0 @@
-string $geoPlane[] = `polyPlane -ch on -o on -w 100 -h 100 -sw 128 -sh 128 -cuv 2 -n aaOcean`;
-polyColorSet -create -clamped 0 -rpt RGBA -colorSet "colorSetEigenVec";
-polyColorSet -create -clamped 0 -rpt RGBA -colorSet "colorSetEigenVal";
-
-deformer -type aaOceanDeformer -n aaOceanDeformer;
-connectAttr "time1.outTime" "aaOceanDeformer.time";
