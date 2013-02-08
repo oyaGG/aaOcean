@@ -27,9 +27,9 @@ global proc AEaaOceanDeformerTemplate( string $nodeName )
 	
 	editorTemplate -beginLayout "Foam Parameters" -collapse 0;
 		editorTemplate -label "Do Foam (Eigen Vectors/Values)" -addControl "doFoam";
-        
 		editorTemplate -label "Eigen Vector ColorSet Name" -addControl "eigenVectorMap";
 		editorTemplate -label "Eigen Value ColorSet Name" -addControl "eigenValueMap";
+		editorTemplate -label "Invert Eigen Values" -addControl "invertFoam";
 	editorTemplate -endLayout;
  
     editorTemplate -endLayout;

@@ -162,6 +162,7 @@ MStatus aaOceanDeformer::compute(const MPlug& plug, MDataBlock& block)
 		MTime appTime = block.inputValue(time).asTime();
 		float currentTime = (float)appTime.as(MTime::kSeconds) + timeOffsetValue;
 		bool foam = block.inputValue(doFoam).asBool();
+		bool invert = block.inputValue(invertFoam).asBool();
 		MMatrix transform = block.inputValue(inTransform).asMatrix();
 
 		// main ocean input function
@@ -213,7 +214,11 @@ MStatus aaOceanDeformer::compute(const MPlug& plug, MDataBlock& block)
 					}
 					if(foundEigenValue)
 					{
-						r = pOcean->getOceanData(u[i], v[i], aaOcean::eFOAM);
+						if(invert)
+							r = 1.0f - pOcean->getOceanData(u[i], v[i], aaOcean::eFOAM);
+						else
+							r = pOcean->getOceanData(u[i], v[i], aaOcean::eFOAM);
+
 						colArrayEigenValue.set(i, r, r, r);
 					}
 				}

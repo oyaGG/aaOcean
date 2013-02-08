@@ -88,6 +88,7 @@ public:
 	static  MObject  time;
 	static  MObject  timeOffset;
 	static  MObject  doFoam;
+	static  MObject  invertFoam;
 
 	static  MObject  uvMap;
 	static  MObject  eigenVectorMap;
@@ -124,6 +125,7 @@ MObject		aaOceanDeformer::waveAlign;
 MObject		aaOceanDeformer::time;
 MObject		aaOceanDeformer::timeOffset;
 MObject		aaOceanDeformer::doFoam;
+MObject		aaOceanDeformer::invertFoam;
 MObject		aaOceanDeformer::uvMap;
 MObject		aaOceanDeformer::eigenVectorMap;
 MObject		aaOceanDeformer::eigenValueMap;
@@ -264,6 +266,13 @@ MStatus aaOceanDeformer::initialize()
 	nAttrDoFoam.setWritable(true);
     addAttribute( doFoam );
     attributeAffects( aaOceanDeformer::doFoam, aaOceanDeformer::outputGeom);
+
+	MFnNumericAttribute nAttrInvertFoam;
+	invertFoam = nAttrInvertFoam.create( "invertFoam", "invertFoam", MFnNumericData::kBoolean, 0 );
+    nAttrInvertFoam.setKeyable(  true );
+	nAttrInvertFoam.setWritable(true);
+    addAttribute( invertFoam );
+    attributeAffects( aaOceanDeformer::invertFoam, aaOceanDeformer::outputGeom);
 
 	MObject defaultValue;
 	MFnTypedAttribute nAttrUVMap;
