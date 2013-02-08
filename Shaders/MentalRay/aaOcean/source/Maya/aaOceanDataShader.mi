@@ -24,6 +24,7 @@ declare shader
 		scalar	"gamma",   		#: default 1.0
 		scalar	"brightness",	#: default 1.0
 		boolean	"rawOutput",	#: default 0
+		boolean	"invertFoam",	#: default 0
 		scalar	"fmin",			#: default 0
 		scalar	"fmax",			#: default 1
 		

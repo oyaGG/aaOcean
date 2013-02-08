@@ -32,6 +32,7 @@ typedef struct
 	miScalar	gamma;
 	miScalar	brightness;
 	miBoolean	rawOutput;
+	miBoolean	invertFoam;
 	miScalar	fmin;
 	miScalar	fmax;
 

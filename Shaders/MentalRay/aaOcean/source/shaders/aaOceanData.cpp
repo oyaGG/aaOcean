@@ -66,7 +66,11 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
 
 			// fitting to 0 - 1 range using rescale(...)
 			// invert result to put foam on wave peaks
-			result->a  = 1.0f - rescale(result->a, fmin, fmax, 0.0f, 1.0f);
+			if(*mi_eval_boolean(&params->invertFoam))
+				result->a  = 1.0f - rescale(result->a, fmin, fmax, 0.0f, 1.0f);
+			else
+				result->a  = rescale(result->a, fmin, fmax, 0.0f, 1.0f);
+
 			result->a  = maximum<float>(result->a, 0.0f);
 			result->a  = pow(result->a, gamma);
 			result->a *= brightness;

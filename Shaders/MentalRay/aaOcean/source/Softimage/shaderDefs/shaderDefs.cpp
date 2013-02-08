@@ -202,6 +202,14 @@ SICALLBACK aaOceanDataShader_aaOceanDataShader_1_0_Define( const CRef& in_ctxt )
 	rawOutput_opts.SetLongName("Raw Output");
 	inpdefs.AddParamDef(L"rawOutput", siShaderDataTypeBoolean, rawOutput_popts);
 
+	CRef invertFoam_popts = fact.CreateShaderParamDefOptions();
+	ShaderParamDefOptions invertFoam_opts = ShaderParamDefOptions(invertFoam_popts);
+	invertFoam_opts.SetTexturable(true);
+	invertFoam_opts.SetInspectable(true);
+	invertFoam_opts.SetDefaultValue(false);
+	invertFoam_opts.SetLongName("Invert Foam");
+	inpdefs.AddParamDef(L"invertFoam", siShaderDataTypeBoolean, invertFoam_popts);
+
 	CRef fmin_popts = fact.CreateShaderParamDefOptions();
 	ShaderParamDefOptions fmin_opts = ShaderParamDefOptions(fmin_popts);
 	fmin_opts.SetTexturable(true);
@@ -301,6 +309,7 @@ SICALLBACK aaOceanDataShader_aaOceanDataShader_1_0_Define( const CRef& in_ctxt )
 	oPPGLayout.AddTab("Foam Parameters");
 	oPPGLayout.AddItem("rawOutput");
 	oPPGLayout.AddGroup("Non raw options");
+	oPPGLayout.AddItem("invertFoam");
 	oPPGLayout.AddItem("gamma");
 	oPPGLayout.AddItem("brightness");
 	oPPGLayout.AddItem("fmin");
