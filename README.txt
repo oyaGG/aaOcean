@@ -35,6 +35,8 @@ You will need single-precision, threaded fftw library installed. See
 'externals/fftw' for a ./configure script that I use to generate 
 a static library to link with. Download source from fftw.org
 
+You may need to run something like dos2linux to get the files to compile
+
 If you enable OpenEXR support, you will also need:
 IlmBase
 OpenEXR
