@@ -44,6 +44,7 @@ public:
 				float 	waveHeight,
 				float 	chopAmount,
 				float 	time,
+				float   repeatTime,
 				bool	doFoam,
 				bool	doNormals);
 
@@ -70,6 +71,7 @@ public:
 	float	m_waveHeight;
 	float	m_waveSpeed;
 	float	m_time;
+	float	m_loopTime;
 	float	m_foamBoundmin; //for holding min/max foam
 	float   m_foamBoundmax; //for holding min/max foam
 	

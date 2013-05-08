@@ -46,6 +46,7 @@ aaOcean::aaOcean() :
 	m_waveHeight(-1.0f),
 	m_waveSpeed(-1.0f),
 	m_time(-1.0f),
+	m_loopTime(10000.0f),
 	m_foamBoundmin(FLT_MAX),
 	m_foamBoundmax(-FLT_MAX),
 
@@ -101,6 +102,7 @@ aaOcean::aaOcean(const aaOcean &cpy)
 			cpy.m_waveHeight,
 			cpy.m_chopAmount,
 			cpy.m_time,
+			cpy.m_loopTime,
 			cpy.m_doFoam,
 			TRUE);
 }
@@ -112,7 +114,7 @@ aaOcean::~aaOcean()
 
 void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity, 
 					float cutoff, float windDir, int windAlign, float damp, float waveSpeed, 
-					float waveHeight, float chopAmount, float time, bool doFoam, bool doNormals)
+					float waveHeight, float chopAmount, float time, float loopTime, bool doFoam, bool doNormals)
 {
 	m_isValid = FALSE;
 
@@ -156,7 +158,8 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 		m_cutoff		!= cutoff		||
 		m_velocity		!= velocity		||
 		m_windAlign		!= windAlign	||
-		m_damp			!= damp		)
+		m_damp			!= damp			||
+		m_loopTime      != loopTime)
 	{
 		m_oceanScale	= oceanScale;
 		m_windDir		= windDir;
@@ -164,6 +167,7 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 		m_velocity		= velocity;
 		m_windAlign		= windAlign;
 		m_damp			= damp;
+		m_loopTime      = loopTime;
 
 		// re-evaluate HoK if any of these vars change
 		m_doHoK		    = TRUE;
@@ -489,6 +493,7 @@ void aaOcean::setupGrid()
 	register const float	L_sq	 = L * L;
 	register const float	windx	 = cos(m_windDir);
 	register const float	windz	 = sin(m_windDir);
+	register const float	omega0	 = aa_TWOPI / m_loopTime;
 	
 	bool bDamp	= FALSE;
 	if (m_damp > 0.0f)
@@ -497,6 +502,7 @@ void aaOcean::setupGrid()
 	#pragma omp parallel for private( k_sq, k_mag, k_dot_w, philips, x, z)  
 	for(int index = 0; index < n; ++index)
 	{
+		// build Kx and Kz
 		x = m_kX[index] =  m_xCoord[index] * k_mult; 
 		z = m_kZ[index] =  m_zCoord[index] * k_mult;
 
@@ -513,7 +519,10 @@ void aaOcean::setupGrid()
 				philips *= (1.0f - m_damp);
 		}		
 
+		// build dispersion relationship
 		m_omega[index]   = sqrt(aa_GRAVITY / k_mag );
+		m_omega[index]   = (int(m_omega[index] / omega0)) * omega0;
+
 		m_hokReal[index] = (aa_INV_SQRTTWO) * (m_rand1[index]) * philips;
 		m_hokImag[index] = (aa_INV_SQRTTWO) * (m_rand2[index]) * philips;
 	}
@@ -846,8 +855,8 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type)
 	xPlus2	= wrap(x + 2) * m_resolution;
 	x		= x	* m_resolution;
 	yMinus1 = wrap(y - 1);
-	yPlus1	=  wrap(y + 1);
-	yPlus2	=  wrap(y + 2);
+	yPlus1	= wrap(y + 1);
+	yPlus2	= wrap(y + 2);
 	
 	// get the pointer to the aaOcean array that we want to pull data from
 	getArrayType(type, arrayPointer, arrayIndex);
