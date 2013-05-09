@@ -81,6 +81,7 @@ SICALLBACK aaOcean_BeginEvaluate( ICENodeContext& in_ctxt )
 	CDataArrayFloat damp( in_ctxt, ID_IN_DAMP);
 	CDataArrayBool enableFoam( in_ctxt, ID_IN_ENABLEFOAM);
 	CDataArrayFloat time( in_ctxt, ID_IN_TIME);
+	CDataArrayFloat loopTime( in_ctxt, ID_IN_LOOP_TIME);
 
 	pOcean->input(resolution[0], 
 		seed[0],
@@ -94,6 +95,7 @@ SICALLBACK aaOcean_BeginEvaluate( ICENodeContext& in_ctxt )
 		waveHeight[0],
 		chop[0], 
 		time[0],
+		loopTime[0],
 		enableFoam[0],
 		FALSE);
 
