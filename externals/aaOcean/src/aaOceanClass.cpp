@@ -42,6 +42,7 @@ aaOcean::aaOcean() :
 	m_cutoff(-1.0f),
 	m_damp(-1.0f),
 	m_oceanScale(-1.0f),
+	m_oceanDepth(1000.f),
 	m_chopAmount(-1.0f),
 	m_waveHeight(-1.0f),
 	m_waveSpeed(-1.0f),
@@ -93,6 +94,8 @@ aaOcean::aaOcean(const aaOcean &cpy)
 	input(	cpy.m_resolution,
 			cpy.m_seed,
 			cpy.m_oceanScale,
+			cpy.m_oceanDepth,
+			cpy.m_capillaryWavelength,
 			cpy.m_velocity,
 			cpy.m_cutoff,
 			cpy.m_windDir,
@@ -112,8 +115,8 @@ aaOcean::~aaOcean()
 	clearArrays();
 }
 
-void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity, 
-					float cutoff, float windDir, int windAlign, float damp, float waveSpeed, 
+void aaOcean::input(int resolution, ULONG seed, float oceanScale, float oceanDepth, float capillaryWavelength, 
+					float velocity, float cutoff, float windDir, int windAlign, float damp, float waveSpeed, 
 					float waveHeight, float chopAmount, float time, float loopTime, bool doFoam, bool doNormals)
 {
 	m_isValid = FALSE;
@@ -153,24 +156,28 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float velocity
 		m_chopAmount = 0.0f;
 	}
 
-	if( m_oceanScale	!= oceanScale	||
-		m_windDir		!= windDir		||
-		m_cutoff		!= cutoff		||
-		m_velocity		!= velocity		||
-		m_windAlign		!= windAlign	||
-		m_damp			!= damp			||
-		m_loopTime      != loopTime)
+	if( m_oceanScale			!= oceanScale			||
+		m_oceanDepth			!= oceanDepth			||
+		m_capillaryWavelength	!= capillaryWavelength	|| 
+		m_windDir				!= windDir				||
+		m_cutoff				!= cutoff				||
+		m_velocity				!= velocity				||
+		m_windAlign				!= windAlign			||
+		m_damp					!= damp					||
+		m_loopTime				!= loopTime)
 	{
-		m_oceanScale	= oceanScale;
-		m_windDir		= windDir;
-		m_cutoff		= cutoff;
-		m_velocity		= velocity;
-		m_windAlign		= windAlign;
-		m_damp			= damp;
-		m_loopTime      = loopTime;
+		m_oceanScale			= oceanScale;
+		m_oceanDepth			= oceanDepth;
+		m_capillaryWavelength	= capillaryWavelength;
+		m_windDir				= windDir;
+		m_cutoff				= cutoff;
+		m_velocity				= velocity;
+		m_windAlign				= windAlign;
+		m_damp					= damp;
+		m_loopTime				= loopTime;
 
 		// re-evaluate HoK if any of these vars change
-		m_doHoK		    = TRUE;
+		m_doHoK	= TRUE;
 	}
 
 	if(m_seed != seed)
@@ -513,14 +520,22 @@ void aaOcean::setupGrid()
 		philips		= sqrt((( exp(-1.0f / ( L_sq * k_sq)) * pow(k_dot_w, m_windAlign)) / 
 					  (k_sq * k_sq)) * exp(-k_sq * m_cutoff));
 
+		// reduce reflected waves
 		if(bDamp)
 		{
 			if(k_dot_w < 0.0f)
 				philips *= (1.0f - m_damp);
 		}		
 
-		// build dispersion relationship
-		m_omega[index]   = sqrt(aa_GRAVITY / k_mag );
+		// build dispersion relationship with oceanDepth relationship
+		m_omega[index]   = (aa_GRAVITY / k_mag) * tanh( sqrt( k_sq ) * m_oceanDepth);
+
+		// modifying dispersion for capillary waves
+		m_omega[index] = m_omega[index] * (1.0f + k_sq * m_capillaryWavelength * m_capillaryWavelength);
+
+		m_omega[index] = sqrt(m_omega[index]);
+
+		// add time looping support with OmegaNought
 		m_omega[index]   = (int(m_omega[index] / omega0)) * omega0;
 
 		m_hokReal[index] = (aa_INV_SQRTTWO) * (m_rand1[index]) * philips;

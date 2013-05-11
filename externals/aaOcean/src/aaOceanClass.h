@@ -34,7 +34,9 @@ public:
 
 	void input(	int 	resolution,
 				ULONG 	seed, 
-				float 	oceanScale, 
+				float 	oceanScale,
+				float	oceanDepth,
+				float	capillaryWavelength,
 				float 	velocity, 
 				float 	cutoff, 
 				float 	windDir, 
@@ -67,6 +69,8 @@ public:
 	float	m_cutoff;
 	float	m_damp;
 	float	m_oceanScale;
+	float	m_oceanDepth;
+	float	m_capillaryWavelength;
 	float	m_chopAmount;
 	float	m_waveHeight;
 	float	m_waveSpeed;
