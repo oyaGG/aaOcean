@@ -578,11 +578,13 @@ void aaOcean::setupGrid()
 
 	fftwf_execute(m_planHeightField);
 
+	float signs[2] = { 1.0f, -1.0f };
+
 	#pragma omp parallel for private(i,j)
 	for(i = 0; i < n; ++i)
 	{
 		for(j = 0; j < n; ++j)
-			m_fft_htField[(i*n) + j][0] *= isEven(i+j)  * m_waveHeight;
+			m_fft_htField[(i*n) + j][0] *= signs[(i + j) & 1]  * m_waveHeight;
 	}
 }
 
@@ -609,6 +611,8 @@ void aaOcean::setupGrid()
 	fftwf_execute(m_planChopX);
 	fftwf_execute(m_planChopZ);
 
+	float signs[2] = { 1.0f, -1.0f };
+
 	n = m_resolution;
 	#pragma omp parallel for private(i, j, index)  
 	for(i = 0; i < n; ++i)
@@ -617,7 +621,7 @@ void aaOcean::setupGrid()
 		for(j = 0; j < n; ++j)
 		{
 			index = (i*n) + j;
-			multiplier = m_chopAmount * isEven(i+j) * -1.0f;
+			multiplier = m_chopAmount * signs[(i + j) & 1] * -1.0f;
 			m_fft_chopX[index][0] *= multiplier;
 			m_fft_chopZ[index][0] *= multiplier;
 		}
@@ -652,6 +656,8 @@ void aaOcean::evaluateJacobians()
 	fftwf_execute(m_planJzz);
 	fftwf_execute(m_planJxz);
 
+	float signs[2] = { 1.0f, -1.0f };
+
 	n = m_resolution;
 	#pragma omp parallel for private(i, j, index)  
 	for(i = 0; i < n; ++i)
@@ -660,7 +666,7 @@ void aaOcean::evaluateJacobians()
 		for(j = 0; j < n; ++j)
 		{
 			index = (i*n) + j;
-			multiplier = -m_chopAmount * isEven(i+j);
+			multiplier = -m_chopAmount * signs[(i + j) & 1];
 			m_fft_jxx[index][0] = m_fft_jxx[index][0] * multiplier + 1.0f;
 			m_fft_jzz[index][0] = m_fft_jzz[index][0] * multiplier + 1.0f;
 			m_fft_jxz[index][0] = m_fft_jxz[index][0] * multiplier;
