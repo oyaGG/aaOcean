@@ -553,6 +553,7 @@ void aaOcean::setupGrid()
 	const int n = m_resolution;
 	const int nn = n * n;
 	register const int n_sq = n * n - 1;
+	const float signs[2] = { 1.0f, -1.0f };
 
 	#pragma omp parallel for private(index, index_rev, hokReal, hokImag, hokRealOpp, hokImagOpp, sinwt, coswt)  
 	for(index = 0; index < nn; ++index)
@@ -578,11 +579,9 @@ void aaOcean::setupGrid()
 
 	fftwf_execute(m_planHeightField);
 
-	float signs[2] = { 1.0f, -1.0f };
-
-	#pragma omp parallel for private(i,j)
 	for(i = 0; i < n; ++i)
 	{
+		#pragma omp parallel for private(j)
 		for(j = 0; j < n; ++j)
 			m_fft_htField[(i*n) + j][0] *= signs[(i + j) & 1]  * m_waveHeight;
 	}
@@ -593,6 +592,8 @@ void aaOcean::setupGrid()
 	int  i, j, index;
 	register float  kX, kZ, kMag;
 	int n = m_resolution * m_resolution;
+	const float signs[2] = { 1.0f, -1.0f };
+	float multiplier;
 
 	#pragma omp parallel for private( index,  kX,  kZ, kMag)  
 	for(index = 0; index < n; ++index)
@@ -611,13 +612,10 @@ void aaOcean::setupGrid()
 	fftwf_execute(m_planChopX);
 	fftwf_execute(m_planChopZ);
 
-	float signs[2] = { 1.0f, -1.0f };
-
 	n = m_resolution;
-	#pragma omp parallel for private(i, j, index)  
 	for(i = 0; i < n; ++i)
 	{
-		float multiplier;
+		#pragma omp parallel for private(multiplier, j, index)  
 		for(j = 0; j < n; ++j)
 		{
 			index = (i*n) + j;
@@ -631,7 +629,8 @@ void aaOcean::setupGrid()
 void aaOcean::evaluateJacobians()
 {
 	int  i, j, index;
-	register float kX, kZ, kMag, kXZ;
+	register float kX, kZ, kMag, kXZ, multiplier;
+	const float signs[2] = { 1.0f, -1.0f };
 	int n = m_resolution * m_resolution;
 
 	#pragma omp parallel for private( index, kX, kZ, kXZ, kMag) 
@@ -656,13 +655,10 @@ void aaOcean::evaluateJacobians()
 	fftwf_execute(m_planJzz);
 	fftwf_execute(m_planJxz);
 
-	float signs[2] = { 1.0f, -1.0f };
-
 	n = m_resolution;
-	#pragma omp parallel for private(i, j, index)  
 	for(i = 0; i < n; ++i)
 	{
-		float multiplier;
+		#pragma omp parallel for private(multiplier, j, index)  
 		for(j = 0; j < n; ++j)
 		{
 			index = (i*n) + j;
