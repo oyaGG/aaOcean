@@ -36,7 +36,7 @@ public:
 				ULONG 	seed, 
 				float 	oceanScale,
 				float	oceanDepth,
-				float	capillaryWavelength,
+				float	surfaceTension,
 				float 	velocity, 
 				float 	cutoff, 
 				float 	windDir, 
@@ -70,7 +70,7 @@ public:
 	float	m_damp;
 	float	m_oceanScale;
 	float	m_oceanDepth;
-	float	m_capillaryWavelength;
+	float	m_surfaceTension;
 	float	m_chopAmount;
 	float	m_waveHeight;
 	float	m_waveSpeed;

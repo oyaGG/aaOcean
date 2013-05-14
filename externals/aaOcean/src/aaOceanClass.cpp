@@ -95,7 +95,7 @@ aaOcean::aaOcean(const aaOcean &cpy)
 			cpy.m_seed,
 			cpy.m_oceanScale,
 			cpy.m_oceanDepth,
-			cpy.m_capillaryWavelength,
+			cpy.m_surfaceTension,
 			cpy.m_velocity,
 			cpy.m_cutoff,
 			cpy.m_windDir,
@@ -115,7 +115,7 @@ aaOcean::~aaOcean()
 	clearArrays();
 }
 
-void aaOcean::input(int resolution, ULONG seed, float oceanScale, float oceanDepth, float capillaryWavelength, 
+void aaOcean::input(int resolution, ULONG seed, float oceanScale, float oceanDepth, float surfaceTension, 
 					float velocity, float cutoff, float windDir, int windAlign, float damp, float waveSpeed, 
 					float waveHeight, float chopAmount, float time, float loopTime, bool doFoam, bool doNormals)
 {
@@ -156,25 +156,25 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float oceanDep
 		m_chopAmount = 0.0f;
 	}
 
-	if( m_oceanScale			!= oceanScale			||
-		m_oceanDepth			!= oceanDepth			||
-		m_capillaryWavelength	!= capillaryWavelength	|| 
-		m_windDir				!= windDir				||
-		m_cutoff				!= cutoff				||
-		m_velocity				!= velocity				||
-		m_windAlign				!= windAlign			||
-		m_damp					!= damp					||
-		m_loopTime				!= loopTime)
+	if( m_oceanScale		!= oceanScale		||
+		m_oceanDepth		!= oceanDepth		||
+		m_surfaceTension	!= surfaceTension	|| 
+		m_windDir			!= windDir			||
+		m_cutoff			!= cutoff			||
+		m_velocity			!= velocity			||
+		m_windAlign			!= windAlign		||
+		m_damp				!= damp				||
+		m_loopTime			!= loopTime)
 	{
-		m_oceanScale			= oceanScale;
-		m_oceanDepth			= oceanDepth;
-		m_capillaryWavelength	= capillaryWavelength;
-		m_windDir				= windDir;
-		m_cutoff				= cutoff;
-		m_velocity				= velocity;
-		m_windAlign				= windAlign;
-		m_damp					= damp;
-		m_loopTime				= loopTime;
+		m_oceanScale		= oceanScale;
+		m_oceanDepth		= oceanDepth;
+		m_surfaceTension	= surfaceTension;
+		m_windDir			= windDir;
+		m_cutoff			= cutoff;
+		m_velocity			= velocity;
+		m_windAlign			= windAlign;
+		m_damp				= damp;
+		m_loopTime			= loopTime;
 
 		// re-evaluate HoK if any of these vars change
 		m_doHoK	= TRUE;
@@ -531,7 +531,7 @@ void aaOcean::setupGrid()
 		m_omega[index]   = (aa_GRAVITY / k_mag) * tanh( sqrt( k_sq ) * m_oceanDepth);
 
 		// modifying dispersion for capillary waves
-		m_omega[index] = m_omega[index] * (1.0f + k_sq * m_capillaryWavelength * m_capillaryWavelength);
+		m_omega[index] = m_omega[index] * (1.0f + k_sq * m_surfaceTension * m_surfaceTension);
 
 		m_omega[index] = sqrt(m_omega[index]);
 
