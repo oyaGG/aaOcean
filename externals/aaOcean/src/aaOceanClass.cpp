@@ -115,17 +115,57 @@ aaOcean::~aaOcean()
 	clearArrays();
 }
 
+bool aaOcean::isValid()
+{
+	return m_isValid;
+}
+
+bool aaOcean::isChoppy()
+{
+	return m_doChop;
+}
+
+char* aaOcean::getState()
+{
+	return &m_state[0];
+}
+
+int aaOcean::getResolution()
+{
+	return m_resolution;
+}
+
 void aaOcean::input(int resolution, ULONG seed, float oceanScale, float oceanDepth, float surfaceTension, 
 					float velocity, float cutoff, float windDir, int windAlign, float damp, float waveSpeed, 
 					float waveHeight, float chopAmount, float time, float loopTime, bool doFoam, bool doNormals)
 {
-	m_isValid = FALSE;
-
-	// forcing to be power of two, setting minimum resolution of 4
+	// forcing to be power of two, setting minimum resolution of 2^4
 	resolution	= (int)pow(2.0f, (4 + abs(resolution))); 
+	reInit(resolution);
+
+	// scaled for better UI control
+	m_waveHeight	= waveHeight * 0.01f;
+	m_time			= time;
+	m_waveSpeed		= waveSpeed;
+	m_doFoam		= doFoam;
+	m_doNormals		= doNormals;
+
+	if(chopAmount > 1.0e-6f)
+	{
+		// scaled for better UI control
+		m_chopAmount = chopAmount * 0.01f;
+		m_doChop = TRUE;
+	}
+	else
+	{
+		m_doChop = FALSE;
+		m_chopAmount = 0.0f;
+	}
+
 	// clamping to minimum value
-	oceanScale	= maximum<float>(oceanScale, 0.00001f);	
-	velocity	= maximum<float>(((velocity  * velocity) / aa_GRAVITY), 0.00001f); 
+	oceanScale	= maximum<float>(oceanScale, 1.0e-6f);	
+	velocity	= maximum<float>(velocity,   1.0e-6f); 
+	oceanDepth  = maximum<float>(oceanDepth, 1.0e-6f); 
 	// scaling for better UI control
 	cutoff		= fabs(cutoff * 0.01f);
 	// to radians
@@ -134,27 +174,6 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float oceanDep
 	windAlign	= maximum<int>(((windAlign + 1) * 2), 2); 
 	// clamping to a maximum value of 1
 	damp		= minimum<float>(damp, 1.0f); 
-
-	 // scaled for better UI control
-	waveHeight *= 0.01f;
-	chopAmount *= 0.01f; 
-
-	m_time			= time;
-	m_waveSpeed		= waveSpeed;
-	m_waveHeight	= waveHeight;
-	m_doFoam		= doFoam;
-	m_doNormals		= doNormals;
-
-	if(chopAmount > 0.000001f)
-	{
-		m_chopAmount = chopAmount;
-		m_doChop = TRUE;
-	}
-	else
-	{
-		m_doChop = FALSE;
-		m_chopAmount = 0.0f;
-	}
 
 	if( m_oceanScale		!= oceanScale		||
 		m_oceanDepth		!= oceanDepth		||
@@ -185,58 +204,33 @@ void aaOcean::input(int resolution, ULONG seed, float oceanScale, float oceanDep
 		// setup grid and do HoK if seed changes
 		m_seed	= seed;
 		m_doHoK	= TRUE;
-		if(m_resolution == resolution)
-			m_doSetup = TRUE; 
+		m_doSetup = TRUE;
 	}
-
-	// see if we need to flush arrays and reallocate them
-	if(reInit(resolution))
-		prepareOcean();
+	
+	// we have our inputs. start preparing ocean arrays
+	prepareOcean();
 }
 
-bool aaOcean::isValid()
-{
-	return m_isValid;
-}
-
-bool aaOcean::isChoppy()
-{
-	return m_doChop;
-}
-
-char* aaOcean::getState()
-{
-	return &m_state[0];
-}
-
-int aaOcean::getResolution()
-{
-	return m_resolution;
-}
-
-bool aaOcean::reInit(int resolution)
+void aaOcean::reInit(int resolution)
 {
 	// If ocean resolution has changed, or if we are creating an ocean from scratch
 	// Flush any existing arrays and allocate them with the new array size (resolution)
-	if(m_resolution != resolution || !m_isAllocated )
+	if(m_resolution != resolution)
 	{
 		m_resolution = resolution;
 		allocateBaseArrays();				
 		m_doHoK  = TRUE;
-		setupGrid();
-		sprintf(m_state,"[aaOcean Core] Building ocean shader with resolution %dx%d", resolution, resolution);
+		m_doSetup = TRUE;
+		sprintf(m_state,"[aaOcean Core] Allocating ocean shader with dimensions %dx%d", resolution, resolution);
 	}
-	// if doSetup has been set to True because of a change in Seed
-	if(m_doSetup)
-		setupGrid();
-
-	m_isValid = TRUE;
-	return m_isValid;
 }
 
 void aaOcean::prepareOcean()
 {
-	if( m_doHoK )
+	if(m_doSetup)
+		setupGrid();
+
+	if(m_doHoK)
 		evaluateHokData();
 
 	evaluateHieghtField();
@@ -496,7 +490,7 @@ void aaOcean::setupGrid()
 
 	register const int		n		 = m_resolution * m_resolution;
 	register const float	k_mult	 = aa_TWOPI / m_oceanScale;
-	register const float	L		 = m_velocity;
+	register const float	L		 = m_velocity * m_velocity / aa_GRAVITY;
 	register const float	L_sq	 = L * L;
 	register const float	windx	 = cos(m_windDir);
 	register const float	windz	 = sin(m_windDir);
@@ -513,10 +507,12 @@ void aaOcean::setupGrid()
 		x = m_kX[index] =  m_xCoord[index] * k_mult; 
 		z = m_kZ[index] =  m_zCoord[index] * k_mult;
 
-		//philips spectrum vars
+		// philips spectrum vars
 		k_sq		= (x * x) + (z * z);
 		k_mag		= 1.0f / sqrt( k_sq );
 		k_dot_w		= (x * k_mag) * windx + (z * k_mag) * windz;
+
+		// calculate philips spectrum
 		philips		= sqrt((( exp(-1.0f / ( L_sq * k_sq)) * pow(k_dot_w, m_windAlign)) / 
 					  (k_sq * k_sq)) * exp(-k_sq * m_cutoff));
 

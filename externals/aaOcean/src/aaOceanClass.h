@@ -128,7 +128,7 @@ public:
 	void clearArrays();
 	
 	// initialization functions
-	bool reInit(int data_size);
+	void reInit(int data_size);
 	ULONG generateUID(float, float);
 	void prepareOcean();
 	void setupGrid();
