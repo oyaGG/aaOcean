@@ -74,6 +74,7 @@ SICALLBACK aaOcean_BeginEvaluate( ICENodeContext& in_ctxt )
 	CDataArrayFloat	waveSpeed( in_ctxt, ID_IN_WAVESPEED);
 	CDataArrayFloat	chop( in_ctxt, ID_IN_CHOP);
 	CDataArrayFloat	oceanScale( in_ctxt, ID_IN_OCEAN_SCALE );
+	CDataArrayFloat	oceanDepth( in_ctxt, ID_IN_OCEAN_DEPTH );
 	CDataArrayFloat windDir( in_ctxt, ID_IN_WINDDIR	);
 	CDataArrayFloat cutoff( in_ctxt, ID_IN_CUTOFF);
 	CDataArrayFloat velocity( in_ctxt, ID_IN_WINDVELOCITY);
@@ -82,10 +83,13 @@ SICALLBACK aaOcean_BeginEvaluate( ICENodeContext& in_ctxt )
 	CDataArrayBool enableFoam( in_ctxt, ID_IN_ENABLEFOAM);
 	CDataArrayFloat time( in_ctxt, ID_IN_TIME);
 	CDataArrayFloat loopTime( in_ctxt, ID_IN_LOOP_TIME);
+	CDataArrayFloat surfaceTension( in_ctxt, ID_IN_SURFACE_TENSION);
 
 	pOcean->input(resolution[0], 
 		seed[0],
 		oceanScale[0], 
+		oceanDepth[0],
+		surfaceTension[0],
 		velocity[0], 
 		cutoff[0], 
 		windDir[0], 
@@ -106,13 +110,6 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 {
 	aaOcean *pOcean = (aaOcean *)(CValue::siPtrType)in_ctxt.GetUserData();
 
-	if(!pOcean->isValid() )
-	{
-		pOcean = NULL;
-		Application().LogMessage(CString("Invalid Ocean Input"), siErrorMsg);
-		return CStatus::OK;
-	}
-	
 	CIndexSet indexSet(in_ctxt, ID_IN_PointID );
 	CDataArrayLong PointID(in_ctxt, ID_IN_PointID );
 	CDataArrayBool bEnable(in_ctxt, ID_IN_ENABLE);

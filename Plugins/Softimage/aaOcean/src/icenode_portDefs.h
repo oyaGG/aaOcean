@@ -11,7 +11,9 @@ enum IDs
 	ID_IN_PointID = 0,
 	ID_IN_RESOLUTION = 10,
 	ID_IN_OCEAN_SCALE,
-	ID_IN_WINDDIR,
+	ID_IN_OCEAN_DEPTH = 26,
+	ID_IN_SURFACE_TENSION = 43,
+	ID_IN_WINDDIR = 12,
 	ID_IN_CUTOFF,
 	ID_IN_WINDVELOCITY,
 	ID_IN_WINDALIGN,
@@ -31,6 +33,7 @@ enum IDs
 	ID_G_100 = 100,
 	ID_G_101,
 	ID_G_102,
+	ID_G_103,
 
 	ID_G_200 = 200,
 	ID_G_201,
@@ -61,11 +64,13 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 	st.AssertSucceeded();
 
 	// Add input ports and groups.
-	st = nodeDef.AddPortGroup(ID_G_100,1,1,L"Ocean Params");
+	st = nodeDef.AddPortGroup(ID_G_100,1,1,L"Ocean Parameters");
 	st.AssertSucceeded();
-	st = nodeDef.AddPortGroup(ID_G_101,1,1,L"Scene Data");
+	st = nodeDef.AddPortGroup(ID_G_101,1,1,L"Wave Parameters");
 	st.AssertSucceeded();
-	st = nodeDef.AddPortGroup(ID_G_102,1,1,L"Misc"); 
+	st = nodeDef.AddPortGroup(ID_G_102,1,1,L"Wind Parameters"); 
+	st.AssertSucceeded();
+	st = nodeDef.AddPortGroup(ID_G_103,1,1,L"Misc"); 
 	st.AssertSucceeded();
 
 	st = nodeDef.AddInputPort(	ID_IN_RESOLUTION,
@@ -83,6 +88,20 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 								100.0f);
 	st.AssertSucceeded( ) ;
 
+	st = nodeDef.AddInputPort(	ID_IN_OCEAN_DEPTH,
+								ID_G_100,
+								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
+								L"Ocean Depth",L"Ocean_Depth",
+								10000.0f);
+	st.AssertSucceeded( ) ;
+
+	st = nodeDef.AddInputPort(	ID_IN_SURFACE_TENSION,
+								ID_G_100,
+								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
+								L"Surface Tension",L"Surface_Tension",
+								0.0f);
+	st.AssertSucceeded( ) ;
+
 	st = nodeDef.AddInputPort(	ID_IN_SEED,
 								ID_G_100,
 								siICENodeDataLong,siICENodeStructureSingle,siICENodeContextSingleton,
@@ -94,7 +113,7 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 	st = nodeDef.AddInputPort(	ID_IN_TIME,
 								ID_G_101,
 								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
-								L"Time",L"Time",
+								L"Current Time (secs)",L"CurrentTime",
 								1.0f);
 	st.AssertSucceeded( ) ;
 
@@ -106,14 +125,14 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 	st.AssertSucceeded( ) ;
 
 	st = nodeDef.AddInputPort(	ID_IN_WAVE_HEIGHT,
-								ID_G_100,
+								ID_G_101,
 								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
 								L"Wave Height",L"Wave_Height",
 								1.0f);
 	st.AssertSucceeded( ) ;
 
 	st = nodeDef.AddInputPort(	ID_IN_WINDVELOCITY,
-								ID_G_100,
+								ID_G_101,
 								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
 								L"Wave Size",L"Wave_Size",
 								5.0f, FLT_MIN, 30.f,
@@ -121,21 +140,21 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 	st.AssertSucceeded( ) ;
 
 	st = nodeDef.AddInputPort(	ID_IN_WAVESPEED,
-								ID_G_100,
+								ID_G_101,
 								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
 								L"Wave Speed",L"Wave_Speed",
 								1.0f);
 	st.AssertSucceeded( ) ;
 
 	st = nodeDef.AddInputPort(	ID_IN_CHOP,
-								ID_G_100,
+								ID_G_101,
 								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
 								L"Chopiness",L"Chopiness",
 								1.0f);
 	st.AssertSucceeded( ) ;
 
 	st = nodeDef.AddInputPort(	ID_IN_CUTOFF,
-								ID_G_100,
+								ID_G_101,
 								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
 								L"Smooth",L"Smooth",
 								0.0f, 0.f, 100.f,
@@ -143,7 +162,7 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 	st.AssertSucceeded( ) ;
 
 	st = nodeDef.AddInputPort(	ID_IN_WINDDIR,
-								ID_G_100,
+								ID_G_102,
 								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
 								L"Wind Direction",L"Wind_Direction",
 								45.0f, 0.f, 360.f,
@@ -151,7 +170,7 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 	st.AssertSucceeded( ) ;
 
 	st = nodeDef.AddInputPort(	ID_IN_DAMP,
-								ID_G_100,
+								ID_G_102,
 								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
 								L"Reflected Waves",L"Reflected_Waves",
 								0.1f, 0.f, 1.f,
@@ -159,26 +178,26 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 	st.AssertSucceeded( ) ;
 
 	st = nodeDef.AddInputPort(	ID_IN_WINDALIGN,
-								ID_G_100,
+								ID_G_102,
 								siICENodeDataLong,siICENodeStructureSingle,siICENodeContextSingleton,
 								L"Wind Align",L"Wind_Align",
 								0);
 	st.AssertSucceeded( ) ;
 
 	st = nodeDef.AddInputPort(	ID_IN_U,
-								ID_G_101,
+								ID_G_103,
 								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextComponent0D,
 								L"Texture U",L"Texture_U",
 								1.0f);
 
 	st = nodeDef.AddInputPort(	ID_IN_V,
-								ID_G_101,
+								ID_G_103,
 								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextComponent0D,
 								L"Texture V",L"Texture_V",
 								1.0f);
 
 	st = nodeDef.AddInputPort(	ID_IN_TRANSFORM,
-								ID_G_101,siICENodeDataMatrix44,siICENodeStructureSingle,siICENodeContextSingletonOrComponent0D,
+								ID_G_103,siICENodeDataMatrix44,siICENodeStructureSingle,siICENodeContextSingletonOrComponent0D,
 								L"Input_Transform",L"Input_Transform",
 								MATH::CMatrix4f(1.0,0.0,0.0,1.0, 
 												0.0,1.0,0.0,1.0, 
@@ -186,20 +205,20 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 												0.0,0.0,0.0,1.0 ));
 
 	st = nodeDef.AddInputPort(	ID_IN_PointID,
-								ID_G_101,
+								ID_G_103,
 								siICENodeDataLong,siICENodeStructureSingle,siICENodeContextComponent0D,
 								L"PointID",L"PointID",
 								1);
 	st.AssertSucceeded( ) ;
 	
 	st = nodeDef.AddInputPort(	ID_IN_ENABLE,
-								ID_G_102,
+								ID_G_103,
 								siICENodeDataBool,siICENodeStructureSingle,siICENodeContextSingleton,
 								L"Enable Ocean",L"Enable",
 								true);
 
 	st = nodeDef.AddInputPort(	ID_IN_ENABLEFOAM,
-								ID_G_102,
+								ID_G_103,
 								siICENodeDataBool,siICENodeStructureSingle,siICENodeContextSingleton,
 								L"Enable Foam",L"Enable_Foam",
 								false);
