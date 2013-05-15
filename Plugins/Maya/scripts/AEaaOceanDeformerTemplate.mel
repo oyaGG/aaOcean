@@ -5,9 +5,12 @@ global proc AEaaOceanDeformerTemplate( string $nodeName )
     editorTemplate -beginLayout "Ocean Parameters" -collapse 0;
         editorTemplate -addControl "resolution";
 		editorTemplate -addControl "oceanSize";
+		editorTemplate -addControl "oceanDepth";
+		editorTemplate -addControl "surfaceTension";
         editorTemplate -addControl "seed";
-		editorTemplate -label "Time (secs)" -addControl "time";
+		editorTemplate -label "Current Time (secs)" -addControl "time";
 		editorTemplate -addControl "timeOffset";
+		editorTemplate -addControl "repeatTime";
 		editorTemplate -label "UV Map label" -addControl "uvMap";
 	editorTemplate -endLayout;
 

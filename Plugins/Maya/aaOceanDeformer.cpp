@@ -169,6 +169,8 @@ MStatus aaOceanDeformer::compute(const MPlug& plug, MDataBlock& block)
 		pOcean->input(	block.inputValue(resolution).asInt(),
 						block.inputValue(seed).asInt(),
 						block.inputValue(oceanSize).asFloat(),
+						block.inputValue(oceanDepth).asFloat(),
+						block.inputValue(surfaceTension).asFloat(),
 						block.inputValue(waveSize).asFloat(),
 						block.inputValue(waveSmooth).asFloat(),
 						block.inputValue(waveDirection).asFloat(),
@@ -178,6 +180,7 @@ MStatus aaOceanDeformer::compute(const MPlug& plug, MDataBlock& block)
 						block.inputValue(waveHeight).asFloat(),
 						block.inputValue(waveChop).asFloat(),
 						currentTime,
+						block.inputValue(repeatTime).asFloat(),
 						foam,
 						FALSE);
 
