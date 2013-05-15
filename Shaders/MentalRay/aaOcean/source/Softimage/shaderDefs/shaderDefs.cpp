@@ -80,6 +80,26 @@ SICALLBACK aaOceanDataShader_aaOceanDataShader_1_0_Define( const CRef& in_ctxt )
 	oceanScale_opts.SetLongName("Ocean Size");
 	inpdefs.AddParamDef(L"oceanScale", siShaderDataTypeScalar, oceanScale_popts);
 
+	CRef oceanDepth_popts = fact.CreateShaderParamDefOptions();
+	ShaderParamDefOptions oceanDepth_opts = ShaderParamDefOptions(oceanDepth_popts);
+	oceanDepth_opts.SetTexturable(true);
+	oceanDepth_opts.SetInspectable(true);
+	oceanDepth_opts.SetDefaultValue(10000.f);
+	oceanDepth_opts.SetHardLimit(1.0e-6f, 200000.f);
+	oceanDepth_opts.SetSoftLimit(100, 10000.f);
+	oceanDepth_opts.SetLongName("Ocean Depth");
+	inpdefs.AddParamDef(L"oceanDepth", siShaderDataTypeScalar, oceanDepth_popts);
+
+	CRef surfaceTension_popts = fact.CreateShaderParamDefOptions();
+	ShaderParamDefOptions surfaceTension_opts = ShaderParamDefOptions(surfaceTension_popts);
+	surfaceTension_opts.SetTexturable(true);
+	surfaceTension_opts.SetInspectable(true);
+	surfaceTension_opts.SetDefaultValue(0.0f);
+	surfaceTension_opts.SetHardLimit(0.0f, 10.0f);
+	surfaceTension_opts.SetSoftLimit(0.0f, 1.f);
+	surfaceTension_opts.SetLongName("Surface Tension");
+	inpdefs.AddParamDef(L"surfaceTension", siShaderDataTypeScalar, surfaceTension_popts);
+
 	CRef seed_popts = fact.CreateShaderParamDefOptions();
 	ShaderParamDefOptions seed_opts = ShaderParamDefOptions(seed_popts);
 	seed_opts.SetTexturable(true);
@@ -173,6 +193,14 @@ SICALLBACK aaOceanDataShader_aaOceanDataShader_1_0_Define( const CRef& in_ctxt )
 	time_opts.SetDefaultValue(0.042);
 	time_opts.SetLongName("Current Time");
 	inpdefs.AddParamDef(L"time", siShaderDataTypeScalar, time_popts);
+
+	CRef repeatTime_popts = fact.CreateShaderParamDefOptions();
+	ShaderParamDefOptions repeatTime_opts = ShaderParamDefOptions(repeatTime_popts);
+	repeatTime_opts.SetTexturable(true);
+	repeatTime_opts.SetInspectable(true);
+	repeatTime_opts.SetDefaultValue(1000.f);
+	repeatTime_opts.SetLongName("Repeat Time");
+	inpdefs.AddParamDef(L"repeatTime", siShaderDataTypeScalar, repeatTime_popts);
 
 	CRef gamma_popts = fact.CreateShaderParamDefOptions();
 	ShaderParamDefOptions gamma_opts = ShaderParamDefOptions(gamma_popts);

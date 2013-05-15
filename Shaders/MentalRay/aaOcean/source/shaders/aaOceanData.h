@@ -18,6 +18,8 @@ typedef struct
 	miScalar	fade;
 	miInteger	resolution;
 	miScalar	oceanScale;
+	miScalar	oceanDepth;
+	miScalar	surfaceTension;
 	miInteger	seed;
 	miScalar	waveHeight;
 	miScalar	velocity;
@@ -28,6 +30,7 @@ typedef struct
 	miScalar	damp;
 	miInteger	windAlign;
 	miScalar	time;
+	miScalar	repeatTime;
 
 	miScalar	gamma;
 	miScalar	brightness;

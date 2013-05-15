@@ -29,9 +29,6 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
 	mi_query( miQ_FUNC_USERPTR, state, 0, (void *)&os);
 	aaOcean *pOcean = (*os)->ocean;
 
-	if(!pOcean->isValid())
-		return miFALSE;
-	
 	miScalar	layerOcean	= *mi_eval_scalar(&params->layerOcean);
 	miVector	*coord		=  mi_eval_vector(&params->uv_coords);
 	miScalar	fade		= *mi_eval_scalar(&params->fade);
@@ -130,6 +127,8 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 		*mi_eval_integer(&params->resolution), 
 		*mi_eval_integer(&params->seed),
 		*mi_eval_scalar (&params->oceanScale), 
+		*mi_eval_scalar (&params->oceanDepth), 
+		*mi_eval_scalar (&params->surfaceTension), 
 		*mi_eval_scalar (&params->velocity), 
 		*mi_eval_scalar (&params->cutoff), 
 		*mi_eval_scalar (&params->windDir), 
@@ -139,20 +138,13 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 		*mi_eval_scalar (&params->waveHeight),
 		*mi_eval_scalar (&params->chopAmount), 
 		*mi_eval_scalar (&params->time),
+		*mi_eval_scalar (&params->repeatTime),
 		miTRUE,
 		miFALSE);
 
 		// get the tag of the currently running shader so that we can call its name
 		miTag shaderInst; 
 		mi_query(miQ_FUNC_TAG, state, 0, &shaderInst);
-
-		if(!pOcean->isValid())
-		{
-			mi_error("%s. Shader ID: %d", pOcean->getState(), shaderInst);	
-			return;
-		}
-
-		// input validated. proceeding...
 		mi_info("%s. Shader ID: %d", pOcean->getState(), shaderInst);	
 
 		miBoolean rawOutput	= *mi_eval_boolean(&params->rawOutput);
