@@ -81,6 +81,36 @@ PropertySet "aaOceanArnold_params"
 		readable = on;
 		inspectable = on;
 	}
+	Parameter "oceanDepth" input
+	{		
+		guid = "{96691F20-A2D6-4A98-88B1-FAA2EED68E19}";
+		type = scalar;
+		flags = 0;
+		texturable = on;
+		value = 1000;
+		value minimum = 0.0001;
+		value maximum = 10000;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "surfaceTension" input
+	{		
+		guid = "{7435E6B4-3F89-4A9C-82B8-B058D6939F6D}";
+		type = scalar;
+		flags = 0;
+		texturable = on;
+		value = 0.0;
+		value minimum = 0.0;
+		value maximum = 5.0;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
 	Parameter "seed" input
 	{		
 		guid = "{73FFECC6-18CB-4553-94D4-00C83774F20A}";
@@ -223,6 +253,19 @@ PropertySet "aaOceanArnold_params"
 		flags = 0;
 		texturable = on;
 		value = 1;
+		writable = on;
+		animatable = on;
+		persistable = on;
+		readable = on;
+		inspectable = on;
+	}
+	Parameter "repeatTime" input
+	{
+		guid = "{D5376801-9EED-4446-82D3-2BE031C04DF1}";
+		type = scalar;
+		flags = 0;
+		texturable = on;
+		value = 1000.0;
 		writable = on;
 		animatable = on;
 		persistable = on;
@@ -414,6 +457,20 @@ Defaults
 		UIRange = 0.001 to 1000 by 0.001;
 		UIType = "Number";
 	}
+	oceanDepth
+	{
+		Name = "Ocean Depth";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 0.0001 to 10000 by 0.1;
+		UIType = "Number";
+	}
+	surfaceTension
+	{
+		Name = "Surface Tension";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 0.0 to 5 by 0.001;
+		UIType = "Number";
+	}
 	seed
 	{
 		Name = "Seed";
@@ -478,6 +535,13 @@ Defaults
 	{
 		Name = "Time (secs)";
 		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+	}
+	repeatTime
+	{
+		Name = "Repeat Time (secs)";
+		Commands = "{F5C75F11-2F05-11d3-AA95-00AA0068D2C0}";
+		UIRange = 0.0001 to 1000 by 0.01;
+		UIType = "Number";
 	}
 	gamma
 	{
@@ -544,8 +608,11 @@ Layout "Default"
 		{
 			resolution;
 			oceanScale;
+			oceanDepth;
+			surfaceTension;
 			seed;
 			time;
+			repeatTime;
 			use_uv_input;
 		}
 		Group "Wave Parameters"

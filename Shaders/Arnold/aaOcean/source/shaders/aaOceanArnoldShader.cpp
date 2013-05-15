@@ -26,6 +26,8 @@ enum aaOceanArnoldParams
 	p_fade,
 	p_resolution,
 	p_oceanScale,
+	p_oceanDepth,
+	p_surfaceTension,
 	p_seed,
 	p_waveHeight,
 	p_velocity,
@@ -36,6 +38,7 @@ enum aaOceanArnoldParams
 	p_damp,
 	p_windAlign,
 	p_time,
+	p_repeatTime,
 	p_gamma,
 	p_brightness,
 	p_raw,
@@ -59,6 +62,8 @@ node_parameters
 	AiParameterFLT ( "fade"				, 0.0f);
 	AiParameterINT ( "resolution"		, 4);
 	AiParameterFLT ( "oceanScale"		, 100.0f);
+	AiParameterFLT ( "oceanDepth"		, 10000.0f);
+	AiParameterFLT ( "surfaceTension"	, 0.0f);
 	AiParameterINT ( "seed"				, 1);
 	AiParameterFLT ( "waveHeight"		, 5.0f);
 	AiParameterFLT ( "velocity"			, 4.5f);
@@ -69,6 +74,7 @@ node_parameters
 	AiParameterFLT ( "damp"				, 0.985f);
 	AiParameterINT ( "windAlign"		, 0);
 	AiParameterFLT ( "time"				, 0.1f);
+	AiParameterFLT ( "repeatTime"		, 1000.f);
 	AiParameterFLT ( "gamma"			, 1.0f);
 	AiParameterFLT ( "brightness"		, 1.0f);
 	AiParameterBOOL( "raw"				, 0);
@@ -93,6 +99,8 @@ node_update
 		params[p_resolution].INT,
 		params[p_seed].INT,
 		params[p_oceanScale].FLT,
+		params[p_oceanDepth].FLT,
+		params[p_surfaceTension].FLT,
 		params[p_velocity].FLT,
 		params[p_cutoff].FLT,
 		params[p_windDir].FLT,
@@ -102,16 +110,10 @@ node_update
 		params[p_waveHeight].FLT,
 		params[p_chopAmount].FLT,
 		params[p_time].FLT,
+		params[p_repeatTime].FLT,
 		TRUE,
 		FALSE);
 
-	if(!pOcean->isValid())
-	{
-		// invalid ocean input
-		AiMsgWarning("%s", pOcean->getState());	
-		return;
-	}
-	
 	// see if user has requested normalized or raw foam values
 	float rawOutput	= params[p_raw].BOOL;
 	if(pOcean->isChoppy() && !rawOutput)
