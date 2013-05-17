@@ -313,8 +313,11 @@ SICALLBACK aaOceanDataShader_aaOceanDataShader_1_0_Define( const CRef& in_ctxt )
 	oPPGLayout.AddGroup("Ocean Parameters");
 		oPPGLayout.AddItem("resolution");
 		oPPGLayout.AddItem("oceanScale");
+		oPPGLayout.AddItem("oceanDepth");
+		oPPGLayout.AddItem("surfaceTension");
 		oPPGLayout.AddItem("seed");
 		oPPGLayout.AddItem("time");
+		oPPGLayout.AddItem("repeatTime");
 		oPPGLayout.AddItem("use_uv_input");
 	oPPGLayout.EndGroup();
 	oPPGLayout.AddGroup("Wave Parameters");
