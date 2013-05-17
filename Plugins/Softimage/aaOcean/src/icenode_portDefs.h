@@ -28,7 +28,7 @@ enum IDs
 	ID_IN_V = 34,
 	ID_IN_TRANSFORM = 36,
 	ID_IN_TIME,
-	ID_IN_LOOP_TIME,
+	ID_IN_REPEAT_TIME,
 
 	ID_G_100 = 100,
 	ID_G_101,
@@ -117,10 +117,10 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
 								1.0f);
 	st.AssertSucceeded( ) ;
 
-	st = nodeDef.AddInputPort(	ID_IN_LOOP_TIME,
+	st = nodeDef.AddInputPort(	ID_IN_REPEAT_TIME,
 								ID_G_100,
 								siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
-								L"Loop Time (secs)",L"loopTime",
+								L"Repeat Time (secs)",L"repeatTime",
 								1000.0f);
 	st.AssertSucceeded( ) ;
 
