@@ -171,7 +171,7 @@ MStatus aaOceanDeformer::initialize()
     attributeAffects( aaOceanDeformer::oceanDepth, aaOceanDeformer::outputGeom);
 
 	MFnNumericAttribute nAttrSurfaceTension;
-	surfaceTension= nAttrSurfaceTension.create( "surfaceTension", "surfaceTension", MFnNumericData::kFloat, 10000.f );
+	surfaceTension= nAttrSurfaceTension.create( "surfaceTension", "surfaceTension", MFnNumericData::kFloat, 0.0f );
     nAttrSurfaceTension.setKeyable(  true );	
 	nAttrSurfaceTension.setWritable(true);
 	nAttrSurfaceTension.setSoftMin(0.f);	
@@ -281,7 +281,7 @@ MStatus aaOceanDeformer::initialize()
 	repeatTime = nAttrRepeatTime.create( "repeatTime", "repeatTime", MFnNumericData::kFloat, 1000.f );
     nAttrRepeatTime.setKeyable(  true );
 	nAttrRepeatTime.setWritable(true);
-    addAttribute( timeOffset );
+    addAttribute( repeatTime );
     attributeAffects( aaOceanDeformer::repeatTime, aaOceanDeformer::outputGeom);
 	
 	MFnNumericAttribute nAttrTimeOffset;
