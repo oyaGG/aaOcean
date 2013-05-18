@@ -1,6 +1,7 @@
 aaOcean v2.6
 Author: Amaan Akram 
 www.amaanakram.com
+aaOcean is an implementation of Jerry Tessendorf's 2004 paper on Simulating Ocean Waves.
 aaOcean is free software and can be redistributed and modified under the terms of the 
 GNU General Public License (Version 3) as provided by the Free Software Foundation.
 GNU General Public License http://www.gnu.org/licenses/gpl.html
