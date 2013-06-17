@@ -27,9 +27,6 @@ void multiplyMatrix(float *InVector, float *OutVector, XSI::CDataArrayMatrix4f &
 
 SICALLBACK aaOcean_Init( CRef& in_ctxt )
 {
-	// initialize fftw threads routines
-	fftwf_init_threads();
-
 	// create new aaOceanClass instance
 	aaOcean *pOcean	= new aaOcean;
 
@@ -53,10 +50,6 @@ SICALLBACK aaOcean_Term( CRef& in_ctxt )
 	pOcean = 0;
 	ctxt.PutUserData( CValue() );
 	Application().LogMessage(L"[aaOcean ICE] : Successfully cleaned up memory");
-
-	// call fftw cleanup routines
-	fftwf_cleanup_threads();
-	fftwf_cleanup();
 
 	return CStatus::OK;
 }
@@ -82,7 +75,7 @@ SICALLBACK aaOcean_BeginEvaluate( ICENodeContext& in_ctxt )
 	CDataArrayFloat damp( in_ctxt, ID_IN_DAMP);
 	CDataArrayBool enableFoam( in_ctxt, ID_IN_ENABLEFOAM);
 	CDataArrayFloat time( in_ctxt, ID_IN_TIME);
-	CDataArrayFloat loopTime( in_ctxt, ID_IN_LOOP_TIME);
+	CDataArrayFloat loopTime( in_ctxt, ID_IN_REPEAT_TIME);
 	CDataArrayFloat surfaceTension( in_ctxt, ID_IN_SURFACE_TENSION);
 
 	pOcean->input(resolution[0], 
