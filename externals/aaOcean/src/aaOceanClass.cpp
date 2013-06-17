@@ -269,6 +269,7 @@ void aaOcean::allocateBaseArrays()
 	if(m_resolution > 254)
 	{
 		int threads = omp_get_num_procs();
+		fftwf_init_threads();
 		fftwf_plan_with_nthreads(threads);
 	}
 	else
@@ -422,6 +423,10 @@ void aaOcean::clearArrays()
 	}
 	
 	clearResidualArrays();
+	// call fftw cleanup routines
+	if(m_resolution > 254)
+		fftwf_cleanup_threads();
+	fftwf_cleanup();
 }
 
 ULONG aaOcean::generateUID(float xCoord, float zCoord)
