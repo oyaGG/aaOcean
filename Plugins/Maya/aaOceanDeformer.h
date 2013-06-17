@@ -339,9 +339,6 @@ MStatus aaOceanDeformer::initialize()
 
 aaOceanDeformer::aaOceanDeformer() 
 {
-	// initialize fftw threads routines
-	fftwf_init_threads();
-
 	pOcean = new aaOcean;
 	u.setLength(1);
 	v.setLength(1);
@@ -360,10 +357,6 @@ aaOceanDeformer::~aaOceanDeformer()
 		delete pOcean;
 		pOcean = NULL;
 		MGlobal::displayInfo( "[aaOcean Maya] Deleted ocean patch" );
-	
-		// call fftw cleanup routines
-		fftwf_cleanup_threads();
-		fftwf_cleanup();
 	}
 }
 
