@@ -208,9 +208,6 @@ shader_evaluate
 
 node_initialize
 {
-	// initialize fftw threads routines
-	fftwf_init_threads();
-
 	// store a new ocean pointer in user-data
 	aaOcean *pOcean;
 	pOcean = new aaOcean;
@@ -230,10 +227,6 @@ node_finish
 	// cleanup ocean
 	delete pOcean;
 	AiMsgInfo("[aaOcean Arnold] Deleted aaOcean data");
-
-	// call fftw cleanup routines
-	fftwf_cleanup_threads();
-	fftwf_cleanup();
 }
 
 node_loader
