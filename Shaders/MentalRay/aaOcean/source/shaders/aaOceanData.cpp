@@ -96,7 +96,6 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
 	{
 		// request per-shader-instance initialization
 		*inst_init_req = miTRUE;
-		fftwf_init_threads();
 	}
 	else
 	{
@@ -201,12 +200,6 @@ void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
 			mi_query(miQ_FUNC_TAG, state, 0, &shaderInst);
 			mi_info("[aaOcean Shader] Data Shader ID %d, terminated at location: %p", shaderInst, pOcean);
 		}
-	}
-	else
-	{
-		// call fftw cleanup routines
-		fftwf_cleanup_threads();
-		fftwf_cleanup();
 	}
 }
 
