@@ -5,8 +5,8 @@
 // GNU General Public License (Version 3) as provided by the Free Software Foundation.
 // GNU General Public License http://www.gnu.org/licenses/gpl.html
 
-#ifdef MSVC_DEFINES // defined in MSVC project settings, preprocessor section
-#define VERSION "12.1.125"
+#ifndef __GNUC__ // defined in MSVC project settings, preprocessor section
+#define VERSION "12.5.376"
 #define I386 
 #define WIN32 
 #define SWAP_BITFIELDS 
@@ -19,6 +19,9 @@
 #define SIZEOF_VOID_P 8
 #define MAKING_DSO
 #endif
+
+#include "aaOceanSOP.h"
+#include "timer/Timer.cpp"
 
 #include <UT/UT_DSOVersion.h>
 #include <UT/UT_Interrupt.h>
@@ -37,9 +40,6 @@
 #include <OP/OP_Operator.h>
 #include <OP/OP_OperatorTable.h>
 #include <PRM/PRM_Include.h>
-#include "aaOceanSOP.h"
-
-#include "timer/Timer.cpp"
 
 void newSopOperator(OP_OperatorTable *table)
 {
@@ -57,6 +57,8 @@ static PRM_Name names[] =
     PRM_Name("resolution",		"Resolution"),
     PRM_Name("seed",			"Seed"),
     PRM_Name("oceanScale",		"Ocean Scale"),
+	PRM_Name("oceanDepth",		"Ocean Depth"),
+	PRM_Name("surfaceTension",	"Surface Tension"),
 
     PRM_Name("velocity",		"Wave Size"),
     PRM_Name("cutoff",			"Wave Smooth"),
@@ -69,6 +71,7 @@ static PRM_Name names[] =
     PRM_Name("chop",			"Chop Amount"),
     PRM_Name("enableEigens",	"Output Eigens Attributes"),
     PRM_Name("timeOffset",		"Time Offset"),
+	PRM_Name("loopTime",		"Loop Time"),
     PRM_Name("uvAttribute",		"UV Attribute"),
 
 };
@@ -81,31 +84,39 @@ static PRM_Default		resolutionDefault(4);
 static PRM_Range		oceanScaleRange(PRM_RANGE_RESTRICTED, 0.0, PRM_RANGE_UI, 200.0);
 static PRM_Default		oceanScaleDefault(100.0);
 
+static PRM_Range		oceanDepthRange(PRM_RANGE_RESTRICTED, 0.001, PRM_RANGE_RESTRICTED, 10000.0);
+static PRM_Default		oceanDepthDefault(10000.0);
+
 static PRM_Range		seedRange(PRM_RANGE_RESTRICTED, 1, PRM_RANGE_RESTRICTED, 15);
 static PRM_Default		seedDefault(1);
 
 static PRM_Range		velocityRange(PRM_RANGE_RESTRICTED, 0.0, PRM_RANGE_RESTRICTED, 30.0);
 static PRM_Default		velocityDefault(4.0);
 
+static PRM_Range		loopTimeRange(PRM_RANGE_RESTRICTED, 0.001, PRM_RANGE_UI, 1000.0);
+static PRM_Default		loopTimeDefault(1000.0);
+
 PRM_Template aaOceanSOP::myTemplateList[] = 
 {	
-    PRM_Template(PRM_INT_E,	1, &names[0],  &resolutionDefault,	0, &resolutionRange),		// resolution
-    PRM_Template(PRM_FLT_J,	1, &names[2],  &oceanScaleDefault,  0, &oceanScaleRange),		// oceanScale
-    PRM_Template(PRM_INT_E,	1, &names[1],  &seedDefault,		0, &seedRange),				// seed
-    PRM_Template(PRM_FLT_J,	1, &names[12], PRMzeroDefaults,		0, &PRMscaleRange),			// timeOffset
+    PRM_Template(PRM_INT_E,	1, &names[0],  &resolutionDefault,	0, &resolutionRange),		// resolution	// 0
+    PRM_Template(PRM_FLT_J,	1, &names[2],  &oceanScaleDefault,  0, &oceanScaleRange),		// oceanScale	// 2
+	PRM_Template(PRM_FLT_J,	1, &names[3],  &oceanDepthDefault,	0, &oceanDepthRange),		// oceanDepth	// 3
+    PRM_Template(PRM_INT_E,	1, &names[1],  &seedDefault,		0, &seedRange),				// seed			// 1
+    PRM_Template(PRM_FLT_J,	1, &names[14], PRMzeroDefaults,		0, &PRMscaleRange),			// timeOffset	// 14
+	PRM_Template(PRM_FLT_J,	1, &names[15], &loopTimeDefault,	0, &loopTimeRange),			// loop time	// 15
 
-    PRM_Template(PRM_FLT_J,	1, &names[9],  PRMoneDefaults,		0, &PRMdivision0Range),		// waveHeight
-    PRM_Template(PRM_FLT_J,	1, &names[3],  &velocityDefault,	0, &velocityRange),			// velocity (Wave Size)
-    PRM_Template(PRM_FLT_J,	1, &names[8],  PRMoneDefaults,		0, &PRMdivision0Range),		// waveSpeed
-    PRM_Template(PRM_FLT_J,	1, &names[10], PRMzeroDefaults,		0, &PRMrolloffRange),		// chop
-    PRM_Template(PRM_FLT_J,	1, &names[4],  PRMzeroDefaults,		0, &PRMdivision0Range),		// cutoff (Wave Smooth)
+    PRM_Template(PRM_FLT_J,	1, &names[11], PRMoneDefaults,		0, &PRMdivision0Range),		// waveHeight	// 11
+    PRM_Template(PRM_FLT_J,	1, &names[5],  &velocityDefault,	0, &velocityRange),			// velocity (Wave Size) //5
+    PRM_Template(PRM_FLT_J,	1, &names[10], PRMoneDefaults,		0, &PRMdivision0Range),		// waveSpeed	// 10
+    PRM_Template(PRM_FLT_J,	1, &names[12], PRMzeroDefaults,		0, &PRMrolloffRange),		// chop			// 12
+    PRM_Template(PRM_FLT_J,	1, &names[6],  PRMzeroDefaults,		0, &PRMdivision0Range),		// cutoff (Wave Smooth) // 6
 
-    PRM_Template(PRM_FLT_J,	1, &names[5],  PRMzeroDefaults,		0, &PRMangleRange),			// windDir
-    PRM_Template(PRM_FLT_J,	1, &names[7],  PRMzeroDefaults,		0, &PRMunitRange),			// damp
-    PRM_Template(PRM_INT_E,	1, &names[6],  PRMzeroDefaults,		0, &PRMdivision0Range),		// windAlign
+    PRM_Template(PRM_FLT_J,	1, &names[7],  PRMzeroDefaults,		0, &PRMangleRange),			// windDir		// 7
+    PRM_Template(PRM_FLT_J,	1, &names[9],  PRMzeroDefaults,		0, &PRMunitRange),			// damp			// 9
+    PRM_Template(PRM_INT_E,	1, &names[8],  PRMzeroDefaults,		0, &PRMdivision0Range),		// windAlign	// 8
 
-    PRM_Template(PRM_TOGGLE,1, &names[11]),													// enable Foam
-    PRM_Template(PRM_STRING,1, &names[13], 0),												// UV Attribute
+    PRM_Template(PRM_TOGGLE,1, &names[13]),													// enable Foam  // 13
+    PRM_Template(PRM_STRING,1, &names[16], 0),												// UV Attribute	// 16
 
     PRM_Template(),
 };
@@ -157,7 +168,9 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
 
     pOcean->input(	RESOLUTION(), 
 					SEED(),
-					OCEANSCALE(now), 
+					OCEANSCALE(now),
+					OCEANDEPTH(now),
+					SURFACETENSION(now),
 					VELOCITY(now), 
 					CUTOFF(now), 
 					WINDDIR(now), 
@@ -167,6 +180,7 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
 					WAVEHEIGHT(now),
 					CHOP(now), 
 					now,
+					LOOPTIME(now),
 					enableEigens,
 					FALSE);
 

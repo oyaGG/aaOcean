@@ -8,6 +8,10 @@
 #ifndef __aaOceanSOP_h__
 #define __aaOceanSOP_h__
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #include <SOP/SOP_Node.h>
 #include "aaOceanClass.cpp"
 
@@ -49,6 +53,8 @@ private:
     int		RESOLUTION()			{ return evalInt("resolution", 0, 0); }
     int		SEED()					{ return evalInt("seed", 0, 0); }
     fpreal	OCEANSCALE(fpreal t)	{ return evalFloat("oceanScale", 0, t); }
+	fpreal	OCEANDEPTH(fpreal t)	{ return evalFloat("oceanDepth", 0, t); }
+	fpreal	SURFACETENSION(fpreal t){ return evalFloat("surfaceTension", 0, t); }
 
     fpreal	VELOCITY(fpreal t)		{ return evalFloat("velocity", 0, t); }
     fpreal	CUTOFF(fpreal t)		{ return evalFloat("cutoff", 0, t); }
@@ -61,6 +67,7 @@ private:
     fpreal	CHOP(fpreal t)			{ return evalFloat("chop", 0, t); }
     int		ENABLEEIGENS()			{ return evalInt("enableEigens", 0, 0); }
     fpreal	TIMEOFFSET(fpreal t)	{ return evalFloat("timeOffset", 0, t); }
+	fpreal	LOOPTIME(fpreal t)	    { return evalFloat("loopTime", 0, t); }
 
     void	getUVAttributeName(UT_String &str){ evalString(str, "uvAttribute", 0, 0); }
     void	getEigenPlusAttribute(UT_String &str){ evalString(str, "eigenPlusAttribute", 0, 0); }
