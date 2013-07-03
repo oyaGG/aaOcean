@@ -13,6 +13,8 @@
 #define _WIN32_WINNT 0x0501
 #define WINVER 0x0501
 #define NOMINMAX 
+#define USE_MATH_DEFINES
+#define BOOST_ALL_NO_LIB  
 #define SESI_LITTLE_ENDIAN 
 #define NEED_SPECIALIZATION_STORAGE 
 #define AMD64 
