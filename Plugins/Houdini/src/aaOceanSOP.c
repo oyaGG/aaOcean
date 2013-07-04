@@ -103,6 +103,7 @@ PRM_Template aaOceanSOP::myTemplateList[] =
     PRM_Template(PRM_INT_E,	1, &names[0],  &resolutionDefault,	0, &resolutionRange),		// resolution	// 0
     PRM_Template(PRM_FLT_J,	1, &names[2],  &oceanScaleDefault,  0, &oceanScaleRange),		// oceanScale	// 2
 	PRM_Template(PRM_FLT_J,	1, &names[3],  &oceanDepthDefault,	0, &oceanDepthRange),		// oceanDepth	// 3
+	PRM_Template(PRM_FLT_J,	1, &names[4],  PRMzeroDefaults,		0, &PRMunitRange),			// surfaceTension// 4
     PRM_Template(PRM_INT_E,	1, &names[1],  &seedDefault,		0, &seedRange),				// seed			// 1
     PRM_Template(PRM_FLT_J,	1, &names[14], PRMzeroDefaults,		0, &PRMscaleRange),			// timeOffset	// 14
 	PRM_Template(PRM_FLT_J,	1, &names[15], &loopTimeDefault,	0, &loopTimeRange),			// loop time	// 15
@@ -185,17 +186,6 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
 					LOOPTIME(now),
 					enableEigens,
 					FALSE);
-
-    if(pOcean->isValid() == FALSE)
-    {
-        char msg[256];
-        sprintf(msg, "[aaOcean] Failed to allocate Ocean. Bad input", msg);
-        addError(SOP_MESSAGE, ""); 
-        cout<<msg;
-        cout.flush();
-        unlockInputs();
-        return error();
-    }
 
     // get the user-specified attribute that holds uv-data
     getUVAttributeName(UvAttribute);
