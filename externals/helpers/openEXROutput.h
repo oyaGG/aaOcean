@@ -1,16 +1,26 @@
 #ifndef OPENEXR_OUTPUT_H
 #define OPENEXR_OUTPUT_H
 
+#include <ImfNamespace.h>
+#include <ImfOutputFile.h>
+#include <ImfInputFile.h>
+#include <ImfChannelList.h>
+#include <ImfStringAttribute.h>
+#include <ImfMatrixAttribute.h>
+#include <ImfArray.h>
 #include <ImfArray.h>
 #include <half.h>
 #include <ImfRgbaFile.h>
+
+namespace CustomImf = OPENEXR_IMF_NAMESPACE;
+using namespace CustomImf;
+using namespace IMATH_NAMESPACE;
 
 #if defined(_MSC_VER)
 	#include <io.h> // For access().
 #else
 	#include <sys/io.h> // For access().
 #endif
-
 
 inline bool dirExists(const char* path)
 {
@@ -29,7 +39,6 @@ inline bool dirExists(const char* path)
 		else
     		return 0;
 	#endif
-	
 }
 
 void genFullFilePath(char* dest, const char* outputFolder, const char* postfix, const int frame)
@@ -64,29 +73,74 @@ void genFullFilePath(char* dest, const char* outputFolder, const char* postfix, 
 	strcat(dest, ".exr");
 }
 
+void writeFullFloatExr (const char fileName[], const float *rPixels,  const float *gPixels, const float *bPixels, const float *aPixels,
+	  int width,
+	  int height)
+{
+ 
+    Header header (width, height);
+    header.channels().insert ("R", Channel (FLOAT));
+	header.channels().insert ("G", Channel (FLOAT));
+	header.channels().insert ("B", Channel (FLOAT));
+	header.channels().insert ("A", Channel (FLOAT));
+
+    OutputFile file (fileName, header);
+
+    FrameBuffer frameBuffer;
+
+    frameBuffer.insert ("R",					// name
+		        Slice (FLOAT,					// type
+			       (char *) rPixels,			// base
+			       sizeof (*rPixels) * 1,		// xStride
+			       sizeof (*rPixels) * width));	// yStride
+	
+	frameBuffer.insert ("G",					// name
+		        Slice (FLOAT,					// type
+			       (char *) gPixels,			// base
+			       sizeof (*gPixels) * 1,		// xStride
+			       sizeof (*gPixels) * width));	// yStride
+
+	frameBuffer.insert ("B",					// name
+		        Slice (FLOAT,					// type
+			       (char *) bPixels,			// base
+			       sizeof (*bPixels) * 1,		// xStride
+			       sizeof (*bPixels) * width));	// yStride
+
+	frameBuffer.insert ("A",					// name
+		        Slice (FLOAT,					// type
+			       (char *) aPixels,			// base
+			       sizeof (*aPixels) * 1,		// xStride
+			       sizeof (*aPixels) * width));	// yStride
+
+
+    file.setFrameBuffer (frameBuffer);
+    file.writePixels (height);
+}
+
 void writeExr(const char* outputFileName, int dimension, float *&red, float *&green, float *&blue, float *&alpha )
 {
-	Imf::Array2D<Imf::Rgba> pixels(dimension, dimension);
-
+	Array2D<float> rPixels (dimension, dimension);
+	Array2D<float> gPixels (dimension, dimension);
+	Array2D<float> bPixels (dimension, dimension);
+	Array2D<float> aPixels (dimension, dimension);
+	
 	#pragma omp parallel for
 	for(int i = 0; i < dimension; i++)
 	{
 		for(int j = 0; j < dimension; j++)
 		{
-			pixels[j][i].g = green[i*dimension+j];
+			gPixels[j][i] = green[i*dimension+j];
 			if(red)
 			{
-				pixels[j][i].r = red[i*dimension+j];
-				pixels[j][i].b = blue[i*dimension+j];
-				pixels[j][i].a = alpha[i*dimension+j];
+				rPixels[j][i] = red[i*dimension+j];
+				bPixels[j][i] = blue[i*dimension+j];
+				aPixels[j][i] = alpha[i*dimension+j];
 			}
 			else
-				pixels[j][i].r = pixels[j][i].b = pixels[j][i].a = 0.0f;
+				rPixels[j][i] = bPixels[j][i] = aPixels[j][i] = 0.0f;
 		}
 	}
-	Imf::RgbaOutputFile outA(&outputFileName[0], Imf::Header(dimension, dimension), Imf::WRITE_RGBA);
-	outA.setFrameBuffer (&pixels[0][0], 1, dimension);
-	outA.writePixels (dimension);
-}
 
+	writeFullFloatExr(&outputFileName[0], &rPixels[0][0], &gPixels[0][0], &bPixels[0][0], &aPixels[0][0], dimension, dimension);
+}
 #endif /* OPENEXR_OUTPUT_H */
