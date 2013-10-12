@@ -1,0 +1,7 @@
+./configure CFLAGS="-fPIC" --enable-float --enable-openmp --enable-sse
+
+-- the final compiled libraries is in <fftw>/.libs  and <fftw>/threads/.libs
+
+link aaOcean with both:
+<fftw>/.libs/libfftw3f.a 
+<fftw>/threads/.libs/libfftw3f_omp.a
