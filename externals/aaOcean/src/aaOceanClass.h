@@ -94,7 +94,6 @@ public:
 
 	//bool types for various checks during run-time
 	bool	m_isAllocated;
-	bool	m_isValid;
 	bool	m_isFoamAllocated;
 	bool	m_isNormalAllocated;
 	bool	m_doHoK;
