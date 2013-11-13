@@ -30,7 +30,9 @@
 #include "agnerFog/stoc1.cpp"
 #include "agnerFog/userintf.cpp"
 #include "aaOceanClass.h"
-#include "vectorSSE.h"
+
+// removed because of gcc-4 dependency
+// #include "vectorSSE.h"
 
 aaOcean::aaOcean() :
 	// input variables
@@ -697,6 +699,8 @@ void aaOcean::evaluateJacobians()
 	}
 }
 
+// removed until vector class is gcc-4.2.x compliant
+/*
 void aaOcean::evaluateNormal()
 {
 	int index;
@@ -807,6 +811,7 @@ void aaOcean::evaluateNormal()
 		}
 	}
 }
+*/
 
 void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax)
 {
