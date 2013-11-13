@@ -135,9 +135,6 @@ shader_evaluate
 	// retrieve ocean pointer from user-data
 	aaOcean *pOcean = (aaOcean*)AiNodeGetLocalData(node);
 
-	if(!pOcean->isValid())
-		return;
-
 	// get our UV's
 	AtPoint uvPt;
 	if(AiShaderEvalParamBool(p_useUVInput))

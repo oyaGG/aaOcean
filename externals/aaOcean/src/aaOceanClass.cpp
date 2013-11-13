@@ -68,7 +68,6 @@ aaOcean::aaOcean() :
 
 	// bools to check ocean state
 	m_isAllocated(0),
-	m_isValid(0),
 	m_isFoamAllocated(0),
 	m_isNormalAllocated(0),
 	m_doHoK(0),
@@ -115,11 +114,6 @@ aaOcean::aaOcean(const aaOcean &cpy)
 aaOcean::~aaOcean()
 {
 	clearArrays();
-}
-
-bool aaOcean::isValid()
-{
-	return m_isValid;
 }
 
 bool aaOcean::isChoppy()
