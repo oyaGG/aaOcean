@@ -125,14 +125,10 @@ bool isAligned(void* data, int alignment = 16)
 
 void* aligned_malloc(int size, int alignment = 16)
 {
-#ifdef GCC_VERSION 
-	const int pointerSize = sizeof(void*);
-	const int requestedSize = size + alignment - 1 + pointerSize;
-	void* raw = malloc(requestedSize);
-	void* start = (char*)raw + pointerSize;
-	void* aligned = (void*)(((unsigned int)((char*)start+alignment-1)) & ~(alignment-1));
-	*(void**)((char*)aligned-pointerSize) = raw;
-	return aligned;
+#ifdef __GNUC__ 
+	// only supporting aligned malloc for windows for now
+	void* mem = malloc(size);
+	return mem;
 #else
 	void* aligned =_aligned_malloc( size, alignment);
 	return aligned;
@@ -142,9 +138,9 @@ void* aligned_malloc(int size, int alignment = 16)
 
 void aligned_free(void* aligned)
 {
-#ifdef GCC_VERSION 
-	void* raw = *(void**)((char*)aligned-sizeof(void*));
-	free(raw);
+#ifdef __GNUC__
+	// only supporting aligned malloc for windows for now
+	free(aligned);
 #else
 	_aligned_free(aligned);
 #endif
