@@ -31,9 +31,6 @@
 #include "agnerFog/userintf.cpp"
 #include "aaOceanClass.h"
 
-// removed because of gcc-4 dependency
-// #include "vectorSSE.h"
-
 aaOcean::aaOcean() :
 	// input variables
     m_resolution(0),
