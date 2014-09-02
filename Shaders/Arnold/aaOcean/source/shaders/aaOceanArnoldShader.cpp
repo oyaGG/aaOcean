@@ -273,6 +273,15 @@ void writeOceanData(const AtNode* node, aaOcean *&pOcean)
 			genFullFilePath(&outputFileName[0], &outputFolder[0], &postfix[0], frame);
 			writeExr(&outputFileName[0], dimension, red, green, blue, alpha);
 			AiMsgInfo("[aaOcean] Image written to %s", outputFileName);
+
+			free(green);
+
+			if(pOcean->isChoppy())
+			{
+				free(red);
+				free(blue);
+				free(alpha);
+			}
 		}
 	}
 }
