@@ -867,7 +867,8 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type)
 	xMinus1 = wrap(x - 1) * m_resolution;
 	xPlus1	= wrap(x + 1) * m_resolution;
 	xPlus2	= wrap(x + 2) * m_resolution;
-	x		= x	* m_resolution;
+	x		= wrap(x)	* m_resolution;
+	y       = wrap(y);
 	yMinus1 = wrap(y - 1);
 	yPlus1	= wrap(y + 1);
 	yPlus2	= wrap(y + 2);
@@ -912,21 +913,8 @@ inline float aaOcean::catmullRom(const float t, const float a, const float b, co
 
 inline int aaOcean::wrap(int x) const
 {
-	// return if we are trying to wrap an index that
-	// does not need wrapping
-	if(x > 0 && x < m_resolution)
-		return x;
-
-	// m_resolution is always a power of two
-	// using a fast method for computing modulo of power-of-two numbers
+	// fast modulo for power of 2 numbers
 	x = x & (m_resolution - 1);
-
-	if(x < 0)
-		x = m_resolution + x;
-	
-	if(x> (m_resolution - 1))
-		int x = 1;
-
 	return x;
 }
 
