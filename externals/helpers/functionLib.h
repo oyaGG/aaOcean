@@ -123,7 +123,7 @@ bool isAligned(void* data, int alignment = 16)
 	return ((uintptr_t)data & (alignment-1)) == 0;
 }
 
-void* aligned_malloc(int size, int alignment = 16)
+void* aligned_malloc(unsigned int size, unsigned int alignment = 16)
 {
 #ifdef __GNUC__ 
 	// only supporting aligned malloc for windows for now
