@@ -243,6 +243,15 @@ void writeOceanData(aaOceanDataShader_t *&params, miState *&state, aaOcean *&pOc
 			genFullFilePath(&outputFileName[0], &outputFolder[0], &postfix[0], frame);
 			writeExr(&outputFileName[0], dimension, red, green, blue, alpha);
 			mi_info("[aaOcean] Image written to %s", outputFileName);
+
+			free(green);
+
+			if(pOcean->isChoppy())
+			{
+				free(red);
+				free(blue);
+				free(alpha);
+			}
 		}
 	}
 }
