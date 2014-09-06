@@ -102,6 +102,9 @@ public:
 	bool	m_doFoam;
 	bool	m_doNormals;
 
+	// memory tracking
+	int		m_memory;
+
 	fftwf_complex *m_fft_htField;
 	fftwf_complex *m_fft_chopX;
 	fftwf_complex *m_fft_chopZ;
@@ -118,7 +121,7 @@ public:
 	fftwf_plan m_planJxz;
 	fftwf_plan m_planJzz;
 
-	char m_state[256]; // array for holding the current state of aaOcean object
+	char m_state[512]; // array for holding the current state of aaOcean object
 	
 	// memory management functions
 	void allocateBaseArrays();
