@@ -12,8 +12,7 @@
 #include <half.h>
 #include <ImfRgbaFile.h>
 
-namespace CustomImf = OPENEXR_IMF_NAMESPACE;
-using namespace CustomImf;
+namespace EXR = OPENEXR_IMF_NAMESPACE;
 using namespace IMATH_NAMESPACE;
 
 #if defined(_MSC_VER)
@@ -78,36 +77,36 @@ void writeFullFloatExr (const char fileName[], const float *rPixels,  const floa
 	  int height)
 {
  
-    Header header (width, height);
-    header.channels().insert ("R", Channel (FLOAT));
-	header.channels().insert ("G", Channel (FLOAT));
-	header.channels().insert ("B", Channel (FLOAT));
-	header.channels().insert ("A", Channel (FLOAT));
+	EXR::Header header (width, height);
+	header.channels().insert ("R", EXR::Channel (EXR::FLOAT));
+	header.channels().insert ("G", EXR::Channel (EXR::FLOAT));
+	header.channels().insert ("B", EXR::Channel (EXR::FLOAT));
+	header.channels().insert ("A", EXR::Channel (EXR::FLOAT));
 
-    OutputFile file (fileName, header);
+    EXR::OutputFile file (fileName, header);
 
-    FrameBuffer frameBuffer;
+    EXR::FrameBuffer frameBuffer;
 
     frameBuffer.insert ("R",					// name
-		        Slice (FLOAT,					// type
+					EXR::Slice (EXR::FLOAT,		// type
 			       (char *) rPixels,			// base
 			       sizeof (*rPixels) * 1,		// xStride
 			       sizeof (*rPixels) * width));	// yStride
 	
 	frameBuffer.insert ("G",					// name
-		        Slice (FLOAT,					// type
+					EXR::Slice (EXR::FLOAT,		// type
 			       (char *) gPixels,			// base
 			       sizeof (*gPixels) * 1,		// xStride
 			       sizeof (*gPixels) * width));	// yStride
 
 	frameBuffer.insert ("B",					// name
-		        Slice (FLOAT,					// type
+					EXR::Slice (EXR::FLOAT,		// type
 			       (char *) bPixels,			// base
 			       sizeof (*bPixels) * 1,		// xStride
 			       sizeof (*bPixels) * width));	// yStride
 
 	frameBuffer.insert ("A",					// name
-		        Slice (FLOAT,					// type
+					EXR::Slice (EXR::FLOAT,		// type
 			       (char *) aPixels,			// base
 			       sizeof (*aPixels) * 1,		// xStride
 			       sizeof (*aPixels) * width));	// yStride
@@ -119,10 +118,10 @@ void writeFullFloatExr (const char fileName[], const float *rPixels,  const floa
 
 void writeExr(const char* outputFileName, int dimension, float *&red, float *&green, float *&blue, float *&alpha )
 {
-	Array2D<float> rPixels (dimension, dimension);
-	Array2D<float> gPixels (dimension, dimension);
-	Array2D<float> bPixels (dimension, dimension);
-	Array2D<float> aPixels (dimension, dimension);
+	EXR::Array2D<float> rPixels (dimension, dimension);
+	EXR::Array2D<float> gPixels (dimension, dimension);
+	EXR::Array2D<float> bPixels (dimension, dimension);
+	EXR::Array2D<float> aPixels (dimension, dimension);
 	
 	#pragma omp parallel for
 	for(int i = 0; i < dimension; i++)
