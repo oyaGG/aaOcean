@@ -1,7 +1,7 @@
-# aaOceanArnold 0x00116400
+# aaOcean 0x00116400
 
-[node aaOceanArnold]
-	maya.name STRING "aaOceanArnold"
+[node aaOcean]
+	maya.name STRING "aaOcean"
 	maya.id INT 0x00116400
 	maya.classification STRING "shader/surface"
 	maya.output_name STRING "outColor"

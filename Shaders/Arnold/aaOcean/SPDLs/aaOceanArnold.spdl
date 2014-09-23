@@ -1,7 +1,7 @@
 SPDL
 Version = "2.0.0.0";
 Reference = "{0251E6E3-0AB6-40b9-B3C1-4E5E3F825F77}";
-PropertySet "aaOceanArnold_params"
+PropertySet "aaOcean_params"
 {
 	Parameter "out" output
 	{
@@ -419,9 +419,9 @@ PropertySet "aaOceanArnold_params"
 }
 
 
-phenomenon "aaOceanArnold_declare"
+phenomenon "aaOcean_declare"
 {
-	Name = "aaOceanArnold";
+	Name = "aaOcean";
 	Version = 1;
 	Use = texture;
 }
