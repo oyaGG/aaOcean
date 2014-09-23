@@ -17,9 +17,9 @@
 void writeOceanData(const AtNode* node, aaOcean *&pOcean);
 #endif /* WRITE_EXR */
 
-AI_SHADER_NODE_EXPORT_METHODS(aaOceanArnoldMethods);
+AI_SHADER_NODE_EXPORT_METHODS(aaOceanMethods);
 
-enum aaOceanArnoldParams
+enum aaOceanParams
 {
 	p_uv_coords,
 	p_useUVInput,
@@ -231,9 +231,9 @@ node_loader
    if (i > 0)
       return FALSE;
 
-   node->methods      = aaOceanArnoldMethods;
+   node->methods      = aaOceanMethods;
    node->output_type  = AI_TYPE_RGBA;
-   node->name         = "aaOceanArnold";
+   node->name         = "aaOcean";
    node->node_type    = AI_NODE_SHADER;
    strcpy(node->version, AI_VERSION);
    return TRUE;

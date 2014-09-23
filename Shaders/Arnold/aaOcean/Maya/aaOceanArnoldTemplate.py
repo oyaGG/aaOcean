@@ -3,7 +3,7 @@ import mtoa.utils as utils
 import mtoa.ui.ae.utils as aeUtils
 from mtoa.ui.ae.shaderTemplate import ShaderAETemplate
 
-class AEaaOceanArnoldTemplate(ShaderAETemplate):
+class AEaaOceanTemplate(ShaderAETemplate):
 	
 	def setup(self):
 		self.addSwatch()
