@@ -72,11 +72,10 @@ void genFullFilePath(char* dest, const char* outputFolder, const char* postfix, 
 	strcat(dest, ".exr");
 }
 
-void writeFullFloatExr (const char fileName[], const float *rPixels,  const float *gPixels, const float *bPixels, const float *aPixels,
-	  int width,
-	  int height)
+// writes floating point data to disk
+void writeExr (const char fileName[], const float *rPixels, const float *gPixels, 
+               const float *bPixels, const float *aPixels, int width, int height)
 {
- 
 	EXR::Header header (width, height);
 	header.channels().insert ("R", EXR::Channel (EXR::FLOAT));
 	header.channels().insert ("G", EXR::Channel (EXR::FLOAT));
@@ -111,13 +110,31 @@ void writeFullFloatExr (const char fileName[], const float *rPixels,  const floa
 			       sizeof (*aPixels) * 1,		// xStride
 			       sizeof (*aPixels) * width));	// yStride
 
-
     file.setFrameBuffer (frameBuffer);
     file.writePixels (height);
 }
 
-void writeExr(const char* outputFileName, int dimension, float *&red, float *&green, float *&blue, float *&alpha )
+// prepares aaOcean arrays to be written to OpenEXR format
+void oceanDataToEXR(aaOcean *&pOcean, const char *outputFolder, const char *postfix, int frame, char *outputFileName)
 {
+	int dimension = pOcean->getResolution();
+	int arraySize = dimension * dimension;
+
+	float *red, *green, *blue, *alpha = 0;
+	green = (float*) malloc(arraySize * sizeof(float));
+	pOcean->getOceanArray(green, aaOcean::eHEIGHTFIELD);
+
+	if(pOcean->isChoppy())
+	{
+		red		= (float*) malloc(arraySize * sizeof(float));
+		blue	= (float*) malloc(arraySize * sizeof(float));
+		alpha	= (float*) malloc(arraySize * sizeof(float));
+
+		pOcean->getOceanArray(red, aaOcean::eCHOPX);
+		pOcean->getOceanArray(blue, aaOcean::eCHOPZ);
+		pOcean->getOceanArray(alpha, aaOcean::eFOAM);
+	}
+	
 	EXR::Array2D<float> rPixels (dimension, dimension);
 	EXR::Array2D<float> gPixels (dimension, dimension);
 	EXR::Array2D<float> bPixels (dimension, dimension);
@@ -140,6 +157,15 @@ void writeExr(const char* outputFileName, int dimension, float *&red, float *&gr
 		}
 	}
 
-	writeFullFloatExr(&outputFileName[0], &rPixels[0][0], &gPixels[0][0], &bPixels[0][0], &aPixels[0][0], dimension, dimension);
+	genFullFilePath(&outputFileName[0], &outputFolder[0], &postfix[0], frame);
+	writeExr(&outputFileName[0], &rPixels[0][0], &gPixels[0][0], &bPixels[0][0], &aPixels[0][0], dimension, dimension);
+	
+	free(green);
+    if(red)
+        free(red);
+    if(blue)
+        free(blue);
+    if(alpha)
+        free(alpha);
 }
 #endif /* OPENEXR_OUTPUT_H */
