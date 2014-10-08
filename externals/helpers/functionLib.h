@@ -2,6 +2,7 @@
 #define FUNCTION_LIB_H
 
 #include <assert.h>
+#include "constants.h"
 
 inline float DegsToRads(float degrees)	// Degrees to radians conversion...
 { 
