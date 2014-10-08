@@ -70,9 +70,9 @@ int main(int argc, char* argv[])
             oceanInput.windDir,         // wind dir
             oceanInput.windAlign,       // wind align
             oceanInput.reflectedWaves,  // damp
-            oceanInput.waveSpeed,		// wave speed
-            oceanInput.waveHeight,		// wave height
-            oceanInput.waveChop,		// chop amount
+            oceanInput.waveSpeed,       // wave speed
+            oceanInput.waveHeight,      // wave height
+            oceanInput.waveChop,        // chop amount
             time,                       // time in seconds
             100000.f,                   // repeat/loop time
             TRUE,                       // calculate foam
