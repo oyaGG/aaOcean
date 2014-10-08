@@ -1,5 +1,21 @@
 // aaOceanTerminal.cpp : standalone aaOcean console/terminal application
-//
+// Outputs RGBA, with Vector Displacement in RGB, and foam in Alpha
+// Recommend OpenEXR 2.xx to avoid namespace runtime conflicts
+// Author: Amaan Akram 
+// www.amaanakram.com
+// aaOcean is free software and can be redistributed and modified under the terms of the 
+// GNU General Public License (Version 3) as provided by the Free Software Foundation.
+// GNU General Public License http://www.gnu.org/licenses/gpl.html
+
+// usage:
+// ./aaOcean --resolution=256 --seed=1 --oceanscale=100 --oceandepth=10000 
+// --surfacetension=0.0 --velocity=15 --smooth=0 --winddir=45 --windalign=1 
+// --reflectedwaves=0.3 --speed=1.0 --waveheight=1.0 --wavechop=1.0 -
+// -startframe=101 --endframe=101 --outputfolder=/tmp --postfix=Your_Postfix
+
+// not all of the above arguments need to be specified. See default values in 
+// input.h in input constructor
+
 #include <stdio.h>
 #include <iostream>
 #include <iomanip> 
@@ -7,13 +23,11 @@
 #include <string.h>
 #include <math.h> 
 
+#include "functionLib.h"
 #include "input.h"
 #include "timer/Timer.cpp"
 #include "aaOceanClass.cpp"
-
-#ifdef WRITE_OPENEXR
 #include "openEXROutput.h"
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -24,15 +38,18 @@ int main(int argc, char* argv[])
     if(!processInput(argc, argv, oceanInput))
         return 1;
 
-    int dimension = (int)pow(2.0f, (4 + (oceanInput.resolution)));
+    int dimension = oceanInput.resolution;
     LOG(logINFO) << "Starting ocean evaluation for " << dimension << "x" << dimension;
-    aaOcean *pOcean = new aaOcean;
 
+    // modify dimension to account of aaOcean's
+    // arbitrary resolution scaling of 4
+    dimension = (int)(log((float)dimension)/ log(2.0f)) - 4;
+    aaOcean *pOcean = new aaOcean;
     
     float timestep = 1.0f/oceanInput.fps;
     int currentFrame = oceanInput.startFrame;
 
-    while(currentFrame < oceanInput.endFrame)
+    while(currentFrame <= oceanInput.endFrame)
     {
         t.start();
 
@@ -43,7 +60,7 @@ int main(int argc, char* argv[])
         LOG(logINFO) << msg;
 
         pOcean->input(
-            oceanInput.resolution,      // resolution 
+            dimension,                  // resolution 
             oceanInput.seed,            // seed
             oceanInput.oceanScale,      // ocean scale
             oceanInput.oceanDepth,      // ocean depth
@@ -84,20 +101,15 @@ int main(int argc, char* argv[])
         currentFrame++;
     }
 
-    
-
     delete pOcean;
     return 0;
 }
-
-#ifdef WRITE_OPENEXR
-
 
 void sressTest(aaOcean *pOcean)
 {
     Timer t;
      // stress-test
-    int steps = INT_MAX/1000;
+    int steps = INT_MAX / 10;
     char msg[512];
     sprintf(msg,"Evaluating Ocean for sample UV's, total samples %d", steps);
     LOG(logINFO) << msg;
@@ -113,18 +125,9 @@ void sressTest(aaOcean *pOcean)
         float y = pOcean->getOceanData(u, v, aaOcean::eHEIGHTFIELD);
         float x = pOcean->getOceanData(u, v, aaOcean::eCHOPX);
         float z = pOcean->getOceanData(u, v, aaOcean::eCHOPZ);
-
-        int tID = omp_get_thread_num();
-        if(i%(steps/10) == 0)
-        {	
-            float done = (1.0f - (float(steps) - (float)i)/(float)steps) * 100.f;
-            LOG(logDEBUG) << "Done " << done <<" percent on thread " << tID;
-        }
-        
     }
     t.stop();
     sprintf(msg,"Time to randomly sample ocean grid: %0.2f seconds", t.getElapsedTimeInSec());
     LOG(logINFO) << msg;
 }
 
-#endif
