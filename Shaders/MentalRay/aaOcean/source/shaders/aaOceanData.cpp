@@ -27,9 +27,9 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
     mi_query( miQ_FUNC_USERPTR, state, 0, (void *)&os);
     aaOcean *pOcean = (*os)->ocean;
 
-    miScalar	layerOcean	= *mi_eval_scalar(&params->layerOcean);
-    miVector	*coord		=  mi_eval_vector(&params->uv_coords);
-    miScalar	fade		= *mi_eval_scalar(&params->fade);
+    miScalar    layerOcean  = *mi_eval_scalar(&params->layerOcean);
+    miVector    *coord      =  mi_eval_vector(&params->uv_coords);
+    miScalar    fade        = *mi_eval_scalar(&params->fade);
     
     if(*mi_eval_boolean(&params->use_uv_input) == FALSE)
     {
@@ -54,10 +54,10 @@ miBoolean aaOceanDataShader(miColor *result, miState *state, aaOceanDataShader_t
         // see if user has requested normalized or raw foam values
         if(!*mi_eval_boolean(&params->rawOutput))
         {
-            miScalar	gamma		= *mi_eval_scalar(&params->gamma);
-            miScalar	brightness  = *mi_eval_scalar(&params->brightness);
-            miScalar	fmin		= *mi_eval_scalar(&params->fmin);
-            miScalar	fmax		= *mi_eval_scalar(&params->fmax);
+            miScalar    gamma       = *mi_eval_scalar(&params->gamma);
+            miScalar    brightness  = *mi_eval_scalar(&params->brightness);
+            miScalar    fmin        = *mi_eval_scalar(&params->fmin);
+            miScalar    fmax        = *mi_eval_scalar(&params->fmax);
 
             // fitting to 0 - 1 range using rescale(...)
             // invert result to put foam on wave peaks
@@ -98,7 +98,7 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
     else
     {
         // evaluated any previously connected ocean shaders
-        miScalar layerOcean	= *mi_eval_scalar(&params->layerOcean);
+        miScalar layerOcean = *mi_eval_scalar(&params->layerOcean);
 
         // allocate memory for our ocean object and store its pointer 
         // in shader's user-data construct
@@ -116,7 +116,7 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
         else
         {
             mi_matrix_ident((*os)->transform);
-            mi_warning("[aaOcean Shader] Shader's Transform input is zero. Using Identity instead");	
+            mi_warning("[aaOcean Shader] Shader's Transform input is zero. Using Identity instead");    
         }
     
         // retrieve user input for shader
@@ -142,9 +142,9 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
         // get the tag of the currently running shader so that we can call its name
         miTag shaderInst; 
         mi_query(miQ_FUNC_TAG, state, 0, &shaderInst);
-        mi_info("%s. Shader ID: %d", pOcean->getState(), shaderInst);	
+        mi_info("%s. Shader ID: %d", pOcean->getState(), shaderInst);   
 
-        miBoolean rawOutput	= *mi_eval_boolean(&params->rawOutput);
+        miBoolean rawOutput = *mi_eval_boolean(&params->rawOutput);
         if(pOcean->isChoppy() && !rawOutput)
         {
             float outMin, outMax;
@@ -161,7 +161,7 @@ void aaOceanDataShader_init(miState *state, aaOceanDataShader_t *params, miBoole
         // clear arrays that are not required during shader evaluation
         pOcean->clearResidualArrays();
 
-        mi_info("[aaOcean Shader] Data shader initiated. Shader ID: %d, location: %p", shaderInst, pOcean);	
+        mi_info("[aaOcean Shader] Data shader initiated. Shader ID: %d, location: %p", shaderInst, pOcean); 
     }
 }
 
@@ -177,7 +177,7 @@ char* mitag_to_string(miTag tag, char *default_value)
 }
 
 extern "C" DLLEXPORT 
-void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
+void aaOceanDataShader_exit(miState *state, aaOceanDataShader_t *params)
 {
     if( params )
     {
@@ -189,7 +189,7 @@ void aaOceanDataShader_exit(miState	*state,	aaOceanDataShader_t *params)
             #ifdef WRITE_OPENEXR
             if(params->writeFile)
             {
-                char* outputFolder	= mitag_to_string(params->outputFolder,"");
+                char* outputFolder  = mitag_to_string(params->outputFolder,"");
                 if(!dirExists(outputFolder))
                     mi_error("[aaOcean] Invalid folder path: %s", outputFolder);
                 else

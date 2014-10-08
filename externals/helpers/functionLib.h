@@ -6,11 +6,11 @@
 
 inline float DegsToRads(float degrees)	// Degrees to radians conversion...
 { 
-	return(degrees * aa_PIBY180);  
+    return(degrees * aa_PIBY180);  
 }
 inline float RadsToDegs(float rads)		// Radians to degrees conversion...
 { 
-	return(rads * aa_180BYPI); 
+    return(rads * aa_180BYPI); 
 }
 
 template <class T> const T& maximum ( const T& a, const T& b ) 
@@ -35,13 +35,13 @@ inline bool isfEqual(float x, float y, const float epsilon)
 
 inline float isEven(int x)
 {
-	// used in FFT
-	// (-1)^(x+y), shift back from centre representation for zero-frequencies to left
-	// x, y being coordinates of 2d array holding fft data
+    // used in FFT
+    // (-1)^(x+y), shift back from centre representation for zero-frequencies to left
+    // x, y being coordinates of 2d array holding fft data
     if((x % 2)==0)
-		return 1.0f;
-	else
-		return -1.0f;
+        return 1.0f;
+    else
+        return -1.0f;
 }
 
 inline long int_sqrt(long r) // paul bourke
@@ -53,7 +53,7 @@ inline long int_sqrt(long r) // paul bourke
       t = c + b;
       c >>= 1;
       if (t <= r) 
-	  {
+      {
          r -= t;
          c += b;
       }
@@ -68,10 +68,10 @@ inline int round(float x)
 
 inline bool isInt(float a)
 {
-	if(static_cast<int>(a) == a)
-		return true;
-	else
-		return false;
+    if(static_cast<int>(a) == a)
+        return true;
+    else
+        return false;
 }
 
 inline float rescale(const float& value, const float& oldMin, const float& oldMax, const float& newMin, const float& newMax)
@@ -87,14 +87,14 @@ inline float rescale(const float& value, const float& oldMin, const float& oldMa
 
 float intpow( float base, int exponent )
 {
-	float out = 1.f, curpwr = base;
-	for( ; exponent > 0; exponent = exponent >> 1)
-	{
-		if ((exponent & 1) > 0)
-			base *= curpwr;
-		curpwr *= curpwr;
-	}
-	return out;
+    float out = 1.f, curpwr = base;
+    for( ; exponent > 0; exponent = exponent >> 1)
+    {
+        if ((exponent & 1) > 0)
+            base *= curpwr;
+        curpwr *= curpwr;
+    }
+    return out;
 }
 
 float fastPow(float a, float b) 
@@ -112,27 +112,27 @@ float fastPow(float a, float b)
 
 inline float lerp(float t, float a, float b)
 { 
-	// t = 0 retunes a
-	// t = 1 returns b
-	return a*(1.0f - t) + b * t;
+    // t = 0 retunes a
+    // t = 1 returns b
+    return a*(1.0f - t) + b * t;
 }
 
 bool isAligned(void* data, int alignment = 16)
 {
-	// check that the alignment is a power of two
-	assert((alignment & (alignment-1)) == 0); 
-	return ((uintptr_t)data & (alignment-1)) == 0;
+    // check that the alignment is a power of two
+    assert((alignment & (alignment-1)) == 0); 
+    return ((uintptr_t)data & (alignment-1)) == 0;
 }
 
 void* aligned_malloc(unsigned int size, unsigned int alignment = 16)
 {
 #ifdef __GNUC__ 
-	// only supporting aligned malloc for windows for now
-	void* mem = malloc(size);
-	return mem;
+    // only supporting aligned malloc for windows for now
+    void* mem = malloc(size);
+    return mem;
 #else
-	void* aligned =_aligned_malloc( size, alignment);
-	return aligned;
+    void* aligned =_aligned_malloc( size, alignment);
+    return aligned;
 #endif
 
 }
@@ -140,20 +140,20 @@ void* aligned_malloc(unsigned int size, unsigned int alignment = 16)
 void aligned_free(void* aligned)
 {
 #ifdef __GNUC__
-	// only supporting aligned malloc for windows for now
-	free(aligned);
+    // only supporting aligned malloc for windows for now
+    free(aligned);
 #else
-	_aligned_free(aligned);
+    _aligned_free(aligned);
 #endif
 
 }
 
 #if defined(_MSC_VER)
-	#define DATA_ALIGN(declaration, alignment) __declspec(align(alignment)) declaration
+    #define DATA_ALIGN(declaration, alignment) __declspec(align(alignment)) declaration
 #elif defined(GCC)
-	#define DATA_ALIGN(declaration, alignment) declaration __attribute__ ((aligned (alignment)))
+    #define DATA_ALIGN(declaration, alignment) declaration __attribute__ ((aligned (alignment)))
 #else
-	#define DATA_ALIGN(declaration, alignment)
+    #define DATA_ALIGN(declaration, alignment)
 #endif
 
 #endif /*FUNCTION_LIB_H*/

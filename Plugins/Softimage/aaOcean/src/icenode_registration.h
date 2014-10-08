@@ -9,21 +9,21 @@ XSI::CStatus RegisteraaOcean( XSI::PluginRegistrar& in_reg );
 
 SICALLBACK XSILoadPlugin( PluginRegistrar& in_reg )
 {
-	in_reg.PutAuthor(L"Amaan Akram");
-	in_reg.PutName(L"aaOceanIceDeformer");
-	in_reg.PutEmail(L"amaan@amaanakram.com");
-	in_reg.PutURL(L"http://www.amaanakram.com");
-	in_reg.PutVersion(2,6);
+    in_reg.PutAuthor(L"Amaan Akram");
+    in_reg.PutName(L"aaOceanIceDeformer");
+    in_reg.PutEmail(L"amaan@amaanakram.com");
+    in_reg.PutURL(L"http://www.amaanakram.com");
+    in_reg.PutVersion(2,6);
 
-	RegisteraaOcean( in_reg );
+    RegisteraaOcean( in_reg );
 
-	return CStatus::OK;
+    return CStatus::OK;
 }
 
 SICALLBACK XSIUnloadPlugin( const PluginRegistrar& in_reg )
 {
-	CString strPluginName;
-	strPluginName = in_reg.GetName();
-	Application().LogMessage(strPluginName + L" has been unloaded.");
-	return CStatus::OK;
+    CString strPluginName;
+    strPluginName = in_reg.GetName();
+    Application().LogMessage(strPluginName + L" has been unloaded.");
+    return CStatus::OK;
 }
