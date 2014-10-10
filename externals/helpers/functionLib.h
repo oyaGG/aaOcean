@@ -3,6 +3,8 @@
 
 #include <assert.h>
 #include "constants.h"
+#include <stdint.h>
+#include <stdlib.h>
 
 inline float DegsToRads(float degrees)	// Degrees to radians conversion...
 { 

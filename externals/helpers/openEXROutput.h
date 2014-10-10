@@ -12,13 +12,17 @@
 #include <half.h>
 #include <ImfRgbaFile.h>
 
+
+
 namespace EXR = OPENEXR_IMF_NAMESPACE;
 using namespace IMATH_NAMESPACE;
 
 #if defined(_MSC_VER)
-	#include <io.h> // For access().
+	#include <io.h> // For access()
 #else
-	#include <sys/io.h> // For access().
+	#include <sys/io.h> // For access()
+        #include <stdlib.h>
+        #include <unistd.h>
 #endif
 
 inline bool dirExists(const char* path)
