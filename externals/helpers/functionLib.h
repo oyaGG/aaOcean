@@ -3,7 +3,9 @@
 
 #include <assert.h>
 #include "constants.h"
+#ifdef __GNUC__ 
 #include <stdint.h>
+#endif
 #include <stdlib.h>
 
 inline float DegsToRads(float degrees)	// Degrees to radians conversion...
