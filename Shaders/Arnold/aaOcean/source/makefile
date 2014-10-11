@@ -4,21 +4,20 @@
 # This specific makefile links against single-precision, static version of FFTW. 
 # Please make sure that threads are enabled for FFTW
 
-ARNOLD	 	:= 
-FFTWLOC  	:= ../../../../externals/fftw
+DEPLOC		:= ../../../../../../sdks/deploy
+LIBSLOC		:= $(DEPLOC)/lib
+ARNOLD	 	:= $(DEPLOC)/arnold/Arnold-4.2.0.5-linux
 GXXLOC	 	:= 
 TARGETLOC	:= 
-OPENEXRLOC	:=
 
-INCLUDES := -I$(ARNOLD)/include -I../../../../externals/aaOcean/src -I../../../../externals/helpers  -I$(FFTWLOC) -I$(OPENEXRLOC)
 
-#OPENEXR LDFLAGS BELOW
-#LDFLAGS  := -fopenmp -L$(ARNOLD)/bin -lai $(FFTWLOC)/libfftw3f.a $(FFTWLOC)libfftw3f_omp.a -lHalf -lIex -lIlmImf -lIlmThread -lImath -lz
-LDFLAGS  := -fopenmp -L$(ARNOLD)/bin -lai $(FFTWLOC)/libfftw3f.a $(FFTWLOC)libfftw3f_omp.a
+INCLUDES := -I$(ARNOLD)/include -I../../../../externals/aaOcean/src -I../../../../externals/helpers  -I$(DEPLOC)/include -I$(DEPLOC)/include/OpenEXR
 
-#OPENEXR CXXFLAGS BELOW
-#CXXFLAGS := -w -O2 -fPIC -fopenmp -fvisibility=hidden -DWRITE_OPENEXR
-CXXFLAGS := -w -O2 -fPIC -fopenmp -fvisibility=hidden
+
+LDFLAGS  := -fopenmp -L$(ARNOLD)/bin 
+LIBS     := $(LIBSLOC)/libIlmImf.a $(LIBSLOC)/libImath.a $(LIBSLOC)/libHalf.a $(LIBSLOC)/libIexMath.a $(LIBSLOC)/libIlmThread.a $(LIBSLOC)/libIex.a $(LIBSLOC)/libfftw3f.a $(LIBSLOC)/libfftw3f_omp.a $(LIBSLOC)/libz.a -Wl,-rpath -Wl,$(LIBSLOC) -lai
+
+CXXFLAGS := -w -O2 -fPIC -fopenmp -fvisibility=hidden -pthread -DWRITE_OPENEXR
 
 CXX	 := $(GXXLOC)g++
 SOURCES  := shaders/aaOceanArnoldShader.cpp
@@ -26,7 +25,7 @@ OBJECTS  := $(SOURCES:.cpp=.o)
 TARGET   := $(TARGETLOC)aaOceanArnold.so
 
 $(TARGET) : $(OBJECTS)
-	$(CXX) $(inputs) -shared $< -o $@ $(LDFLAGS)
+	$(CXX) $(inputs) -shared $< -o $@ $(LDFLAGS) -L$(LIBSLOC) $(LIBS)
 
 %.o : %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
