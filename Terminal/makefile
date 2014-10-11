@@ -1,13 +1,16 @@
-# Requires FFTW, OPENEXR
-# To enable OpenEXR support uncomment the LDFLAGS and CXXFLAGS below, and comment out the existing ones
-
-# This specific makefile links against single-precision, static version of FFTW
+# Requires the following packages
+# fftw, download source from http://fftw.org/download.html
+# ./configure CFLAGS="-fPIC" --enable-float --enable-openmp --enable-sse --prefix=
+#ILMBASE, OPENEXR, zlib
+#
+# for portability, it is advised to link against the static libraries of the above packages
+# build instructions are included in <aaocean_repo_path>/externals
 
 # fftw, openexr, ilmbase and libz header and libs (change this if required)
-DEPLOC      := /development/sdks/deploy
+DEPLOC      := ../../../sdks/deploy
 
 # aaocean's repository location (change this if required)
-AAOCEANLOC    := /development/Repos/aaocean
+AAOCEANLOC    := ../../../repos/aaocean
 
 ####### NO USER-INPUT REQUIRED BEYOND THIS LINE ######
 
@@ -24,10 +27,10 @@ INCLUDES := -I$(AAOCEANLOC)/externals/aaOcean/src -I$(AAOCEANLOC)/externals/help
 LIBSLOC     := $(DEPLOC)/lib
 
 # libs to link against 
-LIBS     := $(LIBSLOC)/libIlmImf.a $(LIBSLOC)/libImath.a $(LIBSLOC)/libHalf.a $(LIBSLOC)/libIexMath.a $(LIBSLOC)/libIlmThread.a $(LIBSLOC)/libIex.a $(LIBSLOC)/libfftw3f.a $(LIBSLOC)/libfftw3f_omp.a $(LIBSLOC)/libz.a
+LIBS     := $(LIBSLOC)/libIlmImf.a $(LIBSLOC)/libImath.a $(LIBSLOC)/libHalf.a $(LIBSLOC)/libIexMath.a $(LIBSLOC)/libIlmThread.a $(LIBSLOC)/libIex.a $(LIBSLOC)/libfftw3f.a $(LIBSLOC)/libfftw3f_omp.a $(LIBSLOC)/libz.a -Wl,-rpath -Wl,$(LIBSLOC)
 
 # this should not be changed
-LDFLAGS  := -fPIC -fopenmp -pthread -fvisibility=hidden -w -O2  -Wl,-rpath -Wl,$(LIBSLOC)
+LDFLAGS  := -fPIC -fopenmp -pthread -fvisibility=hidden -w -O2  
 
 # the build target executable:
 TARGET = aaOceanTerminal
@@ -38,4 +41,4 @@ $(TARGET): $(TARGET).cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(TARGET) $(TARGET).cpp $(LDFLAGS) -L$(LIBSLOC) $(LIBS)
 
 clean:
-    $(RM) $(TARGET)
+	$(RM) $(TARGET)
