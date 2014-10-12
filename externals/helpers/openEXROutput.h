@@ -12,8 +12,6 @@
 #include <half.h>
 #include <ImfRgbaFile.h>
 
-
-
 namespace EXR = OPENEXR_IMF_NAMESPACE;
 using namespace IMATH_NAMESPACE;
 
@@ -47,9 +45,11 @@ inline bool dirExists(const char* path)
 void genFullFilePath(char* dest, const char* outputFolder, const char* postfix, const int frame)
 {
     #ifdef _MSC_VER
-    char* slash = "\\";
+    char slash[5];
+    strcpy(slash, "\\");
     #else
-    char* slash = "/";
+    char slash[5];
+    strcpy(slash, "/");
     #endif
 
     char cFrame[10];
