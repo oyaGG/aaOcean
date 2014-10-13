@@ -10,7 +10,7 @@
 DEPLOC      := ../../../sdks/deploy
 
 # aaocean's repository location (change this if required)
-AAOCEANLOC    := ../../../repos/aaocean
+AAOCEANLOC    := ../../aaocean
 
 ####### NO USER-INPUT REQUIRED BEYOND THIS LINE ######
 
