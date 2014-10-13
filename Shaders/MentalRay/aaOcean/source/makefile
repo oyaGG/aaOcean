@@ -1,32 +1,26 @@
-# Requires FFTW, 
-# To enable OpenEXR support uncomment the LDFLAGS and CXXFLAGS below, and comment out the existing ones
+# Makefile for mental ray aaOcean shader
 
-# This specific makefile links against single-precision, static version of FFTW. 
-# Please make sure that threads are enabled for FFTW
+DEPLOC		:= ../../../../../../sdks/deploy
+LIBSLOC		:= $(DEPLOC)/lib
+MENTALRAY 	:= $(DEPLOC)/softimage/softimage2013
+GXXLOC	 	:= 
+TARGETLOC	:= 
 
-MENTALSDKLOC	:= 
-GXXLOC	 		:= 
-FFTWLOC  		:= ../../../../externals/fftw
-TARGETLOC		:= 
-OPENEXRLOC		:=
+# you should not need to change anything below this line unless aaOcean's repo
+# has not been deployed as stated in the wiki page
 
-INCLUDES := -I$(MENTALSDKLOC) -I$(FFTWLOC) -I$(OPENEXRLOC) -I../../../../externals/aaOcean/src -I../../../../externals/helpers
+INCLUDES := -I$(MENTALRAY)/include -I../../../../externals/aaOcean/src -I../../../../externals/helpers  -I$(DEPLOC)/include -I$(DEPLOC)/include/OpenEXR
+LDFLAGS  := -fopenmp 
+LIBS     := $(LIBSLOC)/libIlmImf.a $(LIBSLOC)/libImath.a $(LIBSLOC)/libHalf.a $(LIBSLOC)/libIexMath.a $(LIBSLOC)/libIlmThread.a $(LIBSLOC)/libIex.a $(LIBSLOC)/libfftw3f.a $(LIBSLOC)/libfftw3f_omp.a $(LIBSLOC)/libz.a -Wl,-rpath -Wl,$(LIBSLOC)
 
-#OPENEXR LDFLAGS BELOW
-#LDFLAGS  := -fopenmp $(FFTWLOC)libfftw3f.a $(FFTWLOC)libfftw3f_omp.a -lHalf -lIex -lIlmImf -lIlmThread -lImath -lz
-LDFLAGS  := -fopenmp $(FFTWLOC)libfftw3f.a $(FFTWLOC)libfftw3f_omp.a 
-
-#OPENEXR CXXFLAGS BELOW
-#CXXFLAGS := -w -O3 -fPIC -fopenmp -DWRITE_OPENEXR
-
-CXXFLAGS := -w -O3 -fPIC -fopenmp
-CXX	 	 := $(GXXLOC)g++
-SOURCES  := shaders/aaOceanData.cpp
-OBJECTS  := $(SOURCES:.cpp=.o)
-TARGET   := $(TARGETLOC)aaOceanShaders.so
+CXXFLAGS	:= -O2 -fPIC -fopenmp -fvisibility=hidden -pthread -DWRITE_OPENEXR
+CXX		:= $(GXXLOC)g++
+SOURCES		:= shaders/aaOceanData.cpp
+OBJECTS		:= $(SOURCES:.cpp=.o)
+TARGET		:= $(TARGETLOC)aaOceanShaders.so
 
 $(TARGET) : $(OBJECTS)
-	$(CXX) $(inputs) -shared $< -o $@ $(LDFLAGS)
+	$(CXX) $(inputs) -shared $< -o $@ $(LDFLAGS) -L$(LIBSLOC) $(LIBS)
 
 %.o : %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
