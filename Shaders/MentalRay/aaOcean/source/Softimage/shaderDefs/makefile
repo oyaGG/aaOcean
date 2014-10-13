@@ -5,6 +5,9 @@ XSISDK 		:= $(DEPLOC)/softimage/softimage2013
 GXXLOC	 	:= 
 TARGETLOC	:= 
 
+# you should not need to change anything below this line unless aaOcean's repo
+# has not been deployed as stated in the wiki page
+
 INCLUDES := -I$(XSISDK)/include
 LDFLAGS  := -Wl,-rpath="\\$$ORIGIN:\\$$ORIGIN/../lib:\\$$ORIGIN/../bin"
 CXXFLAGS := -w -O2 -fPIC
