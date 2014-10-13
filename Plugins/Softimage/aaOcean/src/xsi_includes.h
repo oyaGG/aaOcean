@@ -26,7 +26,7 @@
 #include <xsi_indexset.h>
 #include <xsi_dataarray.h>
 #include <xsi_dataarray2D.h>
-#include <xsi_CustomProperty.h>
+#include <xsi_customproperty.h>
 #include <xsi_model.h>
 #include <xsi_ppglayout.h>
 #include <xsi_ppgeventcontext.h>
