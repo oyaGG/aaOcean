@@ -1,13 +1,15 @@
-XSISDK	 := 
-FFTWLOC  := 
-GXXLOC	 := 
-TARGETLOC:= 
+# Makefile for mental ray aaOcean shader's Shader Definition Plugin for Softimage
 
-INCLUDES := -I$(XSISDK)
-LDFLAGS  := 
+DEPLOC		:= ../../../../../../../../sdks/deploy
+XSISDK 		:= $(DEPLOC)/softimage/softimage2013
+GXXLOC	 	:= 
+TARGETLOC	:= 
+
+INCLUDES := -I$(XSISDK)/include
+LDFLAGS  := -Wl,-rpath="\\$$ORIGIN:\\$$ORIGIN/../lib:\\$$ORIGIN/../bin"
 CXXFLAGS := -w -O2 -fPIC
 CXX      := $(GXXLOC)g++
-SOURCES  := shaderDefs.cpp
+SOURCES  := shaderDefsPlugin.cpp
 OBJECTS  := $(SOURCES:.cpp=.o)
 TARGET   := aaOceanShaderDefs.so
 
