@@ -2,7 +2,12 @@
 #define CONSTANTS_H
 
 #ifndef ULONG
+#ifdef _MSC_VER
+typedef unsigned long ULONG;
+#endif
+#ifndef _MSC_VER
 typedef unsigned int ULONG;
+#endif
 #endif
 
 #ifndef DBL_MAX
