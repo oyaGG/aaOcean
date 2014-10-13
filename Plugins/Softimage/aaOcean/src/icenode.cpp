@@ -7,7 +7,7 @@
 
 #include "xsi_includes.h"
 #include "aaOceanClass.cpp"
-#include "icenode_portdefs.h"
+#include "icenode_portDefs.h"
 #include "icenode_registration.h"
 
 void multiplyMatrix(float *InVector, float *OutVector, XSI::CDataArrayMatrix4f &transform, int transformArraySize)
