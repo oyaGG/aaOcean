@@ -53,7 +53,7 @@
 
 #ifdef __GNUC__
     #if __GNUC_MINOR__ > 2 
-        #error [aaOcean] compiler version may generate code incompatible with Maya
+        #warning [aaOcean] compiler version may generate code incompatible with Maya
     #endif
 #endif
 
