@@ -2,7 +2,7 @@
 #define CONSTANTS_H
 
 #ifndef ULONG
-typedef unsigned long ULONG;
+typedef unsigned int ULONG;
 #endif
 
 #ifndef DBL_MAX
@@ -25,8 +25,8 @@ typedef unsigned long ULONG;
 
 static const float aa_GRAVITY		= 9.80665f;
 static const float aa_EPSILON		= 0.0000001f;
-static const float aa_PI			= 3.14159265358979323846f;
-static const float aa_TWOPI			= 3.14159265358979323846f * 2.0f;
+static const float aa_PI		= 3.14159265358979323846f;
+static const float aa_TWOPI		= 3.14159265358979323846f * 2.0f;
 static const float aa_PIBYTWO		= 1.57079632679489661923f;
 static const float aa_180BYPI		= 57.295779513082320876798154814105f;
 static const float aa_PIBY180		= 0.01745329251994329576922222222222f;
