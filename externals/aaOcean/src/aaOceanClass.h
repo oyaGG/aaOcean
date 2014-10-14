@@ -33,7 +33,7 @@ public:
     };
 
     void input(	int 	resolution,
-                ULONG 	seed, 
+                unsigned int  seed, 
                 float 	oceanScale,
                 float	oceanDepth,
                 float	surfaceTension,
@@ -77,7 +77,7 @@ public:
     float	m_time;
     float	m_loopTime;
     float	m_foamBoundmin; //for holding min/max foam
-    float   m_foamBoundmax; //for holding min/max foam
+    float	m_foamBoundmax; //for holding min/max foam
     
     //ocean array pointers
     int		*m_xCoord;
@@ -131,7 +131,7 @@ public:
     
     // initialization functions
     void reInit(int data_size);
-    ULONG generateUID(float, float);
+    unsigned int generateUID(float, float);
     void prepareOcean();
     void setupGrid();
 
