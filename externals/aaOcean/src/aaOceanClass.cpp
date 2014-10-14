@@ -131,7 +131,7 @@ int aaOcean::getResolution()
     return m_resolution;
 }
 
-void aaOcean::input(int resolution, ULONG seed, float oceanScale, float oceanDepth, float surfaceTension, 
+void aaOcean::input(int resolution, unsigned int seed, float oceanScale, float oceanDepth, float surfaceTension, 
                     float velocity, float cutoff, float windDir, int windAlign, float damp, float waveSpeed, 
                     float waveHeight, float chopAmount, float time, float loopTime, bool doFoam, bool doNormals)
 {
@@ -453,14 +453,14 @@ void aaOcean::clearArrays()
     fftwf_cleanup();
 }
 
-ULONG aaOcean::generateUID(float xCoord, float zCoord)
+unsigned int aaOcean::generateUID(float xCoord, float zCoord)
 {
     // a very simple hash function. should probably do a better one at some point
     register float angle;
     register float length;
     register float coordSq;
     register float id_out;
-    ULONG returnVal = 1;
+    unsigned int returnVal = 1;
 
     if (zCoord != 0.0f && xCoord != 0.0f)
     {
@@ -476,11 +476,11 @@ ULONG aaOcean::generateUID(float xCoord, float zCoord)
         id_out = coordSq + (length * angle) + 0.5f;
         
         if(angle == 0.0f)
-            returnVal = (ULONG)coordSq;
+            returnVal = (unsigned int)coordSq;
         else if (zCoord <= 0.0f)
-            returnVal = (ULONG)floor(id_out);
+            returnVal = (unsigned int)floor(id_out);
         else
-            returnVal = INT_MAX - (ULONG)floor(id_out) ;
+            returnVal = INT_MAX - (unsigned int)floor(id_out) ;
     }
     return returnVal;
 }
@@ -491,7 +491,7 @@ void aaOcean::setupGrid()
         return;
     register const int n = m_resolution;
     register const int half_n = (-n / 2) - ((n-1) / 2);
-    register ULONG index, uID; 
+    register unsigned int index, uID; 
 
     #pragma omp parallel for private(index, uID)
     for(int i = 0; i < n; ++i)
@@ -503,7 +503,7 @@ void aaOcean::setupGrid()
             m_xCoord[index] = half_n + i * 2 ;
             m_zCoord[index] = half_n + j * 2 ;
 
-            uID = (ULONG)generateUID((float)m_xCoord[index], (float)m_zCoord[index]);
+            uID = (unsigned int)generateUID((float)m_xCoord[index], (float)m_zCoord[index]);
 
             StochasticLib1 sto(uID + (unsigned int)m_seed);
             m_rand1[index] = (float)sto.Normal(0.0, 1.0);
