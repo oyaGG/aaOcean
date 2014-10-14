@@ -1,18 +1,18 @@
-# Requires the following packages
-# fftw, download source from http://fftw.org/download.html
-# ./configure CFLAGS="-fPIC" --enable-float --enable-openmp --enable-sse --prefix=
-#ILMBASE, OPENEXR, zlib
-#
-# for portability, it is advised to link against the static libraries of the above packages
-# build instructions are included in <aaocean_repo_path>/externals
+# makefile for aaOcean Terminal/Shell application
 
-# fftw, openexr, ilmbase and libz header and libs (change this if required)
+# this makefile requires fftw, openexr, ilmbase and zlib
+# please visit the following URL to see how to compile these
+# https://bitbucket.org/amaanakram/aaocean/wiki/Home
+
+# $(DEPLOC) is where you have installed 'dependencies' like fftw, openexr, ilmbase, and zlib
+# the following folder structure is expected under $(DEPLOC)
+# $(DEPLOC)/include
+# $(DEPLOC)/lib
 DEPLOC      := ../../../sdks/deploy
 
-# aaocean's repository location (change this if required)
-AAOCEANLOC    := ../../aaocean
-
 ####### NO USER-INPUT REQUIRED BEYOND THIS LINE ######
+
+AAOCEANLOC    := ../../aaocean
 
 # the compiler: gcc for C program, define as g++ for C++
 CXX     := $(GXXLOC)g++

@@ -1,13 +1,25 @@
 # Makefile for mental ray aaOcean shader
 
+# this makefile requires fftw, openexr, ilmbase and zlib
+# please visit the following URL to see how to compile these
+# https://bitbucket.org/amaanakram/aaocean/wiki/Home
+
+# $(DEPLOC) is where you have installed 'dependencies' like fftw, openexr, ilmbase, and zlib
+# the following folder structure is expected under $(DEPLOC)
+# $(DEPLOC)/include
+# $(DEPLOC)/lib
 DEPLOC		:= ../../../../../../sdks/deploy
-LIBSLOC		:= $(DEPLOC)/lib
+
+# this makefile expects the following folder structure under $(MENTALRAY) folder
+# $(MENTALRAY)/include
+# $(MENTALRAY)/lib
 MENTALRAY 	:= $(DEPLOC)/softimage/softimage2013
+
+####### NO USER-INPUT REQUIRED BEYOND THIS LINE ######
+
+LIBSLOC		:= $(DEPLOC)/lib
 GXXLOC	 	:= 
 TARGETLOC	:= 
-
-# you should not need to change anything below this line unless aaOcean's repo
-# has not been deployed as stated in the wiki page
 
 INCLUDES := -I$(MENTALRAY)/include -I../../../../externals/aaOcean/src -I../../../../externals/helpers  -I$(DEPLOC)/include -I$(DEPLOC)/include/OpenEXR
 LDFLAGS  := -fopenmp 

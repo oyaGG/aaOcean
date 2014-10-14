@@ -1,13 +1,32 @@
+# makefile for maya aaocean deformer
+
+# this makefile requires fftw library
+# please visit the following URL to see how to compile fftw
+# https://bitbucket.org/amaanakram/aaocean/wiki/Home
+
 # This makefile is for gcc-4.2.x, which is ABI-compatible with gcc-4.1.2
 # makefile will also work for subsequent gcc versions, but please check
 # ABI compatibility with your maya version
 
+# this makefile expects the following folder structure under $(MAYA) folder
+# $(MAYA)/include
+# $(MAYA)/lib
+
+# $(DEPLOC) is where you have installed 'dependencies' like fftw, openexr, ilmbase, and zlib
+# the following folder structure is expected under $(DEPLOC)
+# $(DEPLOC)/include
+# $(DEPLOC)/lib
+
 DEPLOC		:= ../../../../sdks/deploy
 MAYA		:= $(DEPLOC)/maya/maya2014
+
+GXXLOC		:= #path to gcc here
+TARGETLOC	:= 
+
+####### NO USER-INPUT REQUIRED BEYOND THIS LINE ######
+
 MAYALIB		:= $(MAYA)/lib
 LIBSLOC		:= $(DEPLOC)/lib
-GXXLOC		:= 
-TARGETLOC	:= 
 
 INCLUDES	:= -I$(MAYA)/include -I$(DEPLOC)/include -I../../externals/aaOcean/src -I../../externals/helpers
 LDFLAGS		:= -fopenmp

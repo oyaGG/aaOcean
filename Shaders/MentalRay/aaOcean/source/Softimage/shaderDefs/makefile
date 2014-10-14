@@ -1,12 +1,13 @@
 # Makefile for mental ray aaOcean shader's Shader Definition Plugin for Softimage
 
-DEPLOC		:= ../../../../../../../../sdks/deploy
-XSISDK 		:= $(DEPLOC)/softimage/softimage2013
+# this makefile expects the following folder structure under $(SOFTIMAGE) folder
+# $(SOFTIMAGE)/include
+# $(SOFTIMAGE)/lib
+XSISDK 		:= ../../../../../../../../sdks/deploy/softimage/softimage2013
 GXXLOC	 	:= 
 TARGETLOC	:= 
 
-# you should not need to change anything below this line unless aaOcean's repo
-# has not been deployed as stated in the wiki page
+####### NO USER-INPUT REQUIRED BEYOND THIS LINE ######
 
 INCLUDES := -I$(XSISDK)/include
 LDFLAGS  := -Wl,-rpath="\\$$ORIGIN:\\$$ORIGIN/../lib:\\$$ORIGIN/../bin"
