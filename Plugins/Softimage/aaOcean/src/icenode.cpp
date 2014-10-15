@@ -12,15 +12,15 @@
 
 void multiplyMatrix(float *InVector, float *OutVector, XSI::CDataArrayMatrix4f &transform, int transformArraySize)
 {
-    OutVector[0] =	InVector[0] * transform[transformArraySize].GetValue(0,0) + 
+    OutVector[0] =  InVector[0] * transform[transformArraySize].GetValue(0,0) + 
                     InVector[1] * transform[transformArraySize].GetValue(1,0) + 
                     InVector[2] * transform[transformArraySize].GetValue(2,0);
 
-    OutVector[1] =	InVector[0] * transform[transformArraySize].GetValue(0,1) + 
+    OutVector[1] =  InVector[0] * transform[transformArraySize].GetValue(0,1) + 
                     InVector[1] * transform[transformArraySize].GetValue(1,1) + 
                     InVector[2] * transform[transformArraySize].GetValue(2,1);
 
-    OutVector[2] =	InVector[0] * transform[transformArraySize].GetValue(0,2) + 
+    OutVector[2] =  InVector[0] * transform[transformArraySize].GetValue(0,2) + 
                     InVector[1] * transform[transformArraySize].GetValue(1,2) + 
                     InVector[2] * transform[transformArraySize].GetValue(2,2);
 }
@@ -28,7 +28,7 @@ void multiplyMatrix(float *InVector, float *OutVector, XSI::CDataArrayMatrix4f &
 SICALLBACK aaOcean_Init( CRef& in_ctxt )
 {
     // create new aaOceanClass instance
-    aaOcean *pOcean	= new aaOcean;
+    aaOcean *pOcean = new aaOcean;
 
     // store ocean pointer in user-data
     Context ctxt(in_ctxt);
@@ -46,7 +46,7 @@ SICALLBACK aaOcean_Term( CRef& in_ctxt )
     CValue userData = ctxt.GetUserData( );
     aaOcean *pOcean = (aaOcean *)(CValue::siPtrType)ctxt.GetUserData();
     if(pOcean)
-        delete pOcean;	
+        delete pOcean;  
     pOcean = 0;
     ctxt.PutUserData( CValue() );
     Application().LogMessage(L"[aaOcean ICE] : Successfully cleaned up memory");
@@ -61,17 +61,17 @@ SICALLBACK aaOcean_BeginEvaluate( ICENodeContext& in_ctxt )
 
     // get ICE node input port arrays
     CDataArrayLong PointID( in_ctxt, ID_IN_PointID);
-    CDataArrayLong resolution( in_ctxt, ID_IN_RESOLUTION);		
+    CDataArrayLong resolution( in_ctxt, ID_IN_RESOLUTION);      
     CDataArrayLong seed( in_ctxt, ID_IN_SEED);
-    CDataArrayFloat	waveHeight( in_ctxt, ID_IN_WAVE_HEIGHT);
-    CDataArrayFloat	waveSpeed( in_ctxt, ID_IN_WAVESPEED);
-    CDataArrayFloat	chop( in_ctxt, ID_IN_CHOP);
-    CDataArrayFloat	oceanScale( in_ctxt, ID_IN_OCEAN_SCALE );
-    CDataArrayFloat	oceanDepth( in_ctxt, ID_IN_OCEAN_DEPTH );
-    CDataArrayFloat windDir( in_ctxt, ID_IN_WINDDIR	);
+    CDataArrayFloat waveHeight( in_ctxt, ID_IN_WAVE_HEIGHT);
+    CDataArrayFloat waveSpeed( in_ctxt, ID_IN_WAVESPEED);
+    CDataArrayFloat chop( in_ctxt, ID_IN_CHOP);
+    CDataArrayFloat oceanScale( in_ctxt, ID_IN_OCEAN_SCALE );
+    CDataArrayFloat oceanDepth( in_ctxt, ID_IN_OCEAN_DEPTH );
+    CDataArrayFloat windDir( in_ctxt, ID_IN_WINDDIR );
     CDataArrayFloat cutoff( in_ctxt, ID_IN_CUTOFF);
     CDataArrayFloat velocity( in_ctxt, ID_IN_WINDVELOCITY);
-    CDataArrayLong	windAlign( in_ctxt, ID_IN_WINDALIGN );
+    CDataArrayLong  windAlign( in_ctxt, ID_IN_WINDALIGN );
     CDataArrayFloat damp( in_ctxt, ID_IN_DAMP);
     CDataArrayBool enableFoam( in_ctxt, ID_IN_ENABLEFOAM);
     CDataArrayFloat time( in_ctxt, ID_IN_TIME);
@@ -122,7 +122,7 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
     if(transform.GetCount() > 1)
         transformSingleton = FALSE;
 
-    ULONG out_portID = in_ctxt.GetEvaluatedOutputPortID( );	
+    ULONG out_portID = in_ctxt.GetEvaluatedOutputPortID( ); 
     switch( out_portID )
     {
         case ID_OUT_OCEAN:
@@ -168,7 +168,7 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
         case ID_OUT_FOAM:
         {
             if(pOcean->isChoppy() && bEnable[0] && enableFoam[0])
-            {				
+            {               
                 CDataArrayFloat outData( in_ctxt );
 
                 // output raw (unscaled) foam in ICE deformer
@@ -236,4 +236,3 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
 
     return CStatus::OK;
 }
-
