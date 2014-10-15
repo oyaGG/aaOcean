@@ -14,7 +14,7 @@
 // recommended compiler: gcc-4.2.4
 #ifdef __GNUC__
     #if __GNUC_MINOR__ < 2 
-        #error [aaOcean] GNU C compiler 4.2.x, which is ABI-compatible with 4.1.0, is required
+        #warning [aaOcean] GNU C compiler 4.2.x, which is ABI-compatible with 4.1.0, is required
     #endif
 #endif
 
