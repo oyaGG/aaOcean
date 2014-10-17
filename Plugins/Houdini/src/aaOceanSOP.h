@@ -25,58 +25,58 @@ public:
     static OP_Node *myConstructor(OP_Network*, const char *, OP_Operator *);
 
 protected:
-    virtual const char	*inputLabel(unsigned idx) const;
+    virtual const char  *inputLabel(unsigned idx) const;
 
     /// Method to cook geometry for the SOP
     virtual OP_ERROR cookMySop(OP_Context &context);
 
 private:
-	// working variables
-	GA_ROAttributeRef uvRef;
-	const GA_Attribute *uvAttribute;
-	const GA_AIFTuple *uvTuple;
+    // working variables
+    GA_ROAttributeRef uvRef;
+    const GA_Attribute *uvAttribute;
+    const GA_AIFTuple *uvTuple;
 
-	GA_RWAttributeRef eVecPlusRef;
-	GA_RWAttributeRef eVecMinusRef;
-	GA_RWAttributeRef eValuesRef;
-	GA_RWHandleV3 eVecPlusHandle;
-	GA_RWHandleV3 eVecMinusHandle;
-	GA_RWHandleF eValuesHandle;
+    GA_RWAttributeRef eVecPlusRef;
+    GA_RWAttributeRef eVecMinusRef;
+    GA_RWAttributeRef eValuesRef;
+    GA_RWHandleV3 eVecPlusHandle;
+    GA_RWHandleV3 eVecMinusHandle;
+    GA_RWHandleF eValuesHandle;
 
-	bool enableEigens;
-	char eVecPlusName[10];
-	char eVecMinusName[10];
-	char eValuesName[10];
-	UT_String	UvAttribute;
-	
+    bool enableEigens;
+    char eVecPlusName[10];
+    char eVecMinusName[10];
+    char eValuesName[10];
+    UT_String   UvAttribute;
+    
 
-    int		RESOLUTION()			{ return evalInt("resolution", 0, 0); }
-    int		SEED()					{ return evalInt("seed", 0, 0); }
-    fpreal	OCEANSCALE(fpreal t)	{ return evalFloat("oceanScale", 0, t); }
-	fpreal	OCEANDEPTH(fpreal t)	{ return evalFloat("oceanDepth", 0, t); }
-	fpreal	SURFACETENSION(fpreal t){ return evalFloat("surfaceTension", 0, t); }
+    int     RESOLUTION()            { return evalInt("resolution", 0, 0); }
+    int     SEED()                  { return evalInt("seed", 0, 0); }
+    fpreal  OCEANSCALE(fpreal t)    { return evalFloat("oceanScale", 0, t); }
+    fpreal  OCEANDEPTH(fpreal t)    { return evalFloat("oceanDepth", 0, t); }
+    fpreal  SURFACETENSION(fpreal t){ return evalFloat("surfaceTension", 0, t); }
 
-    fpreal	VELOCITY(fpreal t)		{ return evalFloat("velocity", 0, t); }
-    fpreal	CUTOFF(fpreal t)		{ return evalFloat("cutoff", 0, t); }
-    fpreal	WINDDIR(fpreal t)		{ return evalFloat("windDir", 0, t); }
-    int		WINDALIGN()				{ return evalInt("windAlign", 0, 0); }
+    fpreal  VELOCITY(fpreal t)      { return evalFloat("velocity", 0, t); }
+    fpreal  CUTOFF(fpreal t)        { return evalFloat("cutoff", 0, t); }
+    fpreal  WINDDIR(fpreal t)       { return evalFloat("windDir", 0, t); }
+    int     WINDALIGN()             { return evalInt("windAlign", 0, 0); }
 
-    fpreal	DAMP(fpreal t)			{ return evalFloat("damp", 0, t); }
-    fpreal	WAVESPEED(fpreal t)		{ return evalFloat("waveSpeed", 0, t); }
-    fpreal	WAVEHEIGHT(fpreal t)	{ return evalFloat("waveHeight", 0, t); }
-    fpreal	CHOP(fpreal t)			{ return evalFloat("chop", 0, t); }
-    int		ENABLEEIGENS()			{ return evalInt("enableEigens", 0, 0); }
-    fpreal	TIMEOFFSET(fpreal t)	{ return evalFloat("timeOffset", 0, t); }
-	fpreal	LOOPTIME(fpreal t)	    { return evalFloat("loopTime", 0, t); }
+    fpreal  DAMP(fpreal t)          { return evalFloat("damp", 0, t); }
+    fpreal  WAVESPEED(fpreal t)     { return evalFloat("waveSpeed", 0, t); }
+    fpreal  WAVEHEIGHT(fpreal t)    { return evalFloat("waveHeight", 0, t); }
+    fpreal  CHOP(fpreal t)          { return evalFloat("chop", 0, t); }
+    int     ENABLEEIGENS()          { return evalInt("enableEigens", 0, 0); }
+    fpreal  TIMEOFFSET(fpreal t)    { return evalFloat("timeOffset", 0, t); }
+    fpreal  LOOPTIME(fpreal t)      { return evalFloat("loopTime", 0, t); }
 
-    void	getUVAttributeName(UT_String &str){ evalString(str, "uvAttribute", 0, 0); }
-    void	getEigenPlusAttribute(UT_String &str){ evalString(str, "eigenPlusAttribute", 0, 0); }
-    void	getEigenMinusAttribute(UT_String &str){ evalString(str, "eigenMinusAttribute", 0, 0); }
-    void	getEigenValueAttribute(UT_String &str){ evalString(str, "eigenValueAttribute", 0, 0); }
+    void    getUVAttributeName(UT_String &str){ evalString(str, "uvAttribute", 0, 0); }
+    void    getEigenPlusAttribute(UT_String &str){ evalString(str, "eigenPlusAttribute", 0, 0); }
+    void    getEigenMinusAttribute(UT_String &str){ evalString(str, "eigenMinusAttribute", 0, 0); }
+    void    getEigenValueAttribute(UT_String &str){ evalString(str, "eigenValueAttribute", 0, 0); }
     
     /// This variable is used together with the call to the "checkInputChanged"
     /// routine to notify the handles (if any) if the input has changed.
-    GU_DetailGroupPair	 myDetailGroupPair;
+    GU_DetailGroupPair   myDetailGroupPair;
 
     // pointer to our aaOcean class
     aaOcean *pOcean;

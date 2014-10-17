@@ -902,8 +902,8 @@ struct Arg
   {
     if (option.arg != 0)
       return option::ARG_OK;
-	else
-		return option::ARG_ILLEGAL;
+    else
+        return option::ARG_ILLEGAL;
   }
 };
 

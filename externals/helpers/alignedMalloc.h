@@ -52,26 +52,26 @@ void* aligned_malloc(size_t bytes, size_t alignment)
     // sizeof(alignment)   - this is to save the real value pointer value (ptr vs aligned_ptr) before the aligned memory block
     //                     - this is necessary to free the entire memory block and not just the aligned memory block
     //                     - sizeof(size_t) was chosen over sizeof(unsigned int) for compatibility of 32 and 64-bit architectures
-	
-	if(alignment == 0 || alignment == 1)			//1 and 0 means no alignment needed
-		return malloc(bytes);						//regular malloc
-	else if(((alignment - 1) & alignment) != 0)		//check if power of 2
-		return NULL;								//not a power of 2...failure
+    
+    if(alignment == 0 || alignment == 1)            //1 and 0 means no alignment needed
+        return malloc(bytes);                       //regular malloc
+    else if(((alignment - 1) & alignment) != 0)     //check if power of 2
+        return NULL;                                //not a power of 2...failure
  
-	uintptr_t ptr = (uintptr_t)malloc(bytes + alignment + sizeof(uintptr_t)); //allocate enough memory for everything
+    uintptr_t ptr = (uintptr_t)malloc(bytes + alignment + sizeof(uintptr_t)); //allocate enough memory for everything
  
-	if(ptr == NULL) //failed malloc! :(
-		return NULL;
+    if(ptr == NULL) //failed malloc! :(
+        return NULL;
  
-	uintptr_t aligned_ptr = (ptr + alignment + sizeof(uintptr_t)) & (~(alignment - 1)); //align!
-	*(uintptr_t*)(aligned_ptr - sizeof(uintptr_t)) = ptr; //store the entire memory block address before the aligned block
+    uintptr_t aligned_ptr = (ptr + alignment + sizeof(uintptr_t)) & (~(alignment - 1)); //align!
+    *(uintptr_t*)(aligned_ptr - sizeof(uintptr_t)) = ptr; //store the entire memory block address before the aligned block
  
-	return (void*)aligned_ptr;
+    return (void*)aligned_ptr;
 }
  
 void aligned_free(void* p)
 {
-	free((void*)(*((uintptr_t*)((uintptr_t)p - sizeof(uintptr_t))))); //get the pointer of the entire block and then FREE!
+    free((void*)(*((uintptr_t*)((uintptr_t)p - sizeof(uintptr_t))))); //get the pointer of the entire block and then FREE!
 }
 
 #endif /* ALIGNED_MALLOC_H */

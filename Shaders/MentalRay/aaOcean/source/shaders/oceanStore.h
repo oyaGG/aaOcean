@@ -12,13 +12,13 @@
 class oceanStore
 {
 public:
-	aaOcean*	ocean;
-	miMatrix	transform;
-	oceanStore()
-	{
-		ocean = 0;
-		mi_matrix_ident(transform);
-	}	
+    aaOcean*    ocean;
+    miMatrix    transform;
+    oceanStore()
+    {
+        ocean = 0;
+        mi_matrix_ident(transform);
+    }   
 };
 
 #endif /* OCEANSTORE_H */

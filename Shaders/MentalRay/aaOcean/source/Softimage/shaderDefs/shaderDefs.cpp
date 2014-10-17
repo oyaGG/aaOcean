@@ -272,7 +272,7 @@ SICALLBACK aaOceanDataShader_aaOceanDataShader_1_0_Define( const CRef& in_ctxt )
     paramOptions.SetTexturable(true);
     paramOptions.SetDefaultValue(CValue(mat));
     paramOptions.SetInspectable(true);
-    inpdefs.AddParamDef( "transform", siShaderDataTypeMatrix44, paramOptions );	
+    inpdefs.AddParamDef( "transform", siShaderDataTypeMatrix44, paramOptions ); 
 
     CRef writeFile_popts = fact.CreateShaderParamDefOptions();
     ShaderParamDefOptions writeFile_opts = ShaderParamDefOptions(writeFile_popts);
