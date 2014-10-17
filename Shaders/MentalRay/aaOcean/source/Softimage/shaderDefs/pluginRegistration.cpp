@@ -21,18 +21,18 @@ XSI::CStatus RegisteraaOcean( XSI::PluginRegistrar& in_reg );
 
 SICALLBACK XSILoadPlugin( PluginRegistrar& in_reg )
 {
-	in_reg.PutAuthor(L"Amaan Akram");
-	in_reg.PutName(L"aaOceanDataShader");
-	in_reg.PutVersion(1,0);
-	in_reg.RegisterShader( "aaOceanDataShader", 1, 0 );
+    in_reg.PutAuthor(L"Amaan Akram");
+    in_reg.PutName(L"aaOceanDataShader");
+    in_reg.PutVersion(1,0);
+    in_reg.RegisterShader( "aaOceanDataShader", 1, 0 );
 
-	return CStatus::OK;
+    return CStatus::OK;
 }
 
 SICALLBACK XSIUnloadPlugin( const PluginRegistrar& in_reg )
 {
-	CString strPluginName;
-	strPluginName = in_reg.GetName();
-	Application().LogMessage(strPluginName + L" has been unloaded.",siVerboseMsg);
-	return CStatus::OK;
+    CString strPluginName;
+    strPluginName = in_reg.GetName();
+    Application().LogMessage(strPluginName + L" has been unloaded.",siVerboseMsg);
+    return CStatus::OK;
 }

@@ -8,11 +8,11 @@
 #endif
 #include <stdlib.h>
 
-inline float DegsToRads(float degrees)	// Degrees to radians conversion...
+inline float DegsToRads(float degrees)  // Degrees to radians conversion...
 { 
     return(degrees * aa_PIBY180);  
 }
-inline float RadsToDegs(float rads)		// Radians to degrees conversion...
+inline float RadsToDegs(float rads)     // Radians to degrees conversion...
 { 
     return(rads * aa_180BYPI); 
 }

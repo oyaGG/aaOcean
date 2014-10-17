@@ -13,39 +13,39 @@
 
 typedef struct
 {
-	miVector	uv_coords;			// uv_coords
-	miBoolean	use_uv_input;
-	miScalar	fade;
-	miInteger	resolution;
-	miScalar	oceanScale;
-	miScalar	oceanDepth;
-	miScalar	surfaceTension;
-	miInteger	seed;
-	miScalar	waveHeight;
-	miScalar	velocity;
-	miScalar	waveSpeed;
-	miScalar	chopAmount;
-	miScalar	cutoff;
-	miScalar	windDir;
-	miScalar	damp;
-	miInteger	windAlign;
-	miScalar	time;
-	miScalar	repeatTime;
+    miVector    uv_coords;          // uv_coords
+    miBoolean   use_uv_input;
+    miScalar    fade;
+    miInteger   resolution;
+    miScalar    oceanScale;
+    miScalar    oceanDepth;
+    miScalar    surfaceTension;
+    miInteger   seed;
+    miScalar    waveHeight;
+    miScalar    velocity;
+    miScalar    waveSpeed;
+    miScalar    chopAmount;
+    miScalar    cutoff;
+    miScalar    windDir;
+    miScalar    damp;
+    miInteger   windAlign;
+    miScalar    time;
+    miScalar    repeatTime;
 
-	miScalar	gamma;
-	miScalar	brightness;
-	miBoolean	rawOutput;
-	miBoolean	invertFoam;
-	miScalar	fmin;
-	miScalar	fmax;
+    miScalar    gamma;
+    miScalar    brightness;
+    miBoolean   rawOutput;
+    miBoolean   invertFoam;
+    miScalar    fmin;
+    miScalar    fmax;
 
-	miScalar	layerOcean;
-	miMatrix	transform;
+    miScalar    layerOcean;
+    miMatrix    transform;
 
-	miBoolean	writeFile;
-	miTag		outputFolder;
-	miTag		postfix;
-	miInteger	currentFrame;
+    miBoolean   writeFile;
+    miTag       outputFolder;
+    miTag       postfix;
+    miInteger   currentFrame;
 
 } aaOceanDataShader_t;
 

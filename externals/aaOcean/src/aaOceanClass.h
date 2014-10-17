@@ -32,23 +32,23 @@ public:
        eNORMALSZ
     };
 
-    void input(	int 	resolution,
+    void input( int     resolution,
                 unsigned int  seed, 
-                float 	oceanScale,
-                float	oceanDepth,
-                float	surfaceTension,
-                float 	velocity, 
-                float 	cutoff, 
-                float 	windDir, 
-                int 	windAlign, 
-                float 	damp,  
-                float 	waveSpeed, 
-                float 	waveHeight,
-                float 	chopAmount,
-                float 	time,
+                float   oceanScale,
+                float   oceanDepth,
+                float   surfaceTension,
+                float   velocity, 
+                float   cutoff, 
+                float   windDir, 
+                int     windAlign, 
+                float   damp,  
+                float   waveSpeed, 
+                float   waveHeight,
+                float   chopAmount,
+                float   time,
                 float   repeatTime,
-                bool	doFoam,
-                bool	doNormals);
+                bool    doFoam,
+                bool    doNormals);
 
     float getOceanData(float uCoord, float vCoord, aaOcean::arrayType type) const;
     void getOceanArray(float *&outArray, aaOcean::arrayType type);
@@ -61,49 +61,49 @@ public:
     void getFoamBounds(float& outBoundsMin, float& outBoundsMax);
 
 //private:
-    int		m_resolution;
+    int     m_resolution;
     unsigned int m_seed;
-    int		m_windAlign;
-    float	m_velocity;
-    float	m_windDir;
-    float	m_cutoff;
-    float	m_damp;
-    float	m_oceanScale;
-    float	m_oceanDepth;
-    float	m_surfaceTension;
-    float	m_chopAmount;
-    float	m_waveHeight;
-    float	m_waveSpeed;
-    float	m_time;
-    float	m_loopTime;
-    float	m_foamBoundmin; //for holding min/max foam
-    float	m_foamBoundmax; //for holding min/max foam
+    int     m_windAlign;
+    float   m_velocity;
+    float   m_windDir;
+    float   m_cutoff;
+    float   m_damp;
+    float   m_oceanScale;
+    float   m_oceanDepth;
+    float   m_surfaceTension;
+    float   m_chopAmount;
+    float   m_waveHeight;
+    float   m_waveSpeed;
+    float   m_time;
+    float   m_loopTime;
+    float   m_foamBoundmin; //for holding min/max foam
+    float   m_foamBoundmax; //for holding min/max foam
     
     //ocean array pointers
-    int		*m_xCoord;
-    int		*m_zCoord;
-    float	*m_hokReal;
-    float	*m_hokImag;
-    float	*m_hktReal;
-    float	*m_hktImag;
-    float	*m_kX;
-    float	*m_kZ;
-    float	*m_omega;
-    float	*m_rand1;
-    float	*m_rand2;
+    int     *m_xCoord;
+    int     *m_zCoord;
+    float   *m_hokReal;
+    float   *m_hokImag;
+    float   *m_hktReal;
+    float   *m_hktImag;
+    float   *m_kX;
+    float   *m_kZ;
+    float   *m_omega;
+    float   *m_rand1;
+    float   *m_rand2;
 
     //bool types for various checks during run-time
-    bool	m_isAllocated;
-    bool	m_isFoamAllocated;
-    bool	m_isNormalAllocated;
-    bool	m_doHoK;
-    bool	m_doSetup;
-    bool	m_doChop;
-    bool	m_doFoam;
-    bool	m_doNormals;
+    bool    m_isAllocated;
+    bool    m_isFoamAllocated;
+    bool    m_isNormalAllocated;
+    bool    m_doHoK;
+    bool    m_doSetup;
+    bool    m_doChop;
+    bool    m_doFoam;
+    bool    m_doNormals;
 
     // memory tracking
-    int		m_memory;
+    int     m_memory;
 
     fftwf_complex *m_fft_htField;
     fftwf_complex *m_fft_chopX;
