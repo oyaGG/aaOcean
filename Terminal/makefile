@@ -18,7 +18,7 @@ AAOCEANLOC    := ../../aaocean
 CXX     := $(GXXLOC)g++
 
 # compiler flags:
-CXXFLAGS := -w -O2 -fPIC -fopenmp -fvisibility=hidden -pthread
+CXXFLAGS := -w -O2 -ffast-math -fPIC -fopenmp -fvisibility=hidden -pthread
 
 # includes
 INCLUDES := -I$(AAOCEANLOC)/externals/aaOcean/src -I$(AAOCEANLOC)/externals/helpers -I$(DEPLOC)/include -I$(DEPLOC)/include/OpenEXR
