@@ -25,7 +25,7 @@ INCLUDES := -I$(ARNOLD)/include -I../../../../externals/aaOcean/src -I../../../.
 LDFLAGS  := -fopenmp -L$(ARNOLD)/bin 
 LIBS     := $(LIBSLOC)/libIlmImf.a $(LIBSLOC)/libImath.a $(LIBSLOC)/libHalf.a $(LIBSLOC)/libIexMath.a $(LIBSLOC)/libIlmThread.a $(LIBSLOC)/libIex.a $(LIBSLOC)/libfftw3f.a $(LIBSLOC)/libfftw3f_omp.a $(LIBSLOC)/libz.a -Wl,-rpath -Wl,$(LIBSLOC) -lai
 
-CXXFLAGS := -w -O2 -fPIC -fopenmp -fvisibility=hidden -pthread -DWRITE_OPENEXR
+CXXFLAGS := -w -O2 -fPIC -fopenmp -fvisibility=hidden -pthread -DWRITE_OPENEXR -ffast-math
 
 CXX	 := $(GXXLOC)g++
 SOURCES  := shaders/aaOceanArnoldShader.cpp

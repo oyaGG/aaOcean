@@ -25,7 +25,7 @@ TARGETLOC	:=
 INCLUDES 	:= -I$(SOFTIMAGE)/include -I$(DEPLOC)/include -I../../../../externals/aaOcean/src -I../../../../externals/helpers
 LDFLAGS		:= -fopenmp
 LIBS		:= $(LIBSLOC)/libfftw3f.a $(LIBSLOC)/libfftw3f_omp.a
-CXXFLAGS	:= -w -O2 -fPIC
+CXXFLAGS	:= -w -O2 -fPIC -ffast-math
 CXX		:= $(GXXLOC)g++
 SOURCES  	:= icenode.cpp
 OBJECTS  	:= $(SOURCES:.cpp=.o)
