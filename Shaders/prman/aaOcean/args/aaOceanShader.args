@@ -93,7 +93,7 @@
         </param>
     </page>
     <page name="Custom UV Parameters" open="False">
-     <param name="use_uv_input" type="int" default="0" input="True" widget="checkbox" tag="int and pattern">
+     <param name="useUVInput" type="int" default="0" input="True" widget="checkbox" tag="int and pattern">
             <help></help>
         </param>
         <param name="rotateUV" type="int" default="0" input="True" widget="checkbox" tag="int and pattern">
