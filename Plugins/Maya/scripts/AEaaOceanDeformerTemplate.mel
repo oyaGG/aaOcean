@@ -1,0 +1,44 @@
+global proc AEaaOceanDeformerTemplate( string $nodeName )
+{
+    editorTemplate -beginScrollLayout;
+ 
+    editorTemplate -beginLayout "Ocean Parameters" -collapse 0;
+        editorTemplate -addControl "resolution";
+		editorTemplate -addControl "oceanSize";
+		editorTemplate -addControl "oceanDepth";
+		editorTemplate -addControl "surfaceTension";
+        editorTemplate -addControl "seed";
+		editorTemplate -label "Current Time (secs)" -addControl "time";
+		editorTemplate -addControl "timeOffset";
+		editorTemplate -addControl "repeatTime";
+		editorTemplate -label "UV Map label" -addControl "uvMap";
+	editorTemplate -endLayout;
+
+	editorTemplate -beginLayout "Wave Parameters" -collapse 0;
+		editorTemplate -addControl "waveHeight";
+		editorTemplate -addControl "waveSize";
+		editorTemplate -addControl "waveSpeed";
+		editorTemplate -addControl "waveChop";
+		editorTemplate -addControl "waveSmooth";
+	editorTemplate -endLayout;
+	
+	editorTemplate -beginLayout "Wind Parameters" -collapse 0;
+		editorTemplate -addControl "waveDirection";
+		editorTemplate -addControl "waveReflection";
+		editorTemplate -addControl "waveAlign";
+	editorTemplate -endLayout;
+	
+	editorTemplate -beginLayout "Foam Parameters" -collapse 0;
+		editorTemplate -label "Do Foam (Eigen Vectors/Values)" -addControl "doFoam";
+		editorTemplate -label "Eigen Vector ColorSet Name" -addControl "eigenVectorMap";
+		editorTemplate -label "Eigen Value ColorSet Name" -addControl "eigenValueMap";
+		editorTemplate -label "Invert Eigen Values" -addControl "invertFoam";
+	editorTemplate -endLayout;
+ 
+    editorTemplate -endLayout;
+ 
+    AEdependNodeTemplate $nodeName;
+ 
+    editorTemplate -addExtraControls;
+    editorTemplate -endScrollLayout;
+}
