@@ -2,6 +2,9 @@
 #include "RixShadingUtils.h"
 #include "aaOceanClass.cpp"
 
+// getUniformParam(param) (sctx->EvalParam(k_param, -1, &param, &m_param))
+#define getUniformParam(param) (sctx->EvalParam(k_##param, -1, &param, &m_##param))
+
 class aaOceanShader : public RixPattern
 {
 public:
@@ -43,11 +46,11 @@ private:
     RtFloat     m_fMin;
     RtFloat     m_fMax;
     RtInt       m_writeFile;
-    RtString    m_outputFolder;
-    RtString    m_postfix;
     RtInt       m_currentFrame;
     RtInt       m_rotateUV;
-    RtMatrix    m_transform;
+    char        m_outputFolder[256];
+    char        m_postfix[256];
+    RtMatrix4x4 const *m_transform;
 
     RixMessages *m_msg;
     RixMutex *m_mutex;
@@ -55,7 +58,6 @@ private:
     bool isOceanReady;
 
     aaOcean *m_ocean;
-
 };
 
 
@@ -85,8 +87,6 @@ aaOceanShader::aaOceanShader() :
     m_fMin(0.0f),
     m_fMax(0.0f),
     m_writeFile(0),
-    m_outputFolder(""),
-    m_postfix(""),
     m_currentFrame(1),
     m_rotateUV(0),
    // m_transform,
@@ -94,6 +94,8 @@ aaOceanShader::aaOceanShader() :
     m_mutex(0L),
     isOceanReady(0)
 {
+    strcpy (m_outputFolder, "");
+    strcpy (m_postfix, "");
 }
 
 aaOceanShader::~aaOceanShader()
@@ -241,32 +243,56 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
     RtFloat const *repeatTime;
     RtFloat const *gamma;
     RtFloat const *brightness;
-    RtBoolean const *raw;
-    RtBoolean const *invertFoam;
+    RtInt     const *raw;
+    RtInt     const *invertFoam;
     RtFloat   const *fMin;
     RtFloat   const *fMax;
-    RtBoolean const *writeFile;
-    RtString  const *outputFolder;
-    RtString  const *postfix;
+    RtInt     const *writeFile;
+    RtConstString* outputFolder = NULL;
+    RtConstString* postfix = NULL;
     RtInt     const *currentFrame;
-    RtBoolean const *rotateUV;
+    RtInt     const *rotateUV;
     RtMatrix  const *transform;
 
-    sctx->EvalParam(k_resolution, -1, &resolution, &m_resolution, uniform);
-    sctx->EvalParam(k_oceanScale, -1, &oceanScale, &m_oceanScale, uniform);
-    sctx->EvalParam(k_oceanDepth, -1, &oceanDepth, &m_oceanDepth, uniform);
-    sctx->EvalParam(k_surfaceTension, -1, &surfaceTension, &m_surfaceTension, uniform);
-    sctx->EvalParam(k_seed, -1, &seed, &m_seed, uniform);
-    sctx->EvalParam(k_waveHeight, -1, &waveHeight, &m_waveHeight, uniform);
-    sctx->EvalParam(k_velocity, -1, &velocity, &m_velocity, uniform);
-    sctx->EvalParam(k_waveSpeed, -1, &waveSpeed, &m_waveSpeed, uniform);
-    sctx->EvalParam(k_chopAmount, -1, &chopAmount, &m_chopAmount, uniform);
-    sctx->EvalParam(k_cutoff, -1, &cutoff, &m_cutoff, uniform);
-    sctx->EvalParam(k_windDir, -1, &windDir, &m_windDir, uniform);
-    sctx->EvalParam(k_damp, -1, &damp, &m_damp, uniform);
-    sctx->EvalParam(k_windAlign, -1, &windAlign, &m_windAlign, uniform);
-    sctx->EvalParam(k_time, -1, &time, &m_time, uniform);
-    sctx->EvalParam(k_repeatTime, -1, &repeatTime, &m_repeatTime, uniform);
+    // retrieving critical ocean inputs first
+    getUniformParam(resolution);
+    getUniformParam(oceanScale);
+    getUniformParam(oceanDepth);
+    getUniformParam(surfaceTension);
+    getUniformParam(seed);
+    getUniformParam(waveHeight);
+    getUniformParam(velocity);
+    getUniformParam(waveSpeed);
+    getUniformParam(chopAmount);
+    getUniformParam(cutoff);
+    getUniformParam(windDir);
+    getUniformParam(damp);
+    getUniformParam(windAlign);
+    getUniformParam(time);
+    getUniformParam(repeatTime);
+
+    // retrieving non-critical ocean inputs
+    getUniformParam(gamma);
+    getUniformParam(brightness);
+    getUniformParam(raw);
+    getUniformParam(invertFoam);
+    getUniformParam(fMin);
+    getUniformParam(fMax);
+
+    // openexr output params
+    getUniformParam(writeFile);
+    sctx->EvalParam(k_outputFolder, -1, &outputFolder);
+    sctx->EvalParam(k_postfix, -1, &postfix);
+    getUniformParam(currentFrame);
+    if(outputFolder)
+        strcpy(m_outputFolder, (const char*)outputFolder);
+    if(postfix)
+        strcpy(m_postfix, (const char*)postfix);
+
+    // tranform parameters
+    getUniformParam(rotateUV);
+    //sctx->EvalParam(k_transform, -1, (RtMatrix4x4 const **)&transform);
+    //getUniformParam(transform);
 
     // check if ocean needs re-initialization
     // TODO: WAIT STATE! find a better way to do this
@@ -291,9 +317,10 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
         repeatTime[0],
         TRUE,
         FALSE);
+
         isOceanReady = 1;
 
-        m_msg->WarningAlways("[aaOcean Shader] Initializing ocean. In Mutex zone" );
+        m_msg->WarningAlways("[aaOcean Shader] Initializing ocean in mutex zone" );
     }
     m_mutex->Unlock();
 
