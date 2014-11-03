@@ -8,50 +8,50 @@
         <param name="resolution" type="int" default="3" min="3" max="7"  input="True" widget="default" tag="int and pattern">
             <help></help>
         </param>
-        <param name="oceanScale" type="float" default="100.0f" min="0.001f" max="10000.f"  input="True" widget="default" tag="float and pattern">
+        <param name="oceanScale" type="float" default="100.0" min="0.001" max="10000.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="oceanDepth" type="float" default="1000.0f" min="1.0f" max="10000.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="oceanDepth" type="float" default="1000.0" min="1.0" max="10000.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="surfaceTension" type="float" default="0.0f" min="1.0f" max="10000.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="surfaceTension" type="float" default="0.0" min="1.0" max="10000.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
         <param name="seed" type="int" default="1" min="1" max="20"  input="True" widget="default" tag="int and pattern">
             <help></help>
         </param>
-        <param name="time" type="float" default="0.0f" min="0.0f" max="100.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="time" type="float" default="0.0" min="0.0" max="100.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="repeatTime" type="float" default="1000.0f" min="0.0f" max="1000.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="repeatTime" type="float" default="1000.0" min="0.0" max="1000.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="fade" type="float" default="0.0f" min="0.0f" max="1.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="fade" type="float" default="0.0" min="0.0" max="1.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
     </page>
     <page name="Wave Parameters" open="True">
-        <param name="chopAmount" type="float" default="1.0f" min="0.0f" max="100.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="chopAmount" type="float" default="1.0" min="0.0" max="100.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="velocity" type="float" default="10.0f" min="0.0001f" max="30.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="velocity" type="float" default="10.0" min="0.0001" max="30.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="waveSpeed" type="float" default="1.0f" min="0.0f" max="50.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="waveSpeed" type="float" default="1.0" min="0.0" max="50.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="cutoff" type="float" default="0.0f" min="0.0f" max="100.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="cutoff" type="float" default="0.0" min="0.0" max="100.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="waveHeight" type="float" default="1.0f" min="0.0f" max="100.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="waveHeight" type="float" default="1.0" min="0.0" max="100.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
     </page>
     <page name="Wind Parameters" open="True">
-        <param name="windDir" type="float" default="45.0f" min="0.0f" max="360.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="windDir" type="float" default="45.0" min="0.0" max="360.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="damp" type="float" default="0.985f" min="0.0f" max="1.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="damp" type="float" default="0.985f" min="0.0" max="1.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>  
         <param name="windAlign" type="int" default="1" min="0" max="10"  input="True" widget="default" tag="int and pattern">
@@ -65,16 +65,16 @@
         <param name="invertFoam" type="int" default="0" input="True" widget="checkbox" tag="int and pattern">
             <help></help>
         </param>
-        <param name="gamma" type="float" default="1.0f" min="0.0001f" max="20.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="gamma" type="float" default="1.0" min="0.0001f" max="20.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="brightness" type="float" default="1.0f" min="0.0001f" max="20.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="brightness" type="float" default="1.0" min="0.0001f" max="20.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="fMin" type="float" default="-5.0f" min="-10.0f" max="10.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="fMin" type="float" default="-5.0" min="-10.0" max="10.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="fMax" type="float" default="5.0f" min="-10.0f" max="10.0f"  input="True" widget="default" tag="float and pattern">
+        <param name="fMax" type="float" default="5.0" min="-10.0" max="10.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
     </page>
@@ -102,7 +102,7 @@
         <param name="uv_coords" type="vector" input="True" widget="default" tag="vector and pattern">
             <help></help>
         </param>
-        <param name="transformMatrix" type="float" detail='cantvary' input='True' isDynamicArray="1" arraySize="16" />
+        <param name="transform" type="float" detail='cantvary' input='True' isDynamicArray="1" arraySize="16" />
     </page>
     <output name="resultRGB" tag="color|vector|normal|point|pattern"/>
     <output name="resultEigenvalue" tag="float|pattern"/>
