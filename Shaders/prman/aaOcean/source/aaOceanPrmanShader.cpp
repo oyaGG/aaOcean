@@ -1,9 +1,14 @@
 #include "RixPattern.h"
 #include "RixShadingUtils.h"
+#include <string.h>
+
 #include "aaOceanClass.cpp"
+#ifdef WRITE_OPENEXR
+#include "openEXROutput.h"
+#endif /* WRITE_EXR */
 
 // getUniformParam(param) (sctx->EvalParam(k_param, -1, &param, &m_param))
-#define getUniformParam(param) (sctx->EvalParam(k_##param, -1, &param, &m_##param))
+#define getUniformParam(param) (sctx->EvalParam(k_##param, -1, &param))
 
 class aaOceanShader : public RixPattern
 {
@@ -17,79 +22,28 @@ public:
     virtual void Finalize(RixContext &);
 
     virtual int ComputeOutputParams(RixShadingContext const *,
-                                    RtInt *n, RixPattern::OutputSpec **outputs,
+                                    RtInt *noutputs, 
+                                    OutputSpec **outputs,
                                     RtConstPointer instanceData,
                                     RixSCParamInfo const *);
 private:
-    RtVector3   m_uv_coords;     
-    RtInt       m_use_uv_input;
-    RtFloat     m_fade;  
-    RtInt       m_resolution;
-    RtFloat     m_oceanScale;
-    RtFloat     m_oceanDepth;
-    RtFloat     m_surfaceTension;
-    RtInt       m_seed;
-    RtFloat     m_waveHeight;
-    RtFloat     m_velocity;
-    RtFloat     m_waveSpeed;
-    RtFloat     m_chopAmount;
-    RtFloat     m_cutoff;
-    RtFloat     m_windDir;
-    RtFloat     m_damp;
-    RtInt       m_windAlign;
-    RtFloat     m_time;
-    RtFloat     m_repeatTime;
-    RtFloat     m_gamma;
-    RtFloat     m_brightness;
-    RtInt       m_raw;
-    RtInt       m_invertFoam;
-    RtFloat     m_fMin;
-    RtFloat     m_fMax;
     RtInt       m_writeFile;
     RtInt       m_currentFrame;
     RtInt       m_rotateUV;
     char        m_outputFolder[256];
     char        m_postfix[256];
-    RtMatrix4x4 const *m_transform;
 
     RixMessages *m_msg;
     RixMutex *m_mutex;
 
     bool isOceanReady;
-
     aaOcean *m_ocean;
 };
 
 
 aaOceanShader::aaOceanShader() :
-    m_uv_coords(1.0f, 1.0f, 1.0f),
-    m_use_uv_input(0),
-    m_fade(0.0f),
-    m_resolution(4),
-    m_oceanScale(100.0f),
-    m_oceanDepth(10000.0f),
-    m_surfaceTension(0.0f),
-    m_seed(1),
-    m_waveHeight(5.0f),
-    m_velocity(4.5f),
-    m_waveSpeed(1.0f),
-    m_chopAmount(1.0f),
-    m_cutoff(0.0f),
-    m_windDir(45.0f),
-    m_damp(0.985f),
-    m_windAlign(0),
-    m_time(0.1f),
-    m_repeatTime(1000.f),
-    m_gamma(1.0f),
-    m_brightness(1.0f),
-    m_raw(0),
-    m_invertFoam(0),
-    m_fMin(0.0f),
-    m_fMax(0.0f),
     m_writeFile(0),
     m_currentFrame(1),
-    m_rotateUV(0),
-   // m_transform,
     m_msg(NULL),
     m_mutex(0L),
     isOceanReady(0)
@@ -103,28 +57,10 @@ aaOceanShader::~aaOceanShader()
     
 }
 
-// Init: Called when the plugin is first loaded by the renderer. 
-// The plugin will remain loaded for the lifetime of the render. 
-// Any global work that would be shared by all instances of a plugin 
-// should be done here. Init returns 0 if there was no error initializing the plugin.
-int aaOceanShader::Init(RixContext &ctx, char const *pluginpath)
-{
-    m_msg = (RixMessages*)ctx.GetRixInterface(k_RixMessages);
-    if (!m_msg)
-        return 1;
-
-    RixThreadUtils* tu = (RixThreadUtils*)ctx.GetRixInterface(k_RixThreadUtils);
-    m_mutex = tu->NewMutex();
-
-    m_ocean = new aaOcean;
-
-    return 0;
-}
-
 enum paramId
 {
     k_resultRGB=0,      // vector displacement output
-    k_resultEigenvalue, // eigenvalue (foam/spray)
+    k_resultEigenvalue, // eigenvalue (foam/spray) output
     k_uv_coords,
     k_useUVInput,
     k_fade,
@@ -203,9 +139,44 @@ RixSCParamInfo const * aaOceanShader::GetParamTable()
     return &s_ptable[0];
 }
 
+// Init: Called when the plugin is first loaded by the renderer. 
+// The plugin will remain loaded for the lifetime of the render. 
+// Any global work that would be shared by all instances of a plugin 
+// should be done here. Init returns 0 if there was no error initializing the plugin.
+int aaOceanShader::Init(RixContext &ctx, char const *pluginpath)
+{
+    m_msg = (RixMessages*)ctx.GetRixInterface(k_RixMessages);
+    if (!m_msg)
+        return 1;
+
+    RixThreadUtils* tu = (RixThreadUtils*)ctx.GetRixInterface(k_RixThreadUtils);
+    m_mutex = tu->NewMutex();
+
+    m_ocean = new aaOcean;
+
+    return 0;
+}
+
 // Finalize: Called when the plugin is unloaded from memory by the renderer.
 void aaOceanShader::Finalize(RixContext &ctx)
 {
+ #ifdef WRITE_OPENEXR
+        if(m_writeFile)
+        {
+            if(!dirExists(&m_outputFolder[0]))
+                m_msg->WarningAlways("[aaOcean] Invalid folder path: %s", m_outputFolder);
+            else
+            {
+                char outputFileName[255];
+                sprintf(outputFileName, "none");
+                const char* postfix = &m_postfix[0];
+                oceanDataToEXR(m_ocean, &m_outputFolder[0], &postfix[0], m_currentFrame, &outputFileName[0]);
+                m_msg->WarningAlways("[aaOcean] Image written to %s", outputFileName);
+            }
+        }
+        else
+            m_msg->WarningAlways("[aaOcean] Write File false" );
+#endif
     delete m_mutex;
     delete m_ocean;
 }
@@ -216,14 +187,13 @@ void aaOceanShader::Finalize(RixContext &ctx)
 // outputs it expects the plugin to compute. Most often, this is exactly the same as the \
 // outputs declared in the parameter table.
 int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
-                                RtInt *noutputs, OutputSpec **outputs,
+                                RtInt *noutputs, 
+                                OutputSpec **outputs,
                                 RtConstPointer instanceData,
                                 RixSCParamInfo const *ignored)
 {
     RixSCType type;
     RixSCConnectionInfo cInfo;
-    bool varying = 1;
-    bool uniform = 0;
 
     // evaluate input parameters
     RtInt   const *resolution;
@@ -252,7 +222,7 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
     RtConstString* postfix = NULL;
     RtInt     const *currentFrame;
     RtInt     const *rotateUV;
-    RtMatrix  const *transform;
+    RtMatrix4x4  const *transform;
 
     // retrieving critical ocean inputs first
     getUniformParam(resolution);
@@ -281,17 +251,17 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
 
     // openexr output params
     getUniformParam(writeFile);
-    sctx->EvalParam(k_outputFolder, -1, &outputFolder);
-    sctx->EvalParam(k_postfix, -1, &postfix);
     getUniformParam(currentFrame);
-    if(outputFolder)
-        strcpy(m_outputFolder, (const char*)outputFolder);
-    if(postfix)
-        strcpy(m_postfix, (const char*)postfix);
+    getUniformParam(outputFolder);
+    getUniformParam(postfix);
+    m_writeFile = *writeFile;
+    m_currentFrame = *currentFrame;
+    strcpy(m_outputFolder, *outputFolder);
+    strcpy(m_postfix, *postfix);
 
     // tranform parameters
     getUniformParam(rotateUV);
-    //sctx->EvalParam(k_transform, -1, (RtMatrix4x4 const **)&transform);
+    sctx->EvalParam(k_transform, -1, &transform);
     //getUniformParam(transform);
 
     // check if ocean needs re-initialization
@@ -319,11 +289,10 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
         FALSE);
 
         isOceanReady = 1;
+        m_msg->WarningAlways("[aaOcean] Created new aaOcean %dx%d tile", (int)pow(2.0f, (4 + abs(resolution[0]))));
 
-        m_msg->WarningAlways("[aaOcean Shader] Initializing ocean in mutex zone" );
     }
     m_mutex->Unlock();
-
 
     // Find the number of outputs
     RixSCParamInfo const* paramTable = GetParamTable();
@@ -384,9 +353,14 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
     {
         if(resultRGB)
         {
-            resultRGB[i].r = m_ocean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eCHOPX);
             resultRGB[i].g = m_ocean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eHEIGHTFIELD);
-            resultRGB[i].b = m_ocean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eCHOPZ);
+            if(m_ocean->isChoppy())
+            {
+                resultRGB[i].r = m_ocean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eCHOPX);
+                resultRGB[i].b = m_ocean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eCHOPZ);
+            }
+            else
+                resultRGB[i].r = resultRGB[i].b = 0.0f;
         }
 
         if(resultEigenvalue)
