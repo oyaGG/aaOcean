@@ -9,6 +9,7 @@
 
 // getUniformParam(param) (sctx->EvalParam(k_param, -1, &param, &m_param))
 #define getUniformParam(param) (sctx->EvalParam(k_##param, -1, &param))
+#define getInstanceParam(param) (plist->EvalParam(k_##param, -1, &param))
 
 class aaOceanShader : public RixPattern
 {
@@ -20,6 +21,11 @@ public:
     virtual int Init(RixContext &, char const *pluginpath);
     virtual RixSCParamInfo const *GetParamTable();
     virtual void Finalize(RixContext &);
+
+    virtual int CreateInstanceData(RixContext &,
+                                   char const *handle,
+                                   RixParameterList const *,
+                                   InstanceData *id);
 
     virtual int ComputeOutputParams(RixShadingContext const *,
                                     RtInt *noutputs, 
@@ -34,19 +40,13 @@ private:
     char        m_postfix[256];
 
     RixMessages *m_msg;
-    RixMutex *m_mutex;
-
-    bool isOceanReady;
-    aaOcean *m_ocean;
 };
 
 
 aaOceanShader::aaOceanShader() :
     m_writeFile(0),
     m_currentFrame(1),
-    m_msg(NULL),
-    m_mutex(0L),
-    isOceanReady(0)
+    m_msg(NULL)
 {
     strcpy (m_outputFolder, "");
     strcpy (m_postfix, "");
@@ -77,7 +77,7 @@ enum paramId
     k_windDir,
     k_damp,
     k_windAlign,
-    k_time,
+    k_currentTime,
     k_repeatTime,
     k_gamma,
     k_brightness,
@@ -119,7 +119,7 @@ RixSCParamInfo const * aaOceanShader::GetParamTable()
         RixSCParamInfo("windDir",        k_RixSCFloat),
         RixSCParamInfo("damp",           k_RixSCFloat),
         RixSCParamInfo("windAlign",      k_RixSCInteger),
-        RixSCParamInfo("time",           k_RixSCFloat),
+        RixSCParamInfo("currentTime",    k_RixSCFloat),
         RixSCParamInfo("repeatTime",     k_RixSCFloat),
         RixSCParamInfo("gamma",          k_RixSCFloat),
         RixSCParamInfo("brightness",     k_RixSCFloat),
@@ -148,39 +148,113 @@ int aaOceanShader::Init(RixContext &ctx, char const *pluginpath)
     m_msg = (RixMessages*)ctx.GetRixInterface(k_RixMessages);
     if (!m_msg)
         return 1;
-
-    RixThreadUtils* tu = (RixThreadUtils*)ctx.GetRixInterface(k_RixThreadUtils);
-    m_mutex = tu->NewMutex();
-
-    m_ocean = new aaOcean;
-
     return 0;
 }
 
 // Finalize: Called when the plugin is unloaded from memory by the renderer.
 void aaOceanShader::Finalize(RixContext &ctx)
 {
- #ifdef WRITE_OPENEXR
-        if(m_writeFile)
-        {
-            if(!dirExists(&m_outputFolder[0]))
-                m_msg->WarningAlways("[aaOcean] Invalid folder path: %s", m_outputFolder);
-            else
-            {
-                char outputFileName[255];
-                sprintf(outputFileName, "none");
-                const char* postfix = &m_postfix[0];
-                oceanDataToEXR(m_ocean, &m_outputFolder[0], &postfix[0], m_currentFrame, &outputFileName[0]);
-                m_msg->WarningAlways("[aaOcean] Image written to %s", outputFileName);
-            }
-        }
-        else
-            m_msg->WarningAlways("[aaOcean] Write File false" );
-#endif
-    delete m_mutex;
-    delete m_ocean;
+ 
 }
+// to clear shader instance-specific ocean data
+static void cleanUpOcean(void *oceandata)
+{
+     delete static_cast<aaOcean*>(oceandata);
+     oceandata = 0;
+}
+int
+aaOceanShader::CreateInstanceData(RixContext &ctx,
+                                  char const *handle,
+                                  RixParameterList const *plist,
+                                  InstanceData *idata)
+{
+    // evaluate input parameters
+    RtInt   resolution;
+    RtFloat oceanScale;
+    RtFloat oceanDepth;
+    RtFloat surfaceTension;
+    RtInt   seed;
+    RtFloat waveHeight;
+    RtFloat velocity;
+    RtFloat waveSpeed;
+    RtFloat chopAmount;
+    RtFloat cutoff;
+    RtFloat windDir;
+    RtFloat damp;
+    RtInt   windAlign;
+    RtFloat currentTime;
+    RtFloat repeatTime;
+    RtInt   writeFile;
+    RtInt   currentFrame;
+    RtConstString outputFolder = NULL;
+    RtConstString postfix = NULL;
 
+    // retrieving critical ocean inputs first
+    getInstanceParam(resolution);
+    getInstanceParam(oceanScale);
+    getInstanceParam(oceanDepth);
+    getInstanceParam(surfaceTension);
+    getInstanceParam(seed);
+    getInstanceParam(waveHeight);
+    getInstanceParam(velocity);
+    getInstanceParam(waveSpeed);
+    getInstanceParam(chopAmount);
+    getInstanceParam(cutoff);
+    getInstanceParam(windDir);
+    getInstanceParam(damp);
+    getInstanceParam(windAlign);
+    getInstanceParam(currentTime);
+    getInstanceParam(repeatTime);
+
+    //// openexr output params
+    getInstanceParam(writeFile);
+    getInstanceParam(currentFrame);
+    getInstanceParam(outputFolder);
+    getInstanceParam(postfix);
+        
+    // initialize_ocean
+    aaOcean *pOcean = new aaOcean;
+    pOcean->input(resolution, 
+    seed,
+    oceanScale, 
+    oceanDepth,
+    surfaceTension,
+    velocity, 
+    cutoff, 
+    windDir, 
+    windAlign, 
+    damp, 
+    waveSpeed, 
+    waveHeight,
+    chopAmount, 
+    currentTime,
+    repeatTime,
+    TRUE,
+    FALSE);
+
+    int tileRes = (int)pow(2.0f, (4 + abs(resolution)));
+    m_msg->WarningAlways("[aaOcean] Created new aaOcean %dx%d tile", tileRes, tileRes);
+
+#ifdef WRITE_OPENEXR
+    if(writeFile)
+    {
+        if(!dirExists(&outputFolder[0]))
+            m_msg->WarningAlways("[aaOcean] Invalid folder path: %s", outputFolder);
+        else
+        {
+            char outputFileName[255];
+            sprintf(outputFileName, "none");
+            oceanDataToEXR(pOcean, &outputFolder[0], &postfix[0], currentFrame, &outputFileName[0]);
+            m_msg->WarningAlways("[aaOcean] Image written to %s", outputFileName);
+        }
+    }
+#endif
+
+    idata->data = (void *) pOcean;
+    idata->datalen = sizeof(aaOcean);
+    idata->freefunc = cleanUpOcean;
+    return 0; // no error
+}
 // ComputeOutputParams: This  reads the input \
 // parameters and computes the output parameters. It is called once per graph execution. \
 // All outputs must be computed during this one call. The renderer provides a list of the \
@@ -194,106 +268,8 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
 {
     RixSCType type;
     RixSCConnectionInfo cInfo;
-
-    // evaluate input parameters
-    RtInt   const *resolution;
-    RtFloat const *oceanScale;
-    RtFloat const *oceanDepth;
-    RtFloat const *surfaceTension;
-    RtInt   const *seed;
-    RtFloat const *waveHeight;
-    RtFloat const *velocity;
-    RtFloat const *waveSpeed;
-    RtFloat const *chopAmount;
-    RtFloat const *cutoff;
-    RtFloat const *windDir;
-    RtFloat const *damp;
-    RtInt   const *windAlign;
-    RtFloat const *time;
-    RtFloat const *repeatTime;
-    RtFloat const *gamma;
-    RtFloat const *brightness;
-    RtInt     const *raw;
-    RtInt     const *invertFoam;
-    RtFloat   const *fMin;
-    RtFloat   const *fMax;
-    RtInt     const *writeFile;
-    RtConstString* outputFolder = NULL;
-    RtConstString* postfix = NULL;
-    RtInt     const *currentFrame;
-    RtInt     const *rotateUV;
-    RtMatrix4x4  const *transform;
-
-    // retrieving critical ocean inputs first
-    getUniformParam(resolution);
-    getUniformParam(oceanScale);
-    getUniformParam(oceanDepth);
-    getUniformParam(surfaceTension);
-    getUniformParam(seed);
-    getUniformParam(waveHeight);
-    getUniformParam(velocity);
-    getUniformParam(waveSpeed);
-    getUniformParam(chopAmount);
-    getUniformParam(cutoff);
-    getUniformParam(windDir);
-    getUniformParam(damp);
-    getUniformParam(windAlign);
-    getUniformParam(time);
-    getUniformParam(repeatTime);
-
-    // retrieving non-critical ocean inputs
-    getUniformParam(gamma);
-    getUniformParam(brightness);
-    getUniformParam(raw);
-    getUniformParam(invertFoam);
-    getUniformParam(fMin);
-    getUniformParam(fMax);
-
-    // openexr output params
-    getUniformParam(writeFile);
-    getUniformParam(currentFrame);
-    getUniformParam(outputFolder);
-    getUniformParam(postfix);
-    m_writeFile = *writeFile;
-    m_currentFrame = *currentFrame;
-    strcpy(m_outputFolder, *outputFolder);
-    strcpy(m_postfix, *postfix);
-
-    // tranform parameters
-    getUniformParam(rotateUV);
-    sctx->EvalParam(k_transform, -1, &transform);
-    //getUniformParam(transform);
-
-    // check if ocean needs re-initialization
-    // TODO: WAIT STATE! find a better way to do this
-    m_mutex->Lock();
-    if (isOceanReady == 0)
-    {
-        // initialize_ocean
-        m_ocean->input(resolution[0], 
-        seed[0],
-        oceanScale[0], 
-        oceanDepth[0],
-        surfaceTension[0],
-        velocity[0], 
-        cutoff[0], 
-        windDir[0], 
-        windAlign[0], 
-        damp[0], 
-        waveSpeed[0], 
-        waveHeight[0],
-        chopAmount[0], 
-        time[0],
-        repeatTime[0],
-        TRUE,
-        FALSE);
-
-        isOceanReady = 1;
-        m_msg->WarningAlways("[aaOcean] Created new aaOcean %dx%d tile", (int)pow(2.0f, (4 + abs(resolution[0]))));
-
-    }
-    m_mutex->Unlock();
-
+    aaOcean *pOcean = (aaOcean*)instanceData;
+   
     // Find the number of outputs
     RixSCParamInfo const* paramTable = GetParamTable();
     int numOutputs = -1;
@@ -332,11 +308,7 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
 
     RtColorRGB* resultRGB = (RtColorRGB*) out[k_resultRGB].value;
     if(!resultRGB)
-    {
-        // make sure the resultRGB space is allocated because it
-        // will store the composite color results.
         resultRGB = pool.AllocForPattern<RtColorRGB>(sctx->numPts);
-    }
 
     RtFloat* resultEigenvalue = (RtFloat*) out[k_resultEigenvalue].value;
     //if(!resultEigenvalue)
@@ -353,18 +325,18 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
     {
         if(resultRGB)
         {
-            resultRGB[i].g = m_ocean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eHEIGHTFIELD);
-            if(m_ocean->isChoppy())
+            resultRGB[i].g = pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eHEIGHTFIELD);
+            if(pOcean->isChoppy())
             {
-                resultRGB[i].r = m_ocean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eCHOPX);
-                resultRGB[i].b = m_ocean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eCHOPZ);
+                resultRGB[i].r = pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eCHOPX);
+                resultRGB[i].b = pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eCHOPZ);
             }
             else
                 resultRGB[i].r = resultRGB[i].b = 0.0f;
         }
 
         if(resultEigenvalue)
-            resultEigenvalue[i] = m_ocean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eFOAM);
+            resultEigenvalue[i] = pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eFOAM);
     }
 
     return 0;
