@@ -20,7 +20,7 @@
         <param name="seed" type="int" default="1" min="1" max="20"  input="True" widget="default" tag="int and pattern">
             <help></help>
         </param>
-        <param name="time" type="float" default="0.0" min="0.0" max="100.0"  input="True" widget="default" tag="float and pattern">
+        <param name="currentTime" type="float" default="0.0" min="0.0" max="100.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
         <param name="repeatTime" type="float" default="1000.0" min="0.0" max="1000.0"  input="True" widget="default" tag="float and pattern">
