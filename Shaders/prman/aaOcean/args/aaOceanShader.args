@@ -99,13 +99,13 @@
         <param name="rotateUV" type="int" default="0" input="True" widget="checkbox" tag="int and pattern">
             <help></help>
         </param>
-        <param name="uv_coords" type="vector" input="True" widget="default" tag="vector and pattern">
+        <param name="uvCoords" type="vector" input="True" widget="default" tag="vector and pattern">
             <help></help>
         </param>
         <param name="transform" type="float" detail='cantvary' input='True' isDynamicArray="1" arraySize="16" />
     </page>
-    <output name="resultRGB" tag="color|vector|normal|point|pattern"/>
-    <output name="resultEigenvalue" tag="float|pattern"/>
+    <output name="outDisplacement" tag="color|vector|normal|point|pattern"/>
+    <output name="outEigenvalue" tag="float|pattern"/>
     <typeTag>
         <tag value="pattern"/>
     </typeTag>
