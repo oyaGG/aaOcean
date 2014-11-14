@@ -33,7 +33,7 @@
 
 aaOcean::aaOcean() :
     // input variables
-    m_resolution(4),
+    m_resolution(-1),
     m_seed(1),
     m_windAlign(0),         
     m_velocity(15.0f),
