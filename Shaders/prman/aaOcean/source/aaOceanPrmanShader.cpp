@@ -20,16 +20,17 @@ public:
     virtual RixSCParamInfo const *GetParamTable();
     virtual void Finalize(RixContext &);
 
+    virtual int ComputeOutputParams(RixShadingContext const *,
+                                    RtInt *noutputs,
+                                    OutputSpec **outputs,
+                                    RtConstPointer instanceData,
+                                    RixSCParamInfo const *);
+
     virtual int CreateInstanceData(RixContext &,
                                    char const *handle,
                                    RixParameterList const *,
                                    InstanceData *id);
 
-    virtual int ComputeOutputParams(RixShadingContext const *,
-                                    RtInt *noutputs, 
-                                    OutputSpec **outputs,
-                                    RtConstPointer instanceData,
-                                    RixSCParamInfo const *);
 private:
     RtInt       m_writeFile;
     RtInt       m_currentFrame;
@@ -44,7 +45,7 @@ private:
 aaOceanShader::aaOceanShader() :
     m_writeFile(0),
     m_currentFrame(1),
-    m_msg(NULL)
+    m_msg(0)
 {
     strcpy (m_outputFolder, "");
     strcpy (m_postfix, "");
@@ -57,8 +58,11 @@ aaOceanShader::~aaOceanShader()
 
 enum paramId
 {
-    k_outDisplacement=0,      // vector displacement output
-    k_outEigenvalue, // eigenvalue (foam/spray) output
+    // outputs
+    k_outDisplacementRGB = 0,      // RGB vector displacement output
+    k_outEigenvalueFloat = 1,      // Float eigenvalue (foam/spray) output
+
+    // inputs
     k_uvCoords,
     k_useUVInput,
     k_fade,
@@ -97,8 +101,8 @@ RixSCParamInfo const * aaOceanShader::GetParamTable()
     static RixSCParamInfo s_ptable[] =
     {
         //outputs
-        RixSCParamInfo("outDisplacement",k_RixSCColor, k_RixSCOutput),
-        RixSCParamInfo("outEigenvalue",  k_RixSCFloat, k_RixSCOutput),
+        RixSCParamInfo("outDisplacementRGB",  k_RixSCColor, k_RixSCOutput),
+        RixSCParamInfo("outEigenvalueFloat",  k_RixSCFloat, k_RixSCOutput),
 
         // inputs - constant
         RixSCParamInfo("uvCoords",       k_RixSCVector),
@@ -137,12 +141,9 @@ RixSCParamInfo const * aaOceanShader::GetParamTable()
     return &s_ptable[0];
 }
 
-// Init: Called when the plugin is first loaded by the renderer. 
-// The plugin will remain loaded for the lifetime of the render. 
-// Any global work that would be shared by all instances of a plugin 
-// should be done here. Init returns 0 if there was no error initializing the plugin.
 int aaOceanShader::Init(RixContext &ctx, char const *pluginpath)
 {
+    // init messaging interface
     m_msg = (RixMessages*)ctx.GetRixInterface(k_RixMessages);
     if (!m_msg)
         return 1;
@@ -155,15 +156,13 @@ void aaOceanShader::Finalize(RixContext &ctx)
  
 }
 // to clear shader instance-specific ocean data
-static void cleanUp(void *oceandata)
+static void cleanUpOcean(void *oceandata)
 {
-     //delete static_cast<aaOcean*>(oceandata);
     aaOcean *pOcean = (aaOcean*)oceandata;
     delete pOcean;
     pOcean = 0;
 }
-int
-aaOceanShader::CreateInstanceData(RixContext &ctx,
+int aaOceanShader::CreateInstanceData(RixContext &ctx,
                                   char const *handle,
                                   RixParameterList const *plist,
                                   InstanceData *idata)
@@ -186,8 +185,8 @@ aaOceanShader::CreateInstanceData(RixContext &ctx,
     RtFloat repeatTime;
     RtInt   writeFile;
     RtInt   currentFrame;
-    RtConstString outputFolder = NULL;
-    RtConstString postfix = NULL;
+    RtConstString outputFolder = 0;
+    RtConstString postfix = 0;
 
     // retrieving critical ocean inputs first
     getParam(resolution, plist);
@@ -214,6 +213,7 @@ aaOceanShader::CreateInstanceData(RixContext &ctx,
         
     // initialize_ocean
     aaOcean *pOcean = new aaOcean;
+
     pOcean->input(resolution, 
     seed,
     oceanScale, 
@@ -233,7 +233,7 @@ aaOceanShader::CreateInstanceData(RixContext &ctx,
     FALSE);
 
     int tileRes = (int)pow(2.0f, (4 + abs(resolution)));
-    m_msg->WarningAlways("[aaOcean] Created new aaOcean %dx%d tile", tileRes, tileRes);
+    m_msg->Info("[aaOcean] Created new aaOcean %dx%d tile", tileRes, tileRes);
 
 #ifdef WRITE_OPENEXR
     if(writeFile)
@@ -245,63 +245,63 @@ aaOceanShader::CreateInstanceData(RixContext &ctx,
             char outputFileName[255];
             sprintf(outputFileName, "none");
             oceanDataToEXR(pOcean, &outputFolder[0], &postfix[0], currentFrame, &outputFileName[0]);
-            m_msg->WarningAlways("[aaOcean] Image written to %s", outputFileName);
+            m_msg->Info("[aaOcean] Image written to %s", outputFileName);
         }
     }
 #endif
+
     idata->datalen = sizeof(aaOcean*);
     idata->data = (void*) pOcean;
-    idata->freefunc = cleanUp;
-    return 0; // no error
+    idata->freefunc = cleanUpOcean;
+    return 0; 
 }
-// ComputeOutputParams: This  reads the input \
-// parameters and computes the output parameters. It is called once per graph execution. \
-// All outputs must be computed during this one call. The renderer provides a list of the \
-// outputs it expects the plugin to compute. Most often, this is exactly the same as the \
-// outputs declared in the parameter table.
 int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
                                 RtInt *noutputs, 
                                 OutputSpec **outputs,
                                 RtConstPointer instanceData,
                                 RixSCParamInfo const *ignored)
 {
-    RixSCType type;
-    RixSCConnectionInfo cInfo;
+    // get pointer to ocean instance data
     aaOcean *pOcean = (aaOcean*)instanceData;
 
-    // working variables
-    RtFloat2 const *uv2;
-    RtVector3 const *uvCoords;
-    RtInt const *useUVInput;
-    RtFloat const *fade;
-    RtFloat const *gamma;
-    RtFloat const *brightness;
-    RtFloat const *fMin;
-    RtFloat const *fMax;
-    RtInt const *invertFoam;
+    // working variables per-batch of shaded points per instance
+    RtFloat2    const *uv2;
+    RtVector3   const *uvCoords;
+    RtInt       const *useUVInput;
+    RtFloat     const *fade;
+    RtFloat     const *gamma;
+    RtFloat     const *brightness;
+    RtFloat     const *fMin;
+    RtFloat     const *fMax;
+    RtInt       const *invertFoam;
 
-   
     // Find the number of outputs
     RixSCParamInfo const* paramTable = GetParamTable();
     int numOutputs = -1;
     while (paramTable[++numOutputs].access == k_RixSCOutput) {}
 
+    RixSCType type;
+    RixSCConnectionInfo cInfo;
     // Allocate and bind our outputs
     RixShadingContext::Allocator pool(sctx);
     OutputSpec* out = pool.AllocForPattern<OutputSpec>(numOutputs);
     *outputs = out;
     *noutputs = numOutputs;
 
+    // output variables
+    RtColorRGB* outDisplacementRGB = 0;
+    RtFloat* outEigenvalueFloat = 0;
+
     // looping through the different output ids
-    for (int i = 0; i < numOutputs; ++i)
+    for (int i = 0; i < numOutputs; i++)
     {
         out[i].paramId = i;
         out[i].detail = k_RixSCInvalidDetail;
-        out[i].value = NULL;
+        out[i].value = 0;
 
-        type = paramTable[i].type;    // we know this
-
+        type = paramTable[i].type; 
         sctx->GetParamInfo(i, &type, &cInfo);
+
         if(cInfo == k_RixSCNetworkValue)
         {
             if( type == k_RixSCColor )
@@ -312,18 +312,14 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
             else if( type == k_RixSCFloat )
             {
                 out[i].detail = k_RixSCVarying;
-                out[i].value = pool.AllocForPattern<RtFloat>(sctx->numPts);
+                out[i].value = outEigenvalueFloat = pool.AllocForPattern<RtFloat>(sctx->numPts);;//(RtFloat*) out[k_outEigenvalueFloat].value;
+
+                //out[i].value = pool.AllocForPattern<RtFloat>(sctx->numPts);
             }
         }
     }
 
-    RtColorRGB* outDisplacement = (RtColorRGB*) out[k_outDisplacement].value;
-    RtFloat* outEigenvalue = (RtFloat*) out[k_outEigenvalue].value;
-
-    if(!outDisplacement)
-        outDisplacement = pool.AllocForPattern<RtColorRGB>(sctx->numPts);
-    if(!outEigenvalue)
-        outEigenvalue = pool.AllocForPattern<RtFloat>(sctx->numPts);
+    outDisplacementRGB = (RtColorRGB*) out[k_outDisplacementRGB].value;
 
     // pulling UVs from primvars
     getParam(useUVInput, sctx);
@@ -339,6 +335,7 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
     // TODO:
         getParam(uvCoords, sctx);
     }
+
     getParam(gamma, sctx);
     getParam(brightness, sctx);
     getParam(fMin, sctx);
@@ -349,31 +346,31 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
     // loop over our points and shade them
     for (int i = 0; i < sctx->numPts; i++)
     {
-        if(outDisplacement)
+        if(outDisplacementRGB)
         {
-            outDisplacement[i].g = pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eHEIGHTFIELD)* (1.0f - *fade);
+            outDisplacementRGB[i].g = pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eHEIGHTFIELD)* (1.0f - *fade);
             if(pOcean->isChoppy())
             {
-                outDisplacement[i].r = pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eCHOPX)* (1.0f - *fade);
-                outDisplacement[i].b = pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eCHOPZ)* (1.0f - *fade);
+                outDisplacementRGB[i].r = pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eCHOPX)* (1.0f - *fade);
+                outDisplacementRGB[i].b = pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eCHOPZ)* (1.0f - *fade);
             }
             else
-                outDisplacement[i].r = outDisplacement[i].b = 0.0f;
+                outDisplacementRGB[i].r = outDisplacementRGB[i].b = 0.0f;
         }
 
-        if(outEigenvalue)
+        if(outEigenvalueFloat)
         {
-            outEigenvalue[i] = pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eFOAM);
+            outEigenvalueFloat[i] = 0.5;//pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eFOAM);
 
-            if(*invertFoam)
-                outEigenvalue[i]  = 1.0f - rescale(outEigenvalue[i], *fMin, *fMax, 0.0f, 1.0f);
+            /*if(*invertFoam)
+                outEigenvalueFloat[i]  = 1.0f - rescale(outEigenvalueFloat[i], *fMin, *fMax, 0.0f, 1.0f);
             else
-                outEigenvalue[i]  = rescale(outEigenvalue[i], *fMin, *fMax, 0.0f, 1.0f);
+                outEigenvalueFloat[i]  = rescale(outEigenvalueFloat[i], *fMin, *fMax, 0.0f, 1.0f);
 
-            outEigenvalue[i]  = maximum<float>(outEigenvalue[i], 0.0f);
-            outEigenvalue[i]  = pow(outEigenvalue[i], *gamma);
-            outEigenvalue[i] *= *brightness;
-            outEigenvalue[i] *= (1.0f - *fade);
+            outEigenvalueFloat[i]  = maximum<float>(outEigenvalueFloat[i], 0.0f);
+            outEigenvalueFloat[i]  = pow(outEigenvalueFloat[i], *gamma);
+            outEigenvalueFloat[i] *= *brightness;
+            outEigenvalueFloat[i] *= (1.0f - *fade);*/
         }
     }
 
@@ -387,5 +384,5 @@ RIX_PATTERNCREATE
 
 RIX_PATTERNDESTROY
 {
-    delete ((aaOceanShader*)pattern);
+    delete (aaOceanShader*)pattern;
 }
