@@ -104,8 +104,8 @@
         </param>
         <param name="transform" type="float" detail='cantvary' input='True' isDynamicArray="1" arraySize="16" />
     </page>
-    <output name="outDisplacement" tag="color|vector|normal|point|pattern"/>
-    <output name="outEigenvalue" tag="float|pattern"/>
+    <output name="outDisplacementRGB" tag="color|pattern"/>
+    <output name="outEigenvalueFloat" tag="float"/>
     <typeTag>
         <tag value="pattern"/>
     </typeTag>
