@@ -360,9 +360,9 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
 
         if(outEigenvalueFloat)
         {
-            outEigenvalueFloat[i] = 0.5;//pOcean->getOceanData(uv2[i][0], uv2[i][1], aaOcean::eFOAM);
+            outEigenvalueFloat[i] = pOcean->getOceanData(uv2[i][0], -uv2[i][1], aaOcean::eFOAM);
 
-            /*if(*invertFoam)
+            if(*invertFoam)
                 outEigenvalueFloat[i]  = 1.0f - rescale(outEigenvalueFloat[i], *fMin, *fMax, 0.0f, 1.0f);
             else
                 outEigenvalueFloat[i]  = rescale(outEigenvalueFloat[i], *fMin, *fMax, 0.0f, 1.0f);
@@ -370,7 +370,7 @@ int aaOceanShader::ComputeOutputParams(RixShadingContext const *sctx,
             outEigenvalueFloat[i]  = maximum<float>(outEigenvalueFloat[i], 0.0f);
             outEigenvalueFloat[i]  = pow(outEigenvalueFloat[i], *gamma);
             outEigenvalueFloat[i] *= *brightness;
-            outEigenvalueFloat[i] *= (1.0f - *fade);*/
+            outEigenvalueFloat[i] *= (1.0f - *fade);
         }
     }
 
