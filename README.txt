@@ -33,8 +33,6 @@ This repository contains the following
 
 *****LINUX BUILD INSTRUCTIONS*******
 Please see the wiki page at 
-
-[Linux Build Instructions]
 https://bitbucket.org/amaanakram/aaocean/wiki/Build%20instructions
 
 MAYA & LINUX:
