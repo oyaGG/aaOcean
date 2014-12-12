@@ -114,7 +114,7 @@ node_update
         FALSE);
 
     // see if user has requested normalized or raw foam values
-    float rawOutput = params[p_raw].BOOL;
+    bool rawOutput = params[p_raw].BOOL;
     if(pOcean->isChoppy() && !rawOutput)
     {
         float outMin, outMax;
