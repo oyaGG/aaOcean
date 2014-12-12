@@ -122,6 +122,8 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
     if(transform.GetCount() > 1)
         transformSingleton = FALSE;
 
+    Application().LogMessage(L"[aaOcean ICE] : debug");
+
     ULONG out_portID = in_ctxt.GetEvaluatedOutputPortID( ); 
     switch( out_portID )
     {
@@ -150,6 +152,10 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
                     outData[i].PutX(localSpaceVec[0]);
                     outData[i].PutY(localSpaceVec[1]);
                     outData[i].PutZ(localSpaceVec[2]);
+
+                    outData[i].PutX(worldSpaceVec[0]);
+                    outData[i].PutY(worldSpaceVec[1]);
+                    outData[i].PutZ(worldSpaceVec[2]);
                 }
             }
             else

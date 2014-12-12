@@ -42,6 +42,7 @@ aaOcean::aaOcean() :
     m_damp(0.985f),
     m_oceanScale(100.0f),
     m_oceanDepth(10000.f),
+    m_surfaceTension(0.0f),
     m_chopAmount(1.0f),
     m_waveHeight(1.0f),
     m_waveSpeed(1.0f),
