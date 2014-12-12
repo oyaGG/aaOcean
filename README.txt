@@ -24,6 +24,7 @@ This repository contains the following
 * aaOcean Mental Ray shaders
 * Softimage Shader Definitions for Mental Ray shaders
 * aaOcean Arnold shaders
+* aaOcean Prman 19 RIS displacement shader
 * aaOcean Softimage ICE deformer
 * aaOcean Maya Deformer
 * aaOcean Houdini SOP
