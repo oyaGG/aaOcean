@@ -37,6 +37,6 @@ https://bitbucket.org/amaanakram/aaocean/wiki/Build%20instructions
 
 MAYA & LINUX:
 To compile the Maya plugin, you will need gcc-4.2.4 which is ABI-compatible with gcc-4.1.x and
-supports OpenMP which is usedby aaOcean
+supports OpenMP which is used by aaOcean
 
 Acknowledgements for help and bug fixes: Frederic Servant, Fabrice Macagno, Phil Stopford, Andrew Helmer
