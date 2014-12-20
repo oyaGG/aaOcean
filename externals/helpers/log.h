@@ -1,3 +1,8 @@
+// Original file obtained from:
+// Logging In C++
+// By Petru Marginean, September 05, 2007
+// http://www.drdobbs.com/cpp/logging-in-c/201804215
+
 #ifndef __LOG_H__
 #define __LOG_H__
 
