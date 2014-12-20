@@ -138,24 +138,23 @@ void aaOcean::input(int resolution, unsigned int seed, float oceanScale, float o
 {
     // forcing to be power of two, setting minimum resolution of 2^4
     resolution  = (int)pow(2.0f, (4 + abs(resolution))); 
-    reInit(resolution);
+    reInit(resolution, seed);
 
     // scaled for better UI control
     m_waveHeight    = waveHeight * 0.01f;
     m_time          = time;
     m_waveSpeed     = waveSpeed;
     m_doFoam        = doFoam;
-    m_doNormals     = doNormals;
 
     if(chopAmount > 1.0e-6f)
     {
         // scaled for better UI control
         m_chopAmount = chopAmount * 0.01f;
-        m_doChop = TRUE;
+        m_doChop = 1;
     }
     else
     {
-        m_doChop = FALSE;
+        m_doChop = 0;
         m_chopAmount = 0.0f;
     }
 
@@ -193,35 +192,27 @@ void aaOcean::input(int resolution, unsigned int seed, float oceanScale, float o
         m_loopTime          = loopTime;
 
         // re-evaluate HoK if any of these vars change
-        m_doHoK = TRUE;
-    }
-
-    if(m_seed != seed)
-    {
-        // setup grid and do HoK if seed changes
-        m_seed  = seed;
-        m_doHoK = TRUE;
-        m_doSetup = TRUE;
+        m_doHoK = 1;
     }
 
     if(!m_doHoK || !m_doSetup)
         sprintf(m_state,"[aaOcean Core] Ocean base state unchanged. Re-evaluating ocean with cached data");
-
     
     // we have our inputs. start preparing ocean arrays
     prepareOcean();
 }
 
-void aaOcean::reInit(int resolution)
+void aaOcean::reInit(int resolution, int seed)
 {
     // If ocean resolution has changed, or if we are creating an ocean from scratch
     // Flush any existing arrays and allocate them with the new array size (resolution)
-    if(m_resolution != resolution)
+    if(m_resolution != resolution || m_seed != seed)
     {
+        m_seed = seed; // should be handled separately -- does not need mem reallocation
         m_resolution = resolution;
         allocateBaseArrays();           
-        m_doHoK  = TRUE;
-        m_doSetup = TRUE;
+        m_doHoK  = 1;
+        m_doSetup = 1;
     }
 }
 
