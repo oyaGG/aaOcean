@@ -27,9 +27,6 @@ public:
        eEIGENPLUSZ,
        eEIGENMINUSX,
        eEIGENMINUSZ,
-       eNORMALSX,
-       eNORMALSY,
-       eNORMALSZ
     };
 
     void input( int     resolution,
@@ -47,8 +44,7 @@ public:
                 float   chopAmount,
                 float   time,
                 float   repeatTime,
-                bool    doFoam,
-                bool    doNormals);
+                bool    doFoam);
 
     float getOceanData(float uCoord, float vCoord, aaOcean::arrayType type) const;
     void getOceanArray(float *&outArray, aaOcean::arrayType type);
@@ -95,12 +91,10 @@ public:
     //bool types for various checks during run-time
     bool    m_isAllocated;
     bool    m_isFoamAllocated;
-    bool    m_isNormalAllocated;
     bool    m_doHoK;
     bool    m_doSetup;
     bool    m_doChop;
     bool    m_doFoam;
-    bool    m_doNormals;
 
     // memory tracking
     int     m_memory;
@@ -111,8 +105,6 @@ public:
     fftwf_complex *m_fft_jxx; // eigenvector
     fftwf_complex *m_fft_jzz; // eigenvector
     fftwf_complex *m_fft_jxz; // eigenvalue
-    fftwf_complex *m_normalsXY; // normals XY component
-    fftwf_complex *m_normalsZ; // normals Z component
 
     fftwf_plan m_planHeightField;
     fftwf_plan m_planChopX;
@@ -126,7 +118,6 @@ public:
     // memory management functions
     void allocateBaseArrays();
     void allocateFoamArrays();
-    void allocateNormalArrays();
     void clearArrays();
     
     // initialization functions
@@ -140,7 +131,6 @@ public:
     void evaluateHieghtField();
     void evaluateChopField();
     void evaluateJacobians();
-    void evaluateNormal();
     
     // interpolation functions
     inline float catmullRom(const float t, const float a, const float b, const float c, const float d) const;

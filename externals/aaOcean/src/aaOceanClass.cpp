@@ -65,12 +65,10 @@ aaOcean::aaOcean() :
     // bools to check ocean state
     m_isAllocated(0),
     m_isFoamAllocated(0),
-    m_isNormalAllocated(0),
     m_doHoK(0),
     m_doSetup(0),
     m_doChop(0),
     m_doFoam(0),
-    m_doNormals(0),
 
     // memory tracking
     m_memory(0),
@@ -81,9 +79,7 @@ aaOcean::aaOcean() :
     m_fft_chopZ(0),
     m_fft_jxx(0),
     m_fft_jzz(0),
-    m_fft_jxz(0),
-    m_normalsXY(0),
-    m_normalsZ(0)
+    m_fft_jxz(0)
 {
     strcpy (m_state, "");
 }
@@ -106,8 +102,7 @@ aaOcean::aaOcean(const aaOcean &cpy)
             cpy.m_chopAmount,
             cpy.m_time,
             cpy.m_loopTime,
-            cpy.m_doFoam,
-            TRUE);
+            cpy.m_doFoam);
 }
 
 aaOcean::~aaOcean()
@@ -132,7 +127,7 @@ int aaOcean::getResolution()
 
 void aaOcean::input(int resolution, unsigned int seed, float oceanScale, float oceanDepth, float surfaceTension, 
                     float velocity, float cutoff, float windDir, int windAlign, float damp, float waveSpeed, 
-                    float waveHeight, float chopAmount, float time, float loopTime, bool doFoam, bool doNormals)
+                    float waveHeight, float chopAmount, float time, float loopTime, bool doFoam)
 {
     // forcing to be power of two, setting minimum resolution of 2^4
     resolution  = (int)pow(2.0f, (4 + abs(resolution))); 
@@ -296,17 +291,6 @@ void aaOcean::allocateBaseArrays()
     m_isFoamAllocated = TRUE;
 }
 
-void aaOcean::allocateNormalArrays()
-{
-    int size = m_resolution * m_resolution;
-    m_memory += size * sizeof(fftwf_complex) * 2;
-
-    m_normalsXY = (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex));
-    m_normalsZ  = (fftwf_complex*) fftwf_malloc(size * sizeof(fftwf_complex));
-
-    m_isNormalAllocated = TRUE;
-}
-
 void aaOcean::clearResidualArrays()
 {
     bool isResidualAllocated = TRUE;
@@ -386,13 +370,6 @@ void aaOcean::clearArrays()
 {
     if(m_isAllocated)
     {
-        if(m_isNormalAllocated)
-        {
-            fftwf_free(m_normalsXY);
-            fftwf_free(m_normalsZ);
-            m_normalsXY = m_normalsZ = FALSE;
-            m_isNormalAllocated = FALSE;
-        }
         if(m_isFoamAllocated)
         {
             if(m_fft_jxx)
@@ -719,120 +696,6 @@ void aaOcean::evaluateJacobians()
     }
 }
 
-// removed until vector class is gcc-4.2.x compliant
-/*
-void aaOcean::evaluateNormal()
-{
-    int index;
-    int n = m_resolution;
-
-    const int halfRes = n/2;    
-
-    #pragma omp parallel for private(index)
-    for(int i = 0; i < n; ++i)
-    {
-        // position vectors to surrounding points
-        vector3 vCurrent, vNorth, vSouth, vEast, vWest, norm1, norm2, norm3, norm4;
-        int ii, jj, xCoord, zCoord;
-        float cX, cZ;
-        for(int j = 0; j < n; ++j)
-        {
-            xCoord = i - n;
-            zCoord = n - (n - j) + 1;
-
-            if(isChoppy())
-            {
-                ii = wrap(i+1);
-                index = (ii * n) + j;;
-                cX = m_fft_chopX[index][0];
-                cZ = m_fft_chopZ[index][0];
-            }
-            else
-                cX = cZ = 0.0f;
-
-            ii = wrap(i+1);
-            index = (ii * n) + j;
-            vNorth.x = xCoord + cX;
-            vNorth.y = m_fft_htField[index][0];
-            vNorth.z = zCoord + 1 + cZ;
-
-            if(isChoppy())
-            {
-                ii = wrap(i-1);
-                index = (ii * n) + j;
-                cX = m_fft_chopX[index][0];
-                cZ = m_fft_chopZ[index][0];
-            }
-            else
-                cX = cZ = 0.0f;
-
-            vSouth.x = xCoord + cX;
-            vSouth.y = m_fft_htField[index][0];
-            vSouth.z = zCoord - 1 + cZ;
-
-            if(isChoppy())
-            {
-                jj = wrap(j-1);
-                index = (i * n) + jj;
-                cX = m_fft_chopX[index][0];
-                cZ = m_fft_chopZ[index][0];
-            }
-            else
-                cX = cZ = 0.0f;
-            
-            vEast.x = xCoord - 1 + cX;
-            vEast.y = m_fft_htField[index][0];
-            vEast.z = zCoord + cZ;
-
-            if(isChoppy())
-            {
-                jj = wrap(j+1);
-                index = (i * n) + jj;
-                cX = m_fft_chopX[index][0];
-                cZ = m_fft_chopZ[index][0];
-            }
-            else
-                cX = cZ = 0.0f;
-            
-            vWest.x = xCoord + cX;
-            vWest.y = m_fft_htField[index][0];
-            vWest.z = zCoord + 1 + cZ;
-
-            index = (j * n) + i;
-            
-            if(isChoppy())
-            {
-                cX = m_fft_chopX[index][0];
-                cZ = m_fft_chopZ[index][0];
-            }
-            vCurrent.x = xCoord - cX;
-            vCurrent.y = m_fft_htField[index][0];
-            vCurrent.z = zCoord - cZ;
-
-            vNorth  = vNorth - vCurrent;
-            vSouth  = vSouth - vCurrent;
-            vEast   = vEast - vCurrent; 
-            vWest   = vWest - vCurrent;
-
-            norm1 = vEast.cross(vNorth);
-            norm2 = vWest.cross(vSouth);
-            norm3 = vSouth.cross(vEast);
-            norm4 = vNorth.cross(vWest);
-
-            vector3 normal = (norm1.normalize() + norm2.normalize() + norm3.normalize() + norm4.normalize()) * 0.25f;
-            if(vCurrent.length()==0.0f)
-                norm1.x = norm1.y = norm1.z = 0.f;
-            else
-                norm1 = norm1.normalize();
-
-            m_normalsXY[index][0] = norm1.x;
-            m_normalsXY[index][1] = norm1.y;
-            m_normalsZ[index][0]  = norm1.z;
-        }
-    }
-}
-*/
-
 void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax)
 {
     outBoundsMax = -FLT_MAX;
@@ -974,14 +837,5 @@ void aaOcean::getArrayType(aaOcean::arrayType type, fftwf_complex*& outArray, in
         outArray = m_fft_jzz;
         arrayIndex = 1;
     }
-    else if (type == eNORMALSX)
-        outArray = m_normalsXY;
-    else if (type == eNORMALSY)
-    {
-        outArray = m_normalsXY;
-        arrayIndex = 1;
-    }
-    else if (type == eNORMALSZ)
-        outArray = m_normalsZ;
 }
 #endif  /* AAOCEANCLASS_CPP */
