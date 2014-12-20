@@ -499,9 +499,6 @@ void aaOcean::setupGrid()
             dsfmt_t dsfmt;
             dsfmt_init_gen_rand(&dsfmt, uID + (unsigned int)m_seed);
             
-            //m_rand1[index] = (float)logNormal(dsfmt);
-            //m_rand2[index] = (float)logNormal(dsfmt);
-            
             m_rand1[index] = (float)gaussian(dsfmt);
             m_rand2[index] = (float)gaussian(dsfmt);
 
