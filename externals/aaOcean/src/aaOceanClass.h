@@ -130,7 +130,7 @@ public:
     void clearArrays();
     
     // initialization functions
-    void reInit(int data_size);
+    void reInit(int data_size, int seed);
     unsigned int generateUID(float, float);
     void prepareOcean();
     void setupGrid();
