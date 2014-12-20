@@ -23,12 +23,10 @@
 #include <climits>
 #include <float.h>
 #include <string.h>
+#include "dSFMT/dSFMT.h"
+#include "dSFMT/dSFMT.c"
 #include "constants.h"
 #include "functionLib.h"
-#include "agnerFog/sfmt.cpp" 
-#include "agnerFog/stocc.h"
-#include "agnerFog/stoc1.cpp"
-#include "agnerFog/userintf.cpp"
 #include "aaOceanClass.h"
 
 aaOcean::aaOcean() :
@@ -497,9 +495,18 @@ void aaOcean::setupGrid()
 
             uID = (unsigned int)generateUID((float)m_xCoord[index], (float)m_zCoord[index]);
 
-            StochasticLib1 sto(uID + (unsigned int)m_seed);
-            m_rand1[index] = (float)sto.Normal(0.0, 1.0);
-            m_rand2[index] = (float)sto.Normal(0.0, 1.0);
+            // generate random numbers
+            dsfmt_t dsfmt;
+            dsfmt_init_gen_rand(&dsfmt, uID + (unsigned int)m_seed);
+            
+            //m_rand1[index] = (float)logNormal(dsfmt);
+            //m_rand2[index] = (float)logNormal(dsfmt);
+            
+            m_rand1[index] = (float)gaussian(dsfmt);
+            m_rand2[index] = (float)gaussian(dsfmt);
+
+            //m_rand1[index] = (float)uniform(dsfmt);
+            //m_rand2[index] = (float)uniform(dsfmt);
         }
     }
     m_doSetup = FALSE;
