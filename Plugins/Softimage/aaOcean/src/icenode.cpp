@@ -121,8 +121,6 @@ SICALLBACK aaOcean_Evaluate( ICENodeContext& in_ctxt )
     if(transform.GetCount() > 1)
         transformSingleton = FALSE;
 
-    Application().LogMessage(L"[aaOcean ICE] : debug");
-
     ULONG out_portID = in_ctxt.GetEvaluatedOutputPortID( ); 
     switch( out_portID )
     {

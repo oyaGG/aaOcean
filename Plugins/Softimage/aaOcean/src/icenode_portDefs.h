@@ -88,20 +88,6 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
                                 100.0f);
     st.AssertSucceeded( ) ;
 
-    st = nodeDef.AddInputPort(  ID_IN_OCEAN_DEPTH,
-                                ID_G_100,
-                                siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
-                                L"Ocean Depth",L"Ocean_Depth",
-                                10000.0f);
-    st.AssertSucceeded( ) ;
-
-    st = nodeDef.AddInputPort(  ID_IN_SURFACE_TENSION,
-                                ID_G_100,
-                                siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
-                                L"Surface Tension",L"Surface_Tension",
-                                0.0f);
-    st.AssertSucceeded( ) ;
-
     st = nodeDef.AddInputPort(  ID_IN_SEED,
                                 ID_G_100,
                                 siICENodeDataLong,siICENodeStructureSingle,siICENodeContextSingleton,
@@ -111,7 +97,7 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
     st.AssertSucceeded( ) ;
 
     st = nodeDef.AddInputPort(  ID_IN_TIME,
-                                ID_G_101,
+                                ID_G_103,
                                 siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
                                 L"Current Time (secs)",L"CurrentTime",
                                 1.0f);
@@ -209,6 +195,21 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
                                 siICENodeDataLong,siICENodeStructureSingle,siICENodeContextComponent0D,
                                 L"PointID",L"PointID",
                                 1);
+    st.AssertSucceeded( ) ;
+
+    st = nodeDef.AddInputPort(  ID_IN_OCEAN_DEPTH,
+                                ID_G_103,
+                                siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
+                                L"Ocean Depth",L"Ocean_Depth",
+                                10000.0f);
+    st.AssertSucceeded( ) ;
+
+    st = nodeDef.AddInputPort(  ID_IN_SURFACE_TENSION,
+                                ID_G_103,
+                                siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
+                                L"Surface Tension",L"Surface_Tension",
+                                0.0f,0.0f,1.0f,
+                                ID_UNDEF, ID_UNDEF, ID_UNDEF);
     st.AssertSucceeded( ) ;
     
     st = nodeDef.AddInputPort(  ID_IN_ENABLE,
