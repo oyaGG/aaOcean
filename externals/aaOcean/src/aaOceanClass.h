@@ -47,7 +47,8 @@ public:
                 float   chopAmount,
                 float   time,
                 float   repeatTime,
-                bool    doFoam);
+                bool    doFoam,
+                float   randWeight=0);
 
     float getOceanData(float uCoord, float vCoord, aaOcean::arrayType type) const;
     void getOceanArray(float *&outArray, aaOcean::arrayType type);
@@ -75,8 +76,9 @@ public:
     float   m_waveSpeed;
     float   m_time;
     float   m_loopTime;
-    float   m_foamBoundmin; //for holding min/max foam
-    float   m_foamBoundmax; //for holding min/max foam
+    float   m_foamBoundmin; // for holding min/max foam
+    float   m_foamBoundmax; // for holding min/max foam
+    float   m_randWeight;   // control blend between rand distributions
     
     //ocean array pointers
     int     *m_xCoord;
@@ -134,7 +136,7 @@ public:
     void clearArrays();
     
     // initialization functions
-    void reInit(int data_size, int seed);
+    void reInit(int data_size, int seed, float randWeigh);
     unsigned int generateUID(const float, const float) const;
     void prepareOcean();
     void setupGrid();

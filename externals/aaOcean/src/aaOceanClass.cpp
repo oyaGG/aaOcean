@@ -49,6 +49,7 @@ aaOcean::aaOcean() :
     m_loopTime(10000.0f),
     m_foamBoundmin(FLT_MAX),
     m_foamBoundmax(-FLT_MAX),
+    m_randWeight(0.f),
 
     // working arrays
     m_xCoord(0),
@@ -139,11 +140,11 @@ int aaOcean::getResolution()
 
 void aaOcean::input(int resolution, unsigned int seed, float oceanScale, float oceanDepth, float surfaceTension, 
                     float velocity, float cutoff, float windDir, int windAlign, float damp, float waveSpeed, 
-                    float waveHeight, float chopAmount, float time, float loopTime, bool doFoam)
+                    float waveHeight, float chopAmount, float time, float loopTime, bool doFoam, float randWeight)
 {
     // forcing to be power of two, setting minimum resolution of 2^4
     resolution  = (int)pow(2.0f, (4 + abs(resolution))); 
-    reInit(resolution, seed);
+    reInit(resolution, seed, randWeight);
 
     // scaled for better UI control
     m_waveHeight    = waveHeight * 0.01f;
@@ -207,17 +208,16 @@ void aaOcean::input(int resolution, unsigned int seed, float oceanScale, float o
     prepareOcean();
 }
 
-void aaOcean::reInit(int resolution, int seed)
+void aaOcean::reInit(int resolution, int seed, float randWeight)
 {
     // If ocean resolution has changed, or if we are creating an ocean from scratch
     // Flush any existing arrays and allocate them with the new array size (resolution)
-    if(m_resolution != resolution || m_seed != seed)
+    if(m_resolution != resolution || m_seed != seed || m_randWeight != randWeight)
     {
         m_seed = seed; // should be handled separately -- does not need mem reallocation
+        m_randWeight = randWeight;
         m_resolution = resolution;
-        allocateBaseArrays();           
-        m_doHoK  = 1;
-        m_doSetup = 1;
+        allocateBaseArrays();
     }
 }
 
@@ -252,6 +252,9 @@ void aaOcean::allocateBaseArrays()
     }
     else
         sprintf(m_state,"[aaOcean Core] Allocating memory for ocean data structures for resolution %dx%d", m_resolution, m_resolution);
+
+    m_doHoK  = 1;
+    m_doSetup = 1;
 
     int size = m_resolution * m_resolution;
     int dims[2] = {m_resolution, m_resolution};
@@ -499,17 +502,19 @@ void aaOcean::setupGrid()
             uID = (unsigned int)generateUID(x, z);
 
             // generate random numbers
-            dsfmt_t dsfmt;
-            dsfmt_init_gen_rand(&dsfmt, uID + (unsigned int)m_seed);
+            dsfmt_t dsfmt1;
+            dsfmt_t dsfmt2;
+            dsfmt_init_gen_rand(&dsfmt1, uID + m_seed);
+            dsfmt_init_gen_rand(&dsfmt2, uID + m_seed + 1);
             
-            //m_rand1[index] = (float)logNormal(dsfmt);
-            //m_rand2[index] = (float)logNormal(dsfmt);
-            
-            //m_rand1[index] = (float)gaussian(dsfmt);
-            //m_rand2[index] = (float)gaussian(dsfmt);
+            float g1 = (float)gaussian(dsfmt1);
+            float g2 = (float)gaussian(dsfmt2);
 
-            m_rand1[index] = (float)uniform(dsfmt);
-            m_rand2[index] = (float)uniform(dsfmt);
+            float u1 = (float)uniform(dsfmt1);
+            float u2 = (float)uniform(dsfmt2);
+
+            m_rand1[index] = lerp(m_randWeight, g1, u1);
+            m_rand2[index] = lerp(m_randWeight, g2, u2);
         }
     }
     m_doSetup = 0;
