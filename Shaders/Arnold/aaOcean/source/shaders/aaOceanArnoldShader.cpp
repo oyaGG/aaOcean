@@ -110,8 +110,7 @@ node_update
         params[p_chopAmount].FLT,
         params[p_time].FLT,
         params[p_repeatTime].FLT,
-        TRUE,
-        FALSE);
+        TRUE);
 
     // see if user has requested normalized or raw foam values
     bool rawOutput = params[p_raw].BOOL;
