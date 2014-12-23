@@ -763,7 +763,6 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type)
     float u, v, du, dv = 0;
     int xMinus1, yMinus1, x, y, xPlus1, yPlus1, xPlus2, yPlus2;
     float *arrayPointer;
-    int arrayIndex;
 
     // maya and softimage V axis runs along negative z axis
     // aaOcean uses convention of V axis along positive z axis
