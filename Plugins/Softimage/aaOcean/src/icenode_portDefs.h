@@ -34,6 +34,7 @@ enum IDs
     ID_G_101,
     ID_G_102,
     ID_G_103,
+    ID_G_104,
 
     ID_G_200 = 200,
     ID_G_201,
@@ -70,8 +71,23 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
     st.AssertSucceeded();
     st = nodeDef.AddPortGroup(ID_G_102,1,1,L"Wind Parameters"); 
     st.AssertSucceeded();
-    st = nodeDef.AddPortGroup(ID_G_103,1,1,L"Misc"); 
+    st = nodeDef.AddPortGroup(ID_G_103,1,1,L"Data Inputs"); 
     st.AssertSucceeded();
+    st = nodeDef.AddPortGroup(ID_G_104,1,1,L"Advanced"); 
+    st.AssertSucceeded();
+
+    st = nodeDef.AddInputPort(  ID_IN_ENABLE,
+                                ID_G_100,
+                                siICENodeDataBool,siICENodeStructureSingle,siICENodeContextSingleton,
+                                L"Enable Ocean",L"Enable",
+                                true);
+
+    st = nodeDef.AddInputPort(  ID_IN_ENABLEFOAM,
+                                ID_G_100,
+                                siICENodeDataBool,siICENodeStructureSingle,siICENodeContextSingleton,
+                                L"Enable Foam",L"Enable_Foam",
+                                CValue(0));
+    st.AssertSucceeded( ) ;
 
     st = nodeDef.AddInputPort(  ID_IN_RESOLUTION,
                                 ID_G_100,
@@ -101,13 +117,6 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
                                 siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
                                 L"Current Time (secs)",L"CurrentTime",
                                 1.0f);
-    st.AssertSucceeded( ) ;
-
-    st = nodeDef.AddInputPort(  ID_IN_REPEAT_TIME,
-                                ID_G_100,
-                                siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
-                                L"Repeat Time (secs)",L"repeatTime",
-                                1000.0f);
     st.AssertSucceeded( ) ;
 
     st = nodeDef.AddInputPort(  ID_IN_WAVE_HEIGHT,
@@ -170,6 +179,14 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
                                 0);
     st.AssertSucceeded( ) ;
 
+    st = nodeDef.AddInputPort(  ID_IN_REPEAT_TIME,
+                                ID_G_102,
+                                siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
+                                L"Wave Loop Time (secs)",L"LoopTime",
+                                1000.0f, 0.001f, 1000.f,
+                                ID_UNDEF, ID_UNDEF, ID_UNDEF);
+    st.AssertSucceeded( ) ;
+
     st = nodeDef.AddInputPort(  ID_IN_U,
                                 ID_G_103,
                                 siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextComponent0D,
@@ -198,32 +215,21 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
     st.AssertSucceeded( ) ;
 
     st = nodeDef.AddInputPort(  ID_IN_OCEAN_DEPTH,
-                                ID_G_103,
+                                ID_G_104,
                                 siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
                                 L"Ocean Depth",L"Ocean_Depth",
                                 10000.0f);
     st.AssertSucceeded( ) ;
 
     st = nodeDef.AddInputPort(  ID_IN_SURFACE_TENSION,
-                                ID_G_103,
+                                ID_G_104,
                                 siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
                                 L"Surface Tension",L"Surface_Tension",
                                 0.0f,0.0f,1.0f,
                                 ID_UNDEF, ID_UNDEF, ID_UNDEF);
     st.AssertSucceeded( ) ;
     
-    st = nodeDef.AddInputPort(  ID_IN_ENABLE,
-                                ID_G_103,
-                                siICENodeDataBool,siICENodeStructureSingle,siICENodeContextSingleton,
-                                L"Enable Ocean",L"Enable",
-                                true);
-
-    st = nodeDef.AddInputPort(  ID_IN_ENABLEFOAM,
-                                ID_G_103,
-                                siICENodeDataBool,siICENodeStructureSingle,siICENodeContextSingleton,
-                                L"Enable Foam",L"Enable_Foam",
-                                false);
-    st.AssertSucceeded( ) ;
+    
 
 //-----------------------------------START OUTPUT PORTS----------------
 
