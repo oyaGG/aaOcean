@@ -229,8 +229,7 @@ int aaOceanShader::CreateInstanceData(RixContext &ctx,
     chopAmount, 
     currentTime,
     repeatTime,
-    TRUE,
-    FALSE);
+    TRUE);
 
     int tileRes = (int)pow(2.0f, (4 + abs(resolution)));
     m_msg->Info("[aaOcean] Created new aaOcean %dx%d tile", tileRes, tileRes);
