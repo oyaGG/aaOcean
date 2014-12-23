@@ -32,7 +32,9 @@
  * unsigned int and 64-bit unsigned int in hexadecimal format.
  */
 
+#ifndef NDEBUG
 #define NDEBUG
+#endif
 #define DSFMT_DO_NOT_USE_OLD_NAMES
 #define HAVE_SSE2
 #define SFMT_MEXP 19937

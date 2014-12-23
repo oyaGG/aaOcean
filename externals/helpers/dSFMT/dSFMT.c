@@ -5,6 +5,7 @@
  *
  * @author Mutsuo Saito (Hiroshima University)
  * @author Makoto Matsumoto (Hiroshima University)
+ // Copyright (C) 2000 - 2009, Richard J. Wagner (for gaussian distribution)
  *
  * Copyright (C) 2007,2008 Mutsuo Saito, Makoto Matsumoto and Hiroshima
  * University. All rights reserved.
@@ -627,6 +628,7 @@ void dsfmt_chk_init_by_array(dsfmt_t *dsfmt, uint32_t init_key[],
 
 // custom additions for aaocean
 // convets uniformly distributed rands to gaussian distribution
+// Copyright (C) 2000 - 2009, Richard J. Wagner
 double gaussian(dsfmt_t &dsfmt, const double& mean = 0.0, const double& variance = 1.0)
 {
     double rand1 = dsfmt_genrand_open_open(&dsfmt);
@@ -639,8 +641,15 @@ double gaussian(dsfmt_t &dsfmt, const double& mean = 0.0, const double& variance
 // uniformly distributed rands with remapped interval
 double uniform(dsfmt_t &dsfmt)
 {
+    // generate [0,1] uniform rands
     double rand = dsfmt_genrand_open_open(&dsfmt);
-    rand = (rand * 2.0) - 1.0;
+
+    // shift to [-1,1] range
+    rand = ((rand * 2.0) - 1.0);
+
+    //shift to [-2,2] to match gaussian heights
+    rand *= 2.0;
+
     return rand;
 }
 
@@ -651,3 +660,4 @@ double uniform(dsfmt_t &dsfmt)
 #if defined(__cplusplus)
 }
 #endif
+
