@@ -11,12 +11,6 @@
         <param name="oceanScale" type="float" default="100.0" min="0.001" max="10000.0"  input="True" widget="default" tag="float and pattern">
             <help></help>
         </param>
-        <param name="oceanDepth" type="float" default="1000.0" min="1.0" max="10000.0"  input="True" widget="default" tag="float and pattern">
-            <help></help>
-        </param>
-        <param name="surfaceTension" type="float" default="0.0" min="1.0" max="10000.0"  input="True" widget="default" tag="float and pattern">
-            <help></help>
-        </param>
         <param name="seed" type="int" default="1" min="1" max="20"  input="True" widget="default" tag="int and pattern">
             <help></help>
         </param>
@@ -103,6 +97,14 @@
             <help></help>
         </param>
         <param name="transform" type="float" detail='cantvary' input='True' isDynamicArray="1" arraySize="16" />
+    </page>
+    <page name="Advanced Parameters" open="False">
+        <param name="oceanDepth" type="float" default="1000.0" min="1.0" max="10000.0"  input="True" widget="default" tag="float and pattern">
+            <help></help>
+        </param>
+        <param name="surfaceTension" type="float" default="0.0" min="1.0" max="10000.0"  input="True" widget="default" tag="float and pattern">
+            <help></help>
+        </param>
     </page>
     <output name="outDisplacementRGB" tag="color|pattern"/>
     <output name="outEigenvalueFloat" tag="float"/>
