@@ -30,7 +30,7 @@
 
 int main(int argc, char* argv[])
 {
-    char msg[256];
+    char msg[512];
     input oceanInput;
 
     if(!processInput(argc, argv, oceanInput))
