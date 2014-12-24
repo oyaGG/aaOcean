@@ -20,6 +20,7 @@ public:
     aaOcean(const aaOcean &cpy);
     ~aaOcean();
 
+    // for retrieving array pointers in getOcean() from host app
     enum arrayType
     {
        eHEIGHTFIELD,
@@ -31,7 +32,15 @@ public:
        eEIGENMINUSX,
        eEIGENMINUSZ
     };
+    
+    // array for holding the current state of aaOcean object
+    char m_state[512]; 
 
+    // cleans up any left over data after ocean arrays are ready
+    void clearResidualArrays();
+    
+    // main input function
+    // should be called from host app
     void input( int     resolution,
                 unsigned int  seed, 
                 float   oceanScale,
@@ -50,17 +59,23 @@ public:
                 bool    doFoam,
                 float   randWeight=0);
 
+    // main output function
+    // should be called from host app
     float getOceanData(float uCoord, float vCoord, aaOcean::arrayType type) const;
-    void getOceanArray(float *&outArray, aaOcean::arrayType type);
-    void clearResidualArrays();
+
+    // retrieves input float arrays to write to open-exr format
+    void getOceanArray(float *&outArray, aaOcean::arrayType type) const;
+
+    // retrieves eigenvalue (foam) array bounds
+    void getFoamBounds(float& outBoundsMin, float& outBoundsMax) const;
 
     bool isValid();
     bool isChoppy();
     int getResolution();
     char* getState();
-    void getFoamBounds(float& outBoundsMin, float& outBoundsMax);
-
-//private:
+    
+    // initialization functions
+private:
     int     m_resolution;
     unsigned int m_seed;
     int     m_windAlign;
@@ -94,16 +109,16 @@ public:
     float   *m_rand2;
 
     //ocean output array pointers
-    float *m_out_fft_htField; // y displacement
-    float *m_out_fft_chopX;   // x displacement
-    float *m_out_fft_chopZ;   // z displacement
-    float *m_out_fft_jxxX; // eigenvector X component
-    float *m_out_fft_jxxZ; // eigenvector Z component
-    float *m_out_fft_jzzX; // eigenvector X component
-    float *m_out_fft_jzzZ; // eigenvector Z component
-    float *m_out_fft_jxz;  // eigenvalue
+    float *m_out_fft_htField;   // y displacement
+    float *m_out_fft_chopX;     // x displacement
+    float *m_out_fft_chopZ;     // z displacement
+    float *m_out_fft_jxxX;      // eigenvector X component
+    float *m_out_fft_jxxZ;      // eigenvector Z component
+    float *m_out_fft_jzzX;      // eigenvector X component
+    float *m_out_fft_jzzZ;      // eigenvector Z component
+    float *m_out_fft_jxz;       // eigenvalue
 
-    //bool types for various checks during run-time
+    // bool types for various checks during run-time
     bool    m_isAllocated;
     bool    m_isFoamAllocated;
     bool    m_doHoK;
@@ -128,18 +143,10 @@ public:
     kiss_fftnd_cfg m_planJxz;
     kiss_fftnd_cfg m_planJzz;
 
-    char m_state[512]; // array for holding the current state of aaOcean object
-    
-    // memory management functions
-    void allocateBaseArrays();
-    void allocateFoamArrays();
-    void clearArrays();
-    
-    // initialization functions
-    void reInit(int data_size, int seed, float randWeigh);
-    unsigned int generateUID(const float, const float) const;
+    void reInit(int data_size, int seed, float randWeight);
     void prepareOcean();
     void setupGrid();
+    unsigned int generateUID(const float, const float) const;
 
     // tessendorf ocean functions
     void evaluateHokData();
@@ -153,6 +160,11 @@ public:
     inline int wrap(int x) const;
 
     void getArrayType(aaOcean::arrayType type, float*& outArray) const;
+
+    // memory management functions
+    void allocateBaseArrays();
+    void allocateFoamArrays();
+    void clearArrays();
 };
 
 #endif  /* AAOCEANCLASS_H */
