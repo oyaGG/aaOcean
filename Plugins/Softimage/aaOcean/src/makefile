@@ -8,7 +8,7 @@
 # $(SOFTIMAGE)/include
 # $(SOFTIMAGE)/lib
 
-# $(DEPLOC) is where you have installed 'dependencies' like fftw, openexr, ilmbase, and zlib
+# $(DEPLOC) is where you have installed 'dependencies' like openexr, ilmbase, and zlib
 # the following folder structure is expected under $(DEPLOC)
 # $(DEPLOC)/include
 # $(DEPLOC)/lib
@@ -24,8 +24,8 @@ TARGETLOC	:=
 
 INCLUDES 	:= -I$(SOFTIMAGE)/include -I$(DEPLOC)/include -I../../../../externals/aaOcean/src -I../../../../externals/helpers
 LDFLAGS		:= -fopenmp
-LIBS		:= $(LIBSLOC)/libfftw3f.a $(LIBSLOC)/libfftw3f_omp.a
-CXXFLAGS	:= -w -O2 -fPIC -ffast-math
+LIBS		:=
+CXXFLAGS	:= -w -O3 -fPIC -ffast-math -fno-strict-aliasing -msse2
 CXX		:= $(GXXLOC)g++
 SOURCES  	:= icenode.cpp
 OBJECTS  	:= $(SOURCES:.cpp=.o)

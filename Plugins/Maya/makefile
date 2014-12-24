@@ -1,7 +1,5 @@
 # makefile for maya aaocean deformer
 
-# this makefile requires fftw library
-# please visit the following URL to see how to compile fftw
 # https://bitbucket.org/amaanakram/aaocean/wiki/Home
 
 # This makefile is for gcc-4.2.x, which is ABI-compatible with gcc-4.1.2
@@ -12,7 +10,7 @@
 # $(MAYA)/include
 # $(MAYA)/lib
 
-# $(DEPLOC) is where you have installed 'dependencies' like fftw, openexr, ilmbase, and zlib
+# $(DEPLOC) is where you have installed 'dependencies' like openexr, ilmbase, and zlib
 # the following folder structure is expected under $(DEPLOC)
 # $(DEPLOC)/include
 # $(DEPLOC)/lib
@@ -30,8 +28,8 @@ LIBSLOC		:= $(DEPLOC)/lib
 
 INCLUDES	:= -I$(MAYA)/include -I$(DEPLOC)/include -I../../externals/aaOcean/src -I../../externals/helpers
 LDFLAGS		:= -fopenmp
-LIBS		:= $(LIBSLOC)/libfftw3f.a $(LIBSLOC)/libfftw3f_omp.a  -L$(MAYALIB) -lOpenMaya -lOpenMayaAnim
-CXXFLAGS	:= -w -O2 -fPIC -fvisibility=hidden -DLINUX -D_BOOL -DI386 -ffast-math -DREQUIRE_IOSTREAM
+LIBS		:= -L$(MAYALIB) -lOpenMaya -lOpenMayaAnim
+CXXFLAGS	:= -w -O3 -fPIC -fvisibility=hidden -DLINUX -D_BOOL -DI386 -ffast-math -DREQUIRE_IOSTREAM -fno-strict-aliasing -msse2 
 CXX		:= $(GXXLOC)g++
 SOURCES		:= aaOceanDeformer.cpp
 OBJECTS		:= $(SOURCES:.cpp=.o)

@@ -1,10 +1,10 @@
 # makefile for aaOcean Terminal/Shell application
 
-# this makefile requires fftw, openexr, ilmbase and zlib
+# this makefile requires openexr, ilmbase and zlib
 # please visit the following URL to see how to compile these
 # https://bitbucket.org/amaanakram/aaocean/wiki/Home
 
-# $(DEPLOC) is where you have installed 'dependencies' like fftw, openexr, ilmbase, and zlib
+# $(DEPLOC) is where you have installed 'dependencies' like openexr, ilmbase, and zlib
 # the following folder structure is expected under $(DEPLOC)
 # $(DEPLOC)/include
 # $(DEPLOC)/lib
@@ -18,7 +18,7 @@ AAOCEANLOC    := ../../aaocean
 CXX     := $(GXXLOC)g++
 
 # compiler flags:
-CXXFLAGS := -w -O2 -ffast-math -fPIC -fopenmp -fvisibility=hidden -pthread
+CXXFLAGS := -w -ffast-math -fPIC -fopenmp -fvisibility=hidden -pthread -fno-strict-aliasing -msse2 -O3
 
 # includes
 INCLUDES := -I$(AAOCEANLOC)/externals/aaOcean/src -I$(AAOCEANLOC)/externals/helpers -I$(DEPLOC)/include -I$(DEPLOC)/include/OpenEXR
@@ -27,10 +27,10 @@ INCLUDES := -I$(AAOCEANLOC)/externals/aaOcean/src -I$(AAOCEANLOC)/externals/help
 LIBSLOC     := $(DEPLOC)/lib
 
 # libs to link against 
-LIBS     := $(LIBSLOC)/libIlmImf.a $(LIBSLOC)/libImath.a $(LIBSLOC)/libHalf.a $(LIBSLOC)/libIexMath.a $(LIBSLOC)/libIlmThread.a $(LIBSLOC)/libIex.a $(LIBSLOC)/libfftw3f.a $(LIBSLOC)/libfftw3f_omp.a $(LIBSLOC)/libz.a -Wl,-rpath -Wl,$(LIBSLOC)
+LIBS     := $(LIBSLOC)/libIlmImf.a $(LIBSLOC)/libImath.a $(LIBSLOC)/libHalf.a $(LIBSLOC)/libIexMath.a $(LIBSLOC)/libIlmThread.a $(LIBSLOC)/libIex.a $(LIBSLOC)/libz.a -Wl,-rpath -Wl,$(LIBSLOC)
 
 # this should not be changed
-LDFLAGS  := -fPIC -fopenmp -pthread -fvisibility=hidden -w -O2  
+LDFLAGS  := -fPIC -fopenmp -pthread -fvisibility=hidden 
 
 # the build target executable:
 TARGET = aaOceanTerminal
