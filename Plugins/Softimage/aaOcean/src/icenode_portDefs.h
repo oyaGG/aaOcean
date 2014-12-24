@@ -9,26 +9,27 @@
 enum IDs
 {
     ID_IN_PointID = 0,
-    ID_IN_RESOLUTION = 10,
+    ID_IN_RESOLUTION,
     ID_IN_OCEAN_SCALE,
-    ID_IN_OCEAN_DEPTH = 26,
-    ID_IN_SURFACE_TENSION = 43,
-    ID_IN_WINDDIR = 12,
+    ID_IN_OCEAN_DEPTH,
+    ID_IN_SURFACE_TENSION,
+    ID_IN_WINDDIR,
     ID_IN_CUTOFF,
     ID_IN_WINDVELOCITY,
     ID_IN_WINDALIGN,
     ID_IN_DAMP,
-    ID_IN_WAVESPEED = 7,
-    ID_IN_CHOP = 9,
-    ID_IN_WAVE_HEIGHT = 25,
-    ID_IN_SEED = 29,
-    ID_IN_ENABLE = 30,
-    ID_IN_ENABLEFOAM = 35,
-    ID_IN_U = 33,
-    ID_IN_V = 34,
-    ID_IN_TRANSFORM = 36,
+    ID_IN_WAVESPEED ,
+    ID_IN_CHOP ,
+    ID_IN_WAVE_HEIGHT ,
+    ID_IN_SEED  ,
+    ID_IN_ENABLE ,
+    ID_IN_ENABLEFOAM ,
+    ID_IN_U,
+    ID_IN_V,
+    ID_IN_TRANSFORM,
     ID_IN_TIME,
     ID_IN_REPEAT_TIME,
+    ID_IN_RAND_WEIGHT ,
 
     ID_G_100 = 100,
     ID_G_101,
@@ -228,8 +229,14 @@ CStatus RegisteraaOcean( PluginRegistrar& in_reg )
                                 0.0f,0.0f,1.0f,
                                 ID_UNDEF, ID_UNDEF, ID_UNDEF);
     st.AssertSucceeded( ) ;
-    
-    
+
+    st = nodeDef.AddInputPort(  ID_IN_RAND_WEIGHT,
+                                ID_G_104,
+                                siICENodeDataFloat,siICENodeStructureSingle,siICENodeContextSingleton,
+                                L"Random Weight",L"Random Weight",
+                                0.0f,0.0f,1.0f,
+                                ID_UNDEF, ID_UNDEF, ID_UNDEF);
+    st.AssertSucceeded( ) ;
 
 //-----------------------------------START OUTPUT PORTS----------------
 

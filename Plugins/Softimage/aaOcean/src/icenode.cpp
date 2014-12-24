@@ -77,6 +77,7 @@ SICALLBACK aaOcean_BeginEvaluate( ICENodeContext& in_ctxt )
     CDataArrayFloat time( in_ctxt, ID_IN_TIME);
     CDataArrayFloat loopTime( in_ctxt, ID_IN_REPEAT_TIME);
     CDataArrayFloat surfaceTension( in_ctxt, ID_IN_SURFACE_TENSION);
+    CDataArrayFloat randWeight( in_ctxt, ID_IN_RAND_WEIGHT);
 
     pOcean->input(resolution[0], 
         seed[0],
@@ -93,7 +94,8 @@ SICALLBACK aaOcean_BeginEvaluate( ICENodeContext& in_ctxt )
         chop[0], 
         time[0],
         loopTime[0],
-        enableFoam[0]);
+        enableFoam[0],
+        randWeight[0]);
 
     return CStatus::OK;
 }
