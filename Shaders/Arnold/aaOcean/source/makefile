@@ -1,10 +1,10 @@
 # Makefile for Arnold aaOcean shader
 
-# this makefile requires fftw, openexr, ilmbase and zlib
+# this makefile requires openexr, ilmbase and zlib
 # please visit the following URL to see how to compile these
 # https://bitbucket.org/amaanakram/aaocean/wiki/Home
 
-# $(DEPLOC) is where you have installed 'dependencies' like fftw, openexr, ilmbase, and zlib
+# $(DEPLOC) is where you have installed 'dependencies' like openexr, ilmbase, and zlib
 # the following folder structure is expected under $(DEPLOC)
 # $(DEPLOC)/include
 # $(DEPLOC)/lib
@@ -23,9 +23,9 @@ TARGETLOC	:=
 
 INCLUDES := -I$(ARNOLD)/include -I../../../../externals/aaOcean/src -I../../../../externals/helpers  -I$(DEPLOC)/include -I$(DEPLOC)/include/OpenEXR
 LDFLAGS  := -fopenmp -L$(ARNOLD)/bin 
-LIBS     := $(LIBSLOC)/libIlmImf.a $(LIBSLOC)/libImath.a $(LIBSLOC)/libHalf.a $(LIBSLOC)/libIexMath.a $(LIBSLOC)/libIlmThread.a $(LIBSLOC)/libIex.a $(LIBSLOC)/libfftw3f.a $(LIBSLOC)/libfftw3f_omp.a $(LIBSLOC)/libz.a -Wl,-rpath -Wl,$(LIBSLOC) -lai
+LIBS     := $(LIBSLOC)/libIlmImf.a $(LIBSLOC)/libImath.a $(LIBSLOC)/libHalf.a $(LIBSLOC)/libIexMath.a $(LIBSLOC)/libIlmThread.a $(LIBSLOC)/libIex.a $(LIBSLOC)/libz.a -Wl,-rpath -Wl,$(LIBSLOC) -lai
 
-CXXFLAGS := -w -O2 -fPIC -fopenmp -fvisibility=hidden -pthread -DWRITE_OPENEXR -ffast-math
+CXXFLAGS := -w -fPIC -fopenmp -fvisibility=hidden -pthread -DWRITE_OPENEXR -ffast-math -fno-strict-aliasing -msse2 -O3
 
 CXX	 := $(GXXLOC)g++
 SOURCES  := shaders/aaOceanArnoldShader.cpp
