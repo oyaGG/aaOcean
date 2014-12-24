@@ -143,7 +143,6 @@ private:
     kiss_fftnd_cfg m_planJxz;
     kiss_fftnd_cfg m_planJzz;
 
-    void reInit(int data_size, int seed, float randWeight);
     void prepareOcean();
     void setupGrid();
     unsigned int generateUID(const float, const float) const;

@@ -144,7 +144,11 @@ void aaOcean::input(int resolution, unsigned int seed, float oceanScale, float o
 {
     // forcing to be power of two, setting minimum resolution of 2^4
     resolution  = (int)pow(2.0f, (4 + abs(resolution))); 
-    reInit(resolution, seed, randWeight);
+    if(m_resolution != resolution)
+    {
+        m_resolution = resolution;
+        allocateBaseArrays();
+    }
 
     // scaled for better UI control
     m_waveHeight    = waveHeight * 0.01f;
@@ -201,24 +205,18 @@ void aaOcean::input(int resolution, unsigned int seed, float oceanScale, float o
         m_doHoK = 1;
     }
 
+    if(m_seed != seed || m_randWeight != randWeight)
+    {
+        m_seed = seed;
+        m_randWeight = randWeight;
+        m_doSetup = m_doHoK = 1;
+    }
+
     if(!m_doHoK || !m_doSetup)
         sprintf(m_state,"[aaOcean Core] Ocean base state unchanged. Re-evaluating ocean with cached data");
     
     // we have our inputs. start preparing ocean arrays
     prepareOcean();
-}
-
-void aaOcean::reInit(int resolution, int seed, float randWeight)
-{
-    // If ocean resolution has changed, or if we are creating an ocean from scratch
-    // Flush any existing arrays and allocate them with the new array size (resolution)
-    if(m_resolution != resolution || m_seed != seed || m_randWeight != randWeight)
-    {
-        m_seed = seed; // should be handled separately -- does not need mem reallocation
-        m_randWeight = randWeight;
-        m_resolution = resolution;
-        allocateBaseArrays();
-    }
 }
 
 void aaOcean::prepareOcean()
@@ -253,9 +251,6 @@ void aaOcean::allocateBaseArrays()
     else
         sprintf(m_state,"[aaOcean Core] Allocating memory for ocean data structures for resolution %dx%d", m_resolution, m_resolution);
 
-    m_doHoK  = 1;
-    m_doSetup = 1;
-
     int size = m_resolution * m_resolution;
     int dims[2] = {m_resolution, m_resolution};
 
@@ -286,7 +281,9 @@ void aaOcean::allocateBaseArrays()
     m_planChopX         = kiss_fftnd_alloc(dims, 2, 1, 0, 0);
     m_planChopZ         = kiss_fftnd_alloc(dims, 2, 1, 0, 0);
 
-    m_isAllocated       = 1;
+    m_doHoK         = 1;
+    m_doSetup       = 1;
+    m_isAllocated   = 1;
 }
 
 void aaOcean::allocateFoamArrays()
@@ -574,7 +571,7 @@ void aaOcean::setupGrid()
         m_hokImag[index] = (aa_INV_SQRTTWO) * (m_rand2[index]) * philips;
     }
 
-    sprintf(m_state,"%s\n[aaOcean Core] Finished initializing all ocean data", m_state);
+    sprintf(m_state,"\n[aaOcean Core] Finished initializing all ocean data");
     m_doHoK = 0;
 }
 
@@ -730,7 +727,7 @@ void aaOcean::evaluateJacobians()
     }
 }
 
-void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax)
+void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax) const
 {
     outBoundsMax = -FLT_MAX;
     outBoundsMin =  FLT_MAX;
@@ -747,7 +744,7 @@ void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax)
     }
 }
 
-void aaOcean::getOceanArray(float *&outArray, aaOcean::arrayType type)
+void aaOcean::getOceanArray(float *&outArray, aaOcean::arrayType type) const
 {
     float *arrayPointer;
     getArrayType(type, arrayPointer);
