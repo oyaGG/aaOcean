@@ -281,6 +281,10 @@ void aaOcean::allocateBaseArrays()
     m_planChopX         = kiss_fftnd_alloc(dims, 2, 1, 0, 0);
     m_planChopZ         = kiss_fftnd_alloc(dims, 2, 1, 0, 0);
 
+    m_arrayPointer[eHEIGHTFIELD] = m_out_fft_htField;
+    m_arrayPointer[eCHOPX]       = m_out_fft_chopX;
+    m_arrayPointer[eCHOPZ]       = m_out_fft_chopZ;
+
     m_doHoK         = 1;
     m_doSetup       = 1;
     m_isAllocated   = 1;
@@ -305,6 +309,13 @@ void aaOcean::allocateFoamArrays()
     m_planJxx = kiss_fftnd_alloc(dims, 2, 1, 0, 0);
     m_planJxz = kiss_fftnd_alloc(dims, 2, 1, 0, 0);
     m_planJzz = kiss_fftnd_alloc(dims, 2, 1, 0, 0);
+
+    m_arrayPointer[eFOAM]        = m_out_fft_jxz;
+    m_arrayPointer[eEIGENPLUSX]  = m_out_fft_jxxX;
+    m_arrayPointer[eEIGENPLUSZ]  = m_out_fft_jxxZ;
+    m_arrayPointer[eEIGENMINUSX] = m_out_fft_jzzX;
+    m_arrayPointer[eEIGENMINUSZ] = m_out_fft_jzzZ;
+
     m_isFoamAllocated = 1;
 }
 
@@ -746,8 +757,9 @@ void aaOcean::getFoamBounds(float& outBoundsMin, float& outBoundsMax) const
 
 void aaOcean::getOceanArray(float *&outArray, aaOcean::arrayType type) const
 {
-    float *arrayPointer;
-    getArrayType(type, arrayPointer);
+    // get the pointer to the aaOcean array that we want to pull data from
+    float *arrayPointer = m_arrayPointer[type];
+
     const int arraySize = m_resolution * m_resolution;
 
     #pragma omp parallel for 
@@ -759,7 +771,9 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type)
 {
     float u, v, du, dv = 0;
     int xMinus1, yMinus1, x, y, xPlus1, yPlus1, xPlus2, yPlus2;
-    float *arrayPointer;
+
+    // get the pointer to the aaOcean array that we want to pull data from
+    float *arrayPointer = m_arrayPointer[type];
 
     // maya and softimage V axis runs along negative z axis
     // aaOcean uses convention of V axis along positive z axis
@@ -792,9 +806,6 @@ float aaOcean::getOceanData(float uCoord, float vCoord, aaOcean::arrayType type)
     yPlus1  = wrap(y + 1);
     yPlus2  = wrap(y + 2);
     
-    // get the pointer to the aaOcean array that we want to pull data from
-    getArrayType(type, arrayPointer);
-
     // prepare for catmul-rom interpolation
     const float a1 = catmullRom(du, 
                             arrayPointer[xMinus1    + yMinus1],
@@ -837,24 +848,4 @@ inline int aaOcean::wrap(int x) const
     return x;
 }
 
-void aaOcean::getArrayType(aaOcean::arrayType type, float*& outArray) const
-{
-    // set pointer to the array that we need to interpolate data from
-    if(type == eHEIGHTFIELD)
-        outArray = m_out_fft_htField;
-    else if(type == eCHOPX)
-        outArray = m_out_fft_chopX;
-    else if(type == eCHOPZ)
-        outArray = m_out_fft_chopZ;
-    else if(type == eFOAM)
-        outArray = m_out_fft_jxz;
-    else if(type == eEIGENPLUSX)
-        outArray = m_out_fft_jxxX;
-    else if(type == eEIGENPLUSZ)
-        outArray = m_out_fft_jxxZ;
-    else if(type == eEIGENMINUSX)
-        outArray = m_out_fft_jzzX;
-    else if(type == eEIGENMINUSZ)
-        outArray = m_out_fft_jzzZ;
-}
 #endif  /* AAOCEANCLASS_CPP */
