@@ -32,7 +32,7 @@ public:
        eEIGENMINUSX,
        eEIGENMINUSZ
     };
-    
+        
     // array for holding the current state of aaOcean object
     char m_state[512]; 
 
@@ -118,6 +118,9 @@ private:
     float *m_out_fft_jzzZ;      // eigenvector Z component
     float *m_out_fft_jxz;       // eigenvalue
 
+    // array of pointers pointing to m_out* arrays
+    float *m_arrayPointer[8];
+
     // bool types for various checks during run-time
     bool    m_isAllocated;
     bool    m_isFoamAllocated;
@@ -157,8 +160,6 @@ private:
     // interpolation functions
     inline float catmullRom(const float t, const float a, const float b, const float c, const float d) const;
     inline int wrap(int x) const;
-
-    void getArrayType(aaOcean::arrayType type, float*& outArray) const;
 
     // memory management functions
     void allocateBaseArrays();
