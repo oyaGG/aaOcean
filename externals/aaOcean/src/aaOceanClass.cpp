@@ -510,16 +510,14 @@ void aaOcean::setupGrid()
             uID = (unsigned int)generateUID(x, z);
 
             // generate random numbers
-            dsfmt_t dsfmt1;
-            dsfmt_t dsfmt2;
-            dsfmt_init_gen_rand(&dsfmt1, uID + m_seed);
-            dsfmt_init_gen_rand(&dsfmt2, uID + m_seed + 1);
+            dsfmt_t dsfmt;
+            dsfmt_init_gen_rand(&dsfmt, uID + m_seed);
             
-            float g1 = (float)gaussian(dsfmt1);
-            float g2 = (float)gaussian(dsfmt2);
+            float g1 = (float)gaussian(dsfmt);
+            float g2 = (float)gaussian(dsfmt);
 
-            float u1 = (float)uniform(dsfmt1);
-            float u2 = (float)uniform(dsfmt2);
+            float u1 = (float)uniform(dsfmt);
+            float u2 = (float)uniform(dsfmt);
 
             m_rand1[index] = lerp(m_randWeight, g1, u1);
             m_rand2[index] = lerp(m_randWeight, g2, u2);
