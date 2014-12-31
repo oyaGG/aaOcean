@@ -638,6 +638,23 @@ double gaussian(dsfmt_t &dsfmt, const double& mean = 0.0, const double& variance
     return mean + r * cos(phi);
 }
 
+double box_muller(dsfmt_t &dsfmt, const double& mean = 0.0, const double& variance = 1.0)
+{                       
+    double x1, x2, w, y1;
+    {
+        do {
+            x1 = 2.0 * dsfmt_genrand_open_open(&dsfmt) - 1.0;
+            x2 = 2.0 * dsfmt_genrand_open_open(&dsfmt) - 1.0;
+            w = x1 * x1 + x2 * x2;
+        } while ( w >= 1.0 );
+
+        w = sqrt( (-2.0 * log( w ) ) / w );
+        y1 = x1 * w;
+    }
+
+    return( mean + y1 * variance );
+}
+
 // uniformly distributed rands with remapped interval
 double uniform(dsfmt_t &dsfmt)
 {
