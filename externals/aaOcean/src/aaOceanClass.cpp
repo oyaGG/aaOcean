@@ -511,6 +511,8 @@ void aaOcean::setupGrid()
 
             // generate random numbers
             dsfmt_t dsfmt;
+            // TODO: slowest in aaocean -- seeding a random number generator
+            // need to find a faster generator with good period
             dsfmt_init_gen_rand(&dsfmt, uID + m_seed);
             
             float g1 = (float)gaussian(dsfmt);
