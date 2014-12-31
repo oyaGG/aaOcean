@@ -28,10 +28,15 @@
 #include "aaOceanClass.cpp"
 #include "openEXROutput.h"
 
+#include "timer/Timer.cpp"
+
 int main(int argc, char* argv[])
 {
     char msg[512];
     input oceanInput;
+
+    Timer t;
+    t.start();
 
     if(!processInput(argc, argv, oceanInput))
         return 1;
@@ -77,7 +82,7 @@ int main(int argc, char* argv[])
         LOG(logDEBUG) << "Logging Ocean Core messages\n" << pOcean->m_state;
         LOG(logINFO) << msg;
         
-        char outputFileName[512];
+        /*char outputFileName[512];
         oceanDataToEXR(pOcean, 
                        &oceanInput.outputFolder[0], 
                        &oceanInput.postfix[0], 
@@ -89,7 +94,12 @@ int main(int argc, char* argv[])
         sprintf(msg,"OpenEXR image location: %s", &outputFileName[0]);
         LOG(logINFO) << msg;
         sprintf(msg,"OpenEXR RGB contains position, Alpha contains raw foam/spray emission data");
+        LOG(logDEBUG) << msg;*/
+
+        t.stop();
+        sprintf(msg,"Elapsed time: %f secs", t.getElapsedTimeInSec());
         LOG(logDEBUG) << msg;
+
 
         currentFrame++;
     }

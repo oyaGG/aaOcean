@@ -1,9 +1,16 @@
-// aaOcean v2.5 Softimage ICE Plugin Registration
+// aaOcean
 // Author: Amaan Akram 
 // www.amaanakram.com
+//
+// LICENSE: 
 // aaOcean is free software and can be redistributed and modified under the terms of the 
 // GNU General Public License (Version 3) as provided by the Free Software Foundation.
 // GNU General Public License http://www.gnu.org/licenses/gpl.html
+//
+// A "New BSD" License for aaOcean can be obtained by contacting the author
+// For more details on aaOcean and associated 3rd Party licenses, please see
+// license.txt file that is part of the aaOcean repository:
+// https://bitbucket.org/amaanakram/aaocean
 
 XSI::CStatus RegisteraaOcean( XSI::PluginRegistrar& in_reg );
 

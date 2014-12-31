@@ -35,8 +35,8 @@
 #ifndef NDEBUG
 #define NDEBUG
 #endif
-#define DSFMT_DO_NOT_USE_OLD_NAMES
-#define HAVE_SSE2
+#define DSFMT_DO_NOT_USE_OLD_NAMES 1
+#define HAVE_SSE2 1
 #define SFMT_MEXP 19937
 
 #ifndef DSFMT_H
