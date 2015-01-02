@@ -17,15 +17,15 @@ https://vimeo.com/42087457
 This repository contains the following
 
 * aaOcean core class
-* aaOcean Mental Ray shaders
+* aaOcean Mental Ray shader
 * Softimage Shader Definitions for Mental Ray shaders
-* aaOcean Arnold shaders
+* aaOcean Arnold shader
 * aaOcean Prman 19 RIS displacement shader
 * aaOcean Softimage ICE deformer
 * aaOcean Maya Deformer
 * aaOcean Houdini SOP
 * aaOcean standalong terminal/shell application
-* everal helper functions that I often use
+* several helper functions that I often use
 
 *****LINUX BUILD INSTRUCTIONS*******
 Please see the wiki page at 
