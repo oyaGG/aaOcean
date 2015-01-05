@@ -629,18 +629,19 @@ void dsfmt_chk_init_by_array(dsfmt_t *dsfmt, uint32_t init_key[],
 // custom additions for aaocean
 // convets uniformly distributed rands to gaussian distribution
 // Copyright (C) 2000 - 2009, Richard J. Wagner
-double gaussian(dsfmt_t &dsfmt, const double& mean = 0.0, const double& variance = 1.0)
+double gaussian(dsfmt_t &dsfmt, const double& mean = 0.0, const double& variance = 1.0, bool boxMuller=0)
 {
-    double rand1 = dsfmt_genrand_open_open(&dsfmt);
-    double rand2 = dsfmt_genrand_close_open(&dsfmt);
-    double r = sqrt( -2.0 * log( 1.0 - rand1) ) * variance; 
-    double phi = 2.0 * 3.14159265358979323846 * rand2;
-    return mean + r * cos(phi);
-}
-
-double box_muller(dsfmt_t &dsfmt, const double& mean = 0.0, const double& variance = 1.0)
-{                       
-    double x1, x2, w, y1;
+    if(!boxMuller)
+    {
+        double rand1 = dsfmt_genrand_open_open(&dsfmt);
+        double rand2 = dsfmt_genrand_close_open(&dsfmt);
+        double r = sqrt( -2.0 * log( 1.0 - rand1) ) * variance; 
+        double phi = 2.0 * 3.14159265358979323846 * rand2;
+        return mean + r * cos(phi);
+    }
+    else
+    {
+        double x1, x2, w, y1;
     {
         do {
             x1 = 2.0 * dsfmt_genrand_open_open(&dsfmt) - 1.0;
@@ -653,6 +654,7 @@ double box_muller(dsfmt_t &dsfmt, const double& mean = 0.0, const double& varian
     }
 
     return( mean + y1 * variance );
+    }
 }
 
 // uniformly distributed rands with remapped interval
