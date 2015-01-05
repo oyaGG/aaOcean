@@ -512,8 +512,8 @@ void aaOcean::setupGrid()
 
             m_xCoord[index] = half_n + i * 2 ;
             m_zCoord[index] = half_n + j * 2 ;
-            float x = m_xCoord[index];
-            float z = m_zCoord[index];
+            float x = (float)m_xCoord[index];
+            float z = (float)m_zCoord[index];
             uID = (unsigned int)generateUID(x, z);
 
             // generate random numbers
