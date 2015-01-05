@@ -28,6 +28,7 @@ public:
     ~aaOcean();
 
     // for retrieving array pointers in getOcean() from host app
+    // declared here for convenience in identifying array names
     enum arrayType
     {
        eHEIGHTFIELD,
@@ -76,46 +77,55 @@ public:
     // retrieves eigenvalue (foam) array bounds
     void getFoamBounds(float& outBoundsMin, float& outBoundsMax) const;
 
+    // Is Valid if input is verified and 
+    // ocean is correctly initialized
     bool isValid();
+
+    // if choppiness is greater than 1, isChoppy() returns 1
     bool isChoppy();
+
+    // returns resolution in powers of 2
     int getResolution();
+
+    // Returns current ocean state
+    // Needs better implementation
     char* getState();
     
     // initialization functions
 private:
-    int     m_resolution;
-    unsigned int m_seed;
-    int     m_windAlign;
-    float   m_velocity;
-    float   m_windDir;
-    float   m_cutoff;
-    float   m_damp;
-    float   m_oceanScale;
-    float   m_oceanDepth;
-    float   m_surfaceTension;
-    float   m_chopAmount;
-    float   m_waveHeight;
-    float   m_waveSpeed;
-    float   m_time;
-    float   m_loopTime;
-    float   m_foamBoundmin; // for holding min/max foam
-    float   m_foamBoundmax; // for holding min/max foam
-    float   m_randWeight;   // control blend between rand distributions
+    int     m_resolution;     // resolution in powers of 2
+    unsigned int m_seed;      // seed for random number generator
+    float   m_oceanScale;     // size of the ocean patch to generate in meters
+    float   m_velocity;       // exposed as 'Wave Size' in some aaOcean plugins
+    float   m_windDir;        // wind direction in degrees
+    int     m_windAlign;      // stretches waves perpendicular to wind direction
+    float   m_cutoff;         // cuts off waves smaller than this wavelength (smoothes ocean surface)
+    float   m_damp;           // Damps waves travelling opposite the wind direction (wave reflection)
+    float   m_chopAmount;     // squeezes the wave peaks to make them appear choppy
+    float   m_waveHeight;     // wave height field multiplier
+    float   m_waveSpeed;      // wave movement multiplier
+    float   m_time;           // current time in seconds
+    float   m_loopTime;       // time in seconds before the ocean shape repeats/loops
+    float   m_oceanDepth;     // slows waves down with decreasing depth
+    float   m_surfaceTension; // generates fast moving, high frequency waves
+    float   m_foamBoundmin;   // stores eigenvalue array bounds
+    float   m_foamBoundmax;   // stores eigenvalue array bounds
+    float   m_randWeight;     // control blend between rand distributions
     
-    //ocean array pointers
-    int     *m_xCoord;
-    int     *m_zCoord;
-    float   *m_hokReal;
-    float   *m_hokImag;
-    float   *m_hktReal;
-    float   *m_hktImag;
-    float   *m_kX;
-    float   *m_kZ;
-    float   *m_omega;
-    float   *m_rand1;
-    float   *m_rand2;
+    // ocean array pointers
+    int     *m_xCoord;  // holds ocean grid coordinates
+    int     *m_zCoord;  // holds ocean grid coordinates
+    float   *m_hokReal; // real component of HoK (see Tessendorf paper)
+    float   *m_hokImag; // imaginary component of HoK (see Tessendorf paper)
+    float   *m_hktReal; // real component of HkT (see Tessendorf paper)
+    float   *m_hktImag; // real component of HkT (see Tessendorf paper)
+    float   *m_kX;      // x-component of wave vector
+    float   *m_kZ;      // z-component of wave vector
+    float   *m_omega;   // omega (see Tessendorf paper)
+    float   *m_rand1;   // random number array 
+    float   *m_rand2;   // random number array 
 
-    //ocean output array pointers
+    // ocean output array pointers
     float *m_out_fft_htField;   // y displacement
     float *m_out_fft_chopX;     // x displacement
     float *m_out_fft_chopZ;     // z displacement
@@ -126,19 +136,21 @@ private:
     float *m_out_fft_jxz;       // eigenvalue
 
     // array of pointers pointing to m_out* arrays
+    // used with 'enum arrayType' and in getOceanData() and getOceanArray()
     float *m_arrayPointer[8];
 
     // bool types for various checks during run-time
-    bool    m_isAllocated;
-    bool    m_isFoamAllocated;
-    bool    m_doHoK;
-    bool    m_doSetup;
-    bool    m_doChop;
-    bool    m_doFoam;
+    bool    m_isAllocated;      // working arrays memory allocation check
+    bool    m_isFoamAllocated;  // eigenvalues/vectors memory allocation check
+    bool    m_doSetup;          // triggers setupGrid()
+    bool    m_doHoK;            // triggers evaluateHokData()
+    bool    m_doChop;           // triggers evaluateChopField()
+    bool    m_doFoam;           // triggers evaluateJacobians()
 
-    // memory tracking
+    // memory tracking -- needs better implementation
     int     m_memory;
 
+    // kissfft arrays
     kiss_fft_cpx *m_fft_htField;
     kiss_fft_cpx *m_fft_chopX;
     kiss_fft_cpx *m_fft_chopZ;
