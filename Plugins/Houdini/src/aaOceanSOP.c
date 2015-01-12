@@ -1,33 +1,22 @@
-// aaOcean v2.6 Houdini SOP Deformer
+// aaOcean
 // Author: Amaan Akram 
 // www.amaanakram.com
+//
+// LICENSE: 
 // aaOcean is free software and can be redistributed and modified under the terms of the 
 // GNU General Public License (Version 3) as provided by the Free Software Foundation.
 // GNU General Public License http://www.gnu.org/licenses/gpl.html
-
-#ifndef __GNUC__ // defined in MSVC project settings, preprocessor section
-#define VERSION "12.5.376"
-#define I386 
-#define WIN32 
-#define SWAP_BITFIELDS 
-#define _WIN32_WINNT 0x0501
-#define WINVER 0x0501
-#define NOMINMAX 
-#define USE_MATH_DEFINES
-#define BOOST_ALL_NO_LIB  
-#define SESI_LITTLE_ENDIAN 
-#define NEED_SPECIALIZATION_STORAGE 
-#define AMD64 
-#define SIZEOF_VOID_P 8
-#define MAKING_DSO
-#endif
+//
+// A "New BSD" License for aaOcean can be obtained by contacting the author
+// For more details on aaOcean and associated 3rd Party licenses, please see
+// license.txt file that is part of the aaOcean repository:
+// https://bitbucket.org/amaanakram/aaocean
 
 #include "aaOceanSOP.h"
-#include "timer/Timer.cpp"
 
+#include <SYS/SYS_Math.h>
 #include <UT/UT_DSOVersion.h>
 #include <UT/UT_Interrupt.h>
-#include <UT/UT_Math.h>
 #include <UT/UT_Matrix3.h>
 #include <UT/UT_Matrix4.h>
 #include <UT/UT_ThreadedAlgorithm.h>
