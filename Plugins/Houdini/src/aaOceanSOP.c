@@ -208,9 +208,9 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
         eVecMinusRef = gdp->addFloatTuple(GA_ATTRIB_POINT, eVecMinusName,   3);
         eValuesRef   = gdp->addFloatTuple(GA_ATTRIB_POINT, eValuesName,     1);
 
-        eVecPlusHandle  = GA_RWHandleV3::GA_RWHandleT(eVecPlusRef.getAttribute());
-        eVecMinusHandle = GA_RWHandleV3::GA_RWHandleT(eVecMinusRef.getAttribute());
-        eValuesHandle   = GA_RWHandleF::GA_RWHandleT(eValuesRef.getAttribute());
+        eVecPlusHandle  = GA_RWHandleV3(eVecPlusRef.getAttribute());
+        eVecMinusHandle = GA_RWHandleV3(eVecMinusRef.getAttribute());
+        eValuesHandle   = GA_RWHandleF(eValuesRef.getAttribute());
     }
     
     // inputs validated. Begin writing ocean data to output handles
