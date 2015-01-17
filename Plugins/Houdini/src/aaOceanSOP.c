@@ -194,8 +194,8 @@ OP_ERROR aaOceanSOP::cookMySop(OP_Context &context)
         char msg[256];
         sprintf(msg, "[aaOcean] Specified UV attribute \'%s\' not found on geometry.\
                      \nUV's are required for aaOcean to cook", UVAttribName);
-        cout<<msg;
-        cout.flush();
+        std::cout<<msg;
+        std::cout.flush();
         addError(SOP_MESSAGE, msg); 
         unlockInputs();
         return error();
